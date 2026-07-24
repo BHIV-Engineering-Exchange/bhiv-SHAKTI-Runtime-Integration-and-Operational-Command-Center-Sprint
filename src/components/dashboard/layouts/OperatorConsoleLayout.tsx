@@ -4,6 +4,7 @@ import { OperatorCard } from "@/components/dashboard/primitives/OperatorCard";
 import { TimelineCard } from "@/components/dashboard/primitives/TimelineCard";
 
 import { useAlertsDashboard, useRuntimeDashboard } from "@/hooks/useQueries";
+import { useAuditRecent } from "@/hooks/useBucketQueries";
 import { toSeverity, formatRelativeTime } from "@/utils/format";
 
 function toOperatorStatus(status: string): "active" | "away" | "offline" | "busy" {
@@ -15,12 +16,23 @@ function toOperatorStatus(status: string): "active" | "away" | "offline" | "busy
 export default memo(function OperatorConsoleLayout() {
   const alerts = useAlertsDashboard();
   const runtime = useRuntimeDashboard();
+  const audit = useAuditRecent(20);
 
-  const sortedAlerts = useMemo(() => {
-    return [...(alerts.data?.alerts ?? [])].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
-  }, [alerts.data?.alerts]);
+  const auditOperations = audit.data?.operations ?? [];
 
   const activities = useMemo(() => {
+    if (auditOperations.length > 0) {
+      return auditOperations.map(op => ({
+        id: op._id,
+        message: `${op.operation_type} artifact ${op.artifact_id ? op.artifact_id.slice(0, 8) + '...' : ''} (${op.status})`,
+        source: op.requester_id || op.integration_id || "bucket_service",
+        category: "system" as const,
+        timestamp: formatRelativeTime(op.timestamp),
+        severity: op.status === "success" ? "info" as const : "critical" as const,
+      }));
+    }
+
+    const sortedAlerts = [...(alerts.data?.alerts ?? [])].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
     return sortedAlerts.map(a => ({
       id: a.id,
       message: a.message,
@@ -29,7 +41,7 @@ export default memo(function OperatorConsoleLayout() {
       timestamp: formatRelativeTime(a.timestamp),
       severity: toSeverity(a.severity),
     }));
-  }, [sortedAlerts]);
+  }, [auditOperations, alerts.data?.alerts]);
 
   // Derive operator cards from real /dashboard/runtime sessions
   const operators = useMemo(() =>
@@ -41,13 +53,13 @@ export default memo(function OperatorConsoleLayout() {
       assignment: s.current_operation ?? undefined,
     })), [runtime.data?.sessions]);
 
-  const isLoading = alerts.isLoading || runtime.isLoading;
-  const isError = !isLoading && (alerts.isError || runtime.isError);
-  const hasData = alerts.data !== undefined || runtime.data !== undefined;
+  const isLoading = alerts.isLoading && runtime.isLoading && audit.isLoading;
+  const isError = !isLoading && (alerts.isError && runtime.isError && audit.isError);
+  const hasData = alerts.data !== undefined || runtime.data !== undefined || audit.data !== undefined;
 
-  const timestamp = alerts.data?.timestamp || runtime.data?.timestamp;
-  const isFetching = alerts.isFetching || runtime.isFetching;
-  const isStale = alerts.isStale || runtime.isStale;
+  const timestamp = audit.data ? new Date().toISOString() : (alerts.data?.timestamp || runtime.data?.timestamp);
+  const isFetching = alerts.isFetching || runtime.isFetching || audit.isFetching;
+  const isStale = alerts.isStale || runtime.isStale || audit.isStale;
   const traceId = (alerts.data as any)?.trace_id || (runtime.data as any)?.trace_id;
 
   return (
@@ -57,7 +69,7 @@ export default memo(function OperatorConsoleLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={hasData}
-      onRetry={() => { alerts.refetch(); runtime.refetch(); }}
+      onRetry={() => { alerts.refetch(); runtime.refetch(); audit.refetch(); }}
       errorMessage="Failed to load console data"
       skeletonCount={5}
       skeletonHeight="h-10"
@@ -65,7 +77,7 @@ export default memo(function OperatorConsoleLayout() {
       isFetching={isFetching}
       isStale={isStale}
       traceId={traceId}
-      dataSource="Control Plane"
+      dataSource="Bucket Audit & Control Plane"
     >
       {hasData && (
         <div className="flex flex-col gap-2 h-full">

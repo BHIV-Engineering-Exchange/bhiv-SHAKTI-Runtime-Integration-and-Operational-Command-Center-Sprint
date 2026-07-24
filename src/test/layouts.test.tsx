@@ -30,6 +30,16 @@ const defaultQueryResult = {
   refetch: vi.fn(),
 };
 
+const mockUseBucketHealth = vi.fn();
+const mockUseBucketArtifacts = vi.fn();
+const mockUseAuditRecent = vi.fn();
+const mockUseBucketStorageStats = vi.fn();
+const mockUseBucketChainState = vi.fn();
+const mockUseConstitutionalStatus = vi.fn();
+const mockUseMetricsScaleStatus = vi.fn();
+const mockUseMetricsQueryPerformance = vi.fn();
+const mockUseMetricsAlerts = vi.fn();
+
 vi.mock("@/hooks/useQueries", () => ({
   useExecutiveDashboard: () => mockUseExecutiveDashboard(),
   useSystemStatus: () => mockUseSystemStatus(),
@@ -45,6 +55,18 @@ vi.mock("@/hooks/useQueries", () => ({
   useMigrationQueue: () => mockUseMigrationQueue(),
   useTelemetryDashboard: () => mockUseTelemetryDashboard(),
   useRuntimeDashboard: () => mockUseRuntimeDashboard(),
+}));
+
+vi.mock("@/hooks/useBucketQueries", () => ({
+  useBucketHealth: () => mockUseBucketHealth(),
+  useBucketArtifacts: () => mockUseBucketArtifacts(),
+  useAuditRecent: () => mockUseAuditRecent(),
+  useBucketStorageStats: () => mockUseBucketStorageStats(),
+  useBucketChainState: () => mockUseBucketChainState(),
+  useConstitutionalStatus: () => mockUseConstitutionalStatus(),
+  useMetricsScaleStatus: () => mockUseMetricsScaleStatus(),
+  useMetricsQueryPerformance: () => mockUseMetricsQueryPerformance(),
+  useMetricsAlerts: () => mockUseMetricsAlerts(),
 }));
 
 import ExecutiveLayout from "../components/dashboard/layouts/ExecutiveLayout";
@@ -68,6 +90,15 @@ describe("Layout Components Integration", () => {
     mockUseMigrationQueue.mockReturnValue(defaultQueryResult);
     mockUseTelemetryDashboard.mockReturnValue(defaultQueryResult);
     mockUseRuntimeDashboard.mockReturnValue(defaultQueryResult);
+    mockUseBucketHealth.mockReturnValue(defaultQueryResult);
+    mockUseBucketArtifacts.mockReturnValue(defaultQueryResult);
+    mockUseAuditRecent.mockReturnValue(defaultQueryResult);
+    mockUseBucketStorageStats.mockReturnValue(defaultQueryResult);
+    mockUseBucketChainState.mockReturnValue(defaultQueryResult);
+    mockUseConstitutionalStatus.mockReturnValue(defaultQueryResult);
+    mockUseMetricsScaleStatus.mockReturnValue(defaultQueryResult);
+    mockUseMetricsQueryPerformance.mockReturnValue(defaultQueryResult);
+    mockUseMetricsAlerts.mockReturnValue(defaultQueryResult);
   });
 
   describe("ExecutiveLayout Component", () => {

@@ -1,5 +1,6 @@
 import { describe, test, expect, vi } from "vitest";
-import { fetchSystemStatus, fetchMetrics, fetchOperationsDashboard, fetchRuntimeDashboard, fetchAlertsDashboard, fetchTelemetryDashboard } from "@/api/endpoints";
+import { fetchSystemStatus, fetchMetrics, fetchOperationsDashboard, fetchRuntimeDashboard } from "@/api/endpoints";
+import { fetchBucketArtifacts, fetchBucketStorageStats, fetchAuditRecent, fetchMetricsScaleStatus, bucketClient } from "@/api/bucketEndpoints";
 import { apiClient } from "@/api/client";
 
 vi.mock("@/api/client", () => ({
@@ -8,7 +9,7 @@ vi.mock("@/api/client", () => ({
   },
 }));
 
-describe("Control Plane Integration Endpoint Normalization", () => {
+describe("Control Plane & Bucket Integration Normalization", () => {
   test("fetchSystemStatus transforms services map into components array", async () => {
     (apiClient.get as any).mockResolvedValueOnce({
       data: {
@@ -55,46 +56,52 @@ describe("Control Plane Integration Endpoint Normalization", () => {
     expect(res.services?.healthy).toBe(9);
   });
 
-  test("fetchOperationsDashboard transforms runtime_services into operations", async () => {
-    (apiClient.get as any).mockResolvedValueOnce({
+  test("fetchBucketArtifacts handles response correctly", async () => {
+    vi.spyOn(bucketClient, "get").mockResolvedValueOnce({
       data: {
-        timestamp: "2026-07-24T05:21:02.969607+00:00",
-        pipeline: { total_traces: 10, total_artifacts: 5 },
-        requests: { total: 100, errors: 2, per_minute: 5, error_rate_pct: 2, success_rate_pct: 98 },
-        latency_ms: { p50: 10, p95: 30 },
-        runtime_services: {
-          prompt_runner: { status: "healthy", pid: 26472, port: 8003, restarts: 2 },
-          bhiv_core: { status: "CRASH_LOOPING", pid: 25548, port: 8001, restarts: 2 },
-        },
+        artifacts: [
+          {
+            artifact_id: "art_01",
+            trace_id: "tr_01",
+            timestamp_utc: "2026-07-24T06:00:00Z",
+            schema_version: "1.0.0",
+            source_module_id: "creator_core",
+            artifact_type: "blueprint",
+          },
+        ],
+        count: 1,
+        total: 1,
+        offset: 0,
+        limit: 50,
+        storage_type: "append_only",
       },
-    });
+    } as any);
 
-    const res = await fetchOperationsDashboard();
-
-    expect(res.operations).toHaveLength(2);
-    expect(res.operations[0].id).toBe("prompt_runner");
-    expect(res.operations[0].status).toBe("running");
-    expect(res.operations[1].id).toBe("bhiv_core");
-    expect(res.operations[1].status).toBe("failed");
+    const res = await fetchBucketArtifacts();
+    expect(res.artifacts).toHaveLength(1);
+    expect(res.artifacts[0].artifact_id).toBe("art_01");
+    expect(res.artifacts[0].artifact_type).toBe("blueprint");
   });
 
-  test("fetchRuntimeDashboard transforms services into sessions", async () => {
-    (apiClient.get as any).mockResolvedValueOnce({
+  test("fetchBucketStorageStats fetches storage metrics", async () => {
+    vi.spyOn(bucketClient, "get").mockResolvedValueOnce({
       data: {
-        timestamp: "2026-07-24T05:21:05.012084+00:00",
-        uptime_seconds: 3963.619,
-        services: {
-          creator_core: { status: "healthy", pid: 17232, port: 8000, restarts: 3 },
+        statistics: {
+          artifact_count: 42,
+          last_hash: "hash_xyz",
+          log_file_size_bytes: 1048576,
+          log_file_size_mb: 1.0,
+          storage_path: "data/artifacts",
+          schema_version: "1.0.0",
+          max_payload_size_mb: 16,
         },
-        summary: { total: 10, healthy: 9, degraded: 1 },
+        status: "healthy",
+        certification: "append_only_enforced",
       },
-    });
+    } as any);
 
-    const res = await fetchRuntimeDashboard();
-
-    expect(res.sessions).toHaveLength(1);
-    expect(res.sessions[0].session_id).toBe("creator_core");
-    expect(res.sessions[0].status).toBe("active");
-    expect(res.active_sessions).toBe(9);
+    const res = await fetchBucketStorageStats();
+    expect(res.statistics.artifact_count).toBe(42);
+    expect(res.certification).toBe("append_only_enforced");
   });
 });

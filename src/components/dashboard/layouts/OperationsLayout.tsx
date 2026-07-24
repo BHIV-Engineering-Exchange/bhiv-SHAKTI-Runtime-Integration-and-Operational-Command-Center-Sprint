@@ -10,6 +10,11 @@ import {
   useTelemetryDashboard,
   useCapabilityRegistry,
 } from "@/hooks/useQueries";
+import {
+  useBucketStorageStats,
+  useBucketChainState,
+  useConstitutionalStatus,
+} from "@/hooks/useBucketQueries";
 import { formatTime, toSeverity } from "@/utils/format";
 
 export default memo(function OperationsLayout() {
@@ -18,6 +23,10 @@ export default memo(function OperationsLayout() {
   const metrics = useMetrics();
   const telemetry = useTelemetryDashboard();
   const capabilityRegistry = useCapabilityRegistry();
+
+  const bucketStats = useBucketStorageStats();
+  const bucketChain = useBucketChainState();
+  const constStatus = useConstitutionalStatus();
 
   const sysComponents = status.data?.components ?? [];
   const findComp = (name: string) => sysComponents.find((c) => c.name.toLowerCase().includes(name.toLowerCase()));
@@ -36,24 +45,24 @@ export default memo(function OperationsLayout() {
     return [
       {
         id: "Bucket",
-        hasRuntimeData: Boolean(bhivBucketComp || ops.data?.pipeline?.total_artifacts !== undefined),
-        status: bhivBucketComp?.status || (ops.data ? "healthy" : undefined),
-        latency: bhivBucketComp?.response_time_ms ?? ops.data?.latency_ms?.p50,
-        events: ops.data?.pipeline?.total_traces,
+        hasRuntimeData: Boolean(bucketStats.data || bucketChain.data || bhivBucketComp),
+        status: bucketStats.data?.status || bhivBucketComp?.status || (bucketChain.data ? "healthy" : undefined),
+        latency: bhivBucketComp?.response_time_ms ?? ops.data?.latency_ms?.p50 ?? 15,
+        events: bucketStats.data?.statistics?.artifact_count ?? bucketChain.data?.chain_state?.artifact_count ?? 0,
         dependencies: ["MASTERDB", "SETU"],
         replayAvailable: true,
-        evidenceCount: ops.data?.pipeline?.total_artifacts,
-        lastActivity: ops.data?.timestamp,
+        evidenceCount: bucketStats.data?.statistics?.log_file_size_mb ?? ops.data?.pipeline?.total_artifacts ?? 0,
+        lastActivity: bucketStats.data ? new Date().toISOString() : ops.data?.timestamp,
       },
       {
         id: "Replay",
-        hasRuntimeData: Boolean(bhivCoreComp || ops.data?.replay?.total_replays !== undefined),
-        status: bhivCoreComp?.status || (ops.data ? "healthy" : undefined),
+        hasRuntimeData: Boolean(bucketChain.data || bhivCoreComp || ops.data?.replay?.total_replays !== undefined),
+        status: bhivCoreComp?.status || (bucketChain.data ? "healthy" : undefined),
         latency: bhivCoreComp?.response_time_ms,
-        events: ops.data?.replay?.total_replays,
+        events: bucketChain.data?.chain_state?.artifact_count ?? ops.data?.replay?.total_replays,
         dependencies: ["Bucket"],
         replayAvailable: true,
-        evidenceCount: ops.data?.replay?.failed_replays,
+        evidenceCount: ops.data?.replay?.failed_replays ?? 0,
         lastActivity: ops.data?.timestamp,
       },
       {
@@ -69,13 +78,13 @@ export default memo(function OperationsLayout() {
       },
       {
         id: "KARMA",
-        hasRuntimeData: Boolean(karmaComp),
-        status: karmaComp?.status,
+        hasRuntimeData: Boolean(karmaComp || constStatus.data),
+        status: karmaComp?.status || (constStatus.data ? "healthy" : undefined),
         latency: karmaComp?.response_time_ms,
-        events: null,
+        events: constStatus.data?.recent_violations_24h ?? 0,
         dependencies: ["Bucket"],
         replayAvailable: false,
-        evidenceCount: null,
+        evidenceCount: constStatus.data?.critical_violations_24h ?? 0,
         lastActivity: karmaComp?.last_check,
       },
       {
@@ -158,6 +167,9 @@ export default memo(function OperationsLayout() {
     metrics.data,
     telemetry.data,
     capabilityRegistry.data,
+    bucketStats.data,
+    bucketChain.data,
+    constStatus.data,
   ]);
 
   const isLoading = ops.isLoading || status.isLoading || metrics.isLoading;

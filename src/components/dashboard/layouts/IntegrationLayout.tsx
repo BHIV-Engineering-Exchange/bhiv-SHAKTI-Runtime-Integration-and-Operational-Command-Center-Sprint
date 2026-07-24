@@ -3,14 +3,40 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { IntegrationCard } from "@/components/dashboard/primitives/IntegrationCard";
 import { AlertCard } from "@/components/dashboard/primitives/AlertCard";
 import { useAlertsDashboard, useSystemStatus } from "@/hooks/useQueries";
+import { useMetricsAlerts } from "@/hooks/useBucketQueries";
 import { toSeverity, toStatus, formatRelativeTime } from "@/utils/format";
 import type { OperationalStatus } from "@/types/api";
 
 export default memo(function IntegrationLayout() {
   const alerts = useAlertsDashboard();
   const status = useSystemStatus();
+  const bucketAlerts = useMetricsAlerts();
 
-  const unacked = alerts.data?.unacknowledged ?? 0;
+  const liveAlertsList = useMemo(() => {
+    const cpAlerts = (alerts.data?.alerts ?? []).map(a => ({
+      id: a.id,
+      message: a.message,
+      severity: toSeverity(a.severity),
+      source: a.source,
+      category: a.category,
+      timestamp: formatRelativeTime(a.timestamp),
+      acknowledged: a.acknowledged,
+    }));
+
+    const bAlerts = (bucketAlerts.data?.alerts ?? []).map(a => ({
+      id: a.alert_id,
+      message: a.message,
+      severity: toSeverity(a.severity),
+      source: "bucket_metrics",
+      category: "scale_alert",
+      timestamp: formatRelativeTime(a.timestamp),
+      acknowledged: false,
+    }));
+
+    return [...cpAlerts, ...bAlerts];
+  }, [alerts.data?.alerts, bucketAlerts.data?.alerts]);
+
+  const unacked = (alerts.data?.unacknowledged ?? 0) + (bucketAlerts.data?.alerts ?? []).length;
 
   // Derive integration cards from real /system/status components
   const integrations = useMemo(() =>
@@ -21,13 +47,13 @@ export default memo(function IntegrationLayout() {
       syncStatus: c.details || undefined,
     })), [status.data?.components]);
 
-  const isLoading = alerts.isLoading || status.isLoading;
-  const isError = !isLoading && (alerts.isError || status.isError);
-  const hasData = alerts.data !== undefined || status.data !== undefined;
+  const isLoading = alerts.isLoading && status.isLoading && bucketAlerts.isLoading;
+  const isError = !isLoading && (alerts.isError && status.isError && bucketAlerts.isError);
+  const hasData = alerts.data !== undefined || status.data !== undefined || bucketAlerts.data !== undefined;
 
-  const timestamp = alerts.data?.timestamp || status.data?.timestamp;
-  const isFetching = alerts.isFetching || status.isFetching;
-  const isStale = alerts.isStale || status.isStale;
+  const timestamp = alerts.data?.timestamp || status.data?.timestamp || (bucketAlerts.data ? new Date().toISOString() : undefined);
+  const isFetching = alerts.isFetching || status.isFetching || bucketAlerts.isFetching;
+  const isStale = alerts.isStale || status.isStale || bucketAlerts.isStale;
   const traceId = (alerts.data as any)?.trace_id || (status.data as any)?.trace_id;
 
   return (
@@ -37,7 +63,7 @@ export default memo(function IntegrationLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={hasData}
-      onRetry={() => { alerts.refetch(); status.refetch(); }}
+      onRetry={() => { alerts.refetch(); status.refetch(); bucketAlerts.refetch(); }}
       errorMessage="Failed to load alerts"
       skeletonCount={4}
       skeletonHeight="h-14"
@@ -45,7 +71,7 @@ export default memo(function IntegrationLayout() {
       isFetching={isFetching}
       isStale={isStale}
       traceId={traceId}
-      dataSource="Control Plane"
+      dataSource="Bucket & Control Plane"
       headerRight={
         unacked > 0 ? (
           <span className="bg-red-500/20 text-red-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-red-500/30">
@@ -76,18 +102,18 @@ export default memo(function IntegrationLayout() {
 
           <div className="flex-1 flex flex-col min-h-0">
             <h3 className="text-sm font-semibold text-slate-300 mb-2 border-b border-slate-700/60 pb-1">Live Alert Feed</h3>
-            {(alerts.data?.alerts ?? []).length === 0 ? (
+            {liveAlertsList.length === 0 ? (
               <p className="text-xs text-slate-500 text-center py-4">No Runtime Data Available</p>
             ) : (
               <div className="space-y-1.5 overflow-y-auto flex-1 min-h-0 max-h-[200px] pr-1">
-                {(alerts.data?.alerts ?? []).map((a) => (
+                {liveAlertsList.map((a) => (
                   <AlertCard
                     key={a.id}
                     message={a.message}
-                    severity={toSeverity(a.severity)}
+                    severity={a.severity}
                     source={a.source}
                     category={a.category}
-                    timestamp={formatRelativeTime(a.timestamp)}
+                    timestamp={a.timestamp}
                     acknowledged={a.acknowledged}
                   />
                 ))}
