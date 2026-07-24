@@ -1,5 +1,5 @@
 // ─── PRANA Service TypeScript Contracts ──────────────────────────────────────
-// Base URL: VITE_PRANA_SERVICE_URL (default: http://localhost:8103)
+// Configured via VITE_PRANA_SERVICE_URL in .env
 
 export interface PranaHealthResponse {
   status: string;

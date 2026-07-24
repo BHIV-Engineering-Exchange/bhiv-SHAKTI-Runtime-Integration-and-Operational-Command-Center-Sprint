@@ -1,5 +1,5 @@
 // ─── Bucket Service TypeScript Contracts ──────────────────────────────────────
-// Base URL: VITE_BUCKET_SERVICE_URL (default: https://bhiv-bucket-i1l6.onrender.com)
+// Configured via VITE_BUCKET_SERVICE_URL in .env
 
 export interface BucketArtifact {
   artifact_id: string;

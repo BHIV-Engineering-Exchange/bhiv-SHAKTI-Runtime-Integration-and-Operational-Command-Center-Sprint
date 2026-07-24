@@ -1,6 +1,6 @@
 // ─── Official Runtime Integration API contracts ───────────────────────────────
 // Source: SHAKTI Runtime Integration team
-// Base URL: VITE_CONTROL_PLANE_URL (default: http://127.0.0.1:8009)
+// Configured via VITE_CONTROL_PLANE_URL in .env
 
 // ─── GET /health ──────────────────────────────────────────────────────────────
 

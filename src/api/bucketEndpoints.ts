@@ -12,7 +12,7 @@ import type {
 } from "@/types/bucket";
 
 const BUCKET_BASE_URL =
-  import.meta.env.VITE_BUCKET_SERVICE_URL ?? "https://bhiv-bucket-i1l6.onrender.com";
+  import.meta.env.VITE_BUCKET_SERVICE_URL ?? import.meta.env.VITE_BUCKET_URL ?? "";
 
 export const bucketClient = axios.create({
   baseURL: BUCKET_BASE_URL,

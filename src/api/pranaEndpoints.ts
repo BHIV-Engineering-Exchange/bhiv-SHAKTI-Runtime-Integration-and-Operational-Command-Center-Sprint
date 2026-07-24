@@ -6,7 +6,7 @@ import type {
 } from "@/types/prana";
 
 const PRANA_BASE_URL =
-  import.meta.env.VITE_PRANA_SERVICE_URL ?? "http://localhost:8103";
+  import.meta.env.VITE_PRANA_SERVICE_URL ?? import.meta.env.VITE_PRANA_URL ?? "";
 
 export const pranaClient = axios.create({
   baseURL: PRANA_BASE_URL,

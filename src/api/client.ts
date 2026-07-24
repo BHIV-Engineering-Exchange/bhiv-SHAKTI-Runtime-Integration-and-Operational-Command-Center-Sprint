@@ -1,8 +1,7 @@
 import axios, { type AxiosError } from "axios";
 import { logger } from "@/utils/logger";
 
-const BASE_URL =
-  import.meta.env.VITE_CONTROL_PLANE_URL ?? "http://127.0.0.1:8009";
+const BASE_URL = import.meta.env.VITE_CONTROL_PLANE_URL ?? "";
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
