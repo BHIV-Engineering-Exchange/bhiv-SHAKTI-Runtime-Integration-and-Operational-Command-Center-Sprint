@@ -1,6 +1,7 @@
 import { describe, test, expect, vi } from "vitest";
-import { fetchSystemStatus, fetchMetrics, fetchOperationsDashboard, fetchRuntimeDashboard } from "@/api/endpoints";
-import { fetchBucketArtifacts, fetchBucketStorageStats, fetchAuditRecent, fetchMetricsScaleStatus, bucketClient } from "@/api/bucketEndpoints";
+import { fetchSystemStatus, fetchMetrics } from "@/api/endpoints";
+import { fetchBucketArtifacts, fetchBucketStorageStats, bucketClient } from "@/api/bucketEndpoints";
+import { fetchPranaHealth, fetchPranaPropagationLog, pranaClient } from "@/api/pranaEndpoints";
 import { apiClient } from "@/api/client";
 
 vi.mock("@/api/client", () => ({
@@ -9,7 +10,7 @@ vi.mock("@/api/client", () => ({
   },
 }));
 
-describe("Control Plane & Bucket Integration Normalization", () => {
+describe("Control Plane, Bucket & PRANA Integration Normalization", () => {
   test("fetchSystemStatus transforms services map into components array", async () => {
     (apiClient.get as any).mockResolvedValueOnce({
       data: {
@@ -103,5 +104,40 @@ describe("Control Plane & Bucket Integration Normalization", () => {
     const res = await fetchBucketStorageStats();
     expect(res.statistics.artifact_count).toBe(42);
     expect(res.certification).toBe("append_only_enforced");
+  });
+
+  test("fetchPranaHealth fetches PRANA health status", async () => {
+    vi.spyOn(pranaClient, "get").mockResolvedValueOnce({
+      data: {
+        status: "healthy",
+        service: "PRANA",
+        forwarding_enabled: true,
+      },
+    } as any);
+
+    const res = await fetchPranaHealth();
+    expect(res.status).toBe("healthy");
+    expect(res.service).toBe("PRANA");
+    expect(res.forwarding_enabled).toBe(true);
+  });
+
+  test("fetchPranaPropagationLog normalizes propagation log entries", async () => {
+    vi.spyOn(pranaClient, "get").mockResolvedValueOnce({
+      data: [
+        {
+          logged_at: "2026-07-24T09:00:00Z",
+          trace_id: "trace_p1",
+          destination: "bucket_storage",
+          status: "success",
+          http_status: 200,
+          attempt: 1,
+        },
+      ],
+    } as any);
+
+    const res = await fetchPranaPropagationLog();
+    expect(res.logs).toHaveLength(1);
+    expect(res.logs[0].trace_id).toBe("trace_p1");
+    expect(res.logs[0].destination).toBe("bucket_storage");
   });
 });

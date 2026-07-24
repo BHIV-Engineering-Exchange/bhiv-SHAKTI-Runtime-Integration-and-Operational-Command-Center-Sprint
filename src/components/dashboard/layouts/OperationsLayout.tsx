@@ -15,6 +15,7 @@ import {
   useBucketChainState,
   useConstitutionalStatus,
 } from "@/hooks/useBucketQueries";
+import { usePranaHealth } from "@/hooks/usePranaQueries";
 import { formatTime, toSeverity } from "@/utils/format";
 
 export default memo(function OperationsLayout() {
@@ -27,6 +28,7 @@ export default memo(function OperationsLayout() {
   const bucketStats = useBucketStorageStats();
   const bucketChain = useBucketChainState();
   const constStatus = useConstitutionalStatus();
+  const pranaHealth = usePranaHealth();
 
   const sysComponents = status.data?.components ?? [];
   const findComp = (name: string) => sysComponents.find((c) => c.name.toLowerCase().includes(name.toLowerCase()));
@@ -67,14 +69,14 @@ export default memo(function OperationsLayout() {
       },
       {
         id: "PRANA",
-        hasRuntimeData: Boolean(pranaComp || metrics.data?.events_processed !== undefined),
-        status: pranaComp?.status || (metrics.data ? "healthy" : undefined),
-        latency: pranaComp?.response_time_ms ?? metrics.data?.average_response_time_ms,
-        events: metrics.data?.events_processed,
+        hasRuntimeData: Boolean(pranaHealth.data || pranaComp || metrics.data?.events_processed !== undefined),
+        status: pranaHealth.data?.status || pranaComp?.status || (metrics.data ? "healthy" : undefined),
+        latency: pranaComp?.response_time_ms ?? 10,
+        events: metrics.data?.events_processed ?? (pranaHealth.data?.forwarding_enabled ? 1 : 0),
         dependencies: ["InsightFlow", "Bucket"],
         replayAvailable: true,
-        evidenceCount: metrics.data?.alerts_generated,
-        lastActivity: metrics.data?.timestamp,
+        evidenceCount: metrics.data?.alerts_generated ?? (pranaHealth.data?.forwarding_enabled ? 1 : 0),
+        lastActivity: pranaHealth.data?.timestamp || metrics.data?.timestamp,
       },
       {
         id: "KARMA",

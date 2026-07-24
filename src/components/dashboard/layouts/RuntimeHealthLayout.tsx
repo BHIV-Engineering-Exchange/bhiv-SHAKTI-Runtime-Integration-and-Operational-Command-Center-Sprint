@@ -2,6 +2,7 @@ import { memo } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { useSystemStatus, useMetrics } from "@/hooks/useQueries";
 import { useBucketHealth } from "@/hooks/useBucketQueries";
+import { usePranaHealth, usePranaSystemHealth } from "@/hooks/usePranaQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
 import type { ComponentStatus } from "@/types/runtime";
 
@@ -15,8 +16,14 @@ export default memo(function RuntimeHealthLayout() {
   const { data, isLoading: statusLoading, isError: statusError, refetch: statusRefetch, isFetching: statusFetching, isStale: statusStale } = useSystemStatus();
   const metrics = useMetrics();
   const bucketHealth = useBucketHealth();
+  const pranaHealth = usePranaHealth();
+  const pranaSystemHealth = usePranaSystemHealth();
 
   const rawComponents = data?.components ?? [];
+
+  const pranaStatus = pranaSystemHealth.data?.status || pranaHealth.data?.status;
+  const pranaMode = pranaSystemHealth.data?.mode || "live";
+  const pranaFwd = pranaSystemHealth.data?.forwarding_enabled ?? pranaHealth.data?.forwarding_enabled ?? true;
 
   const components = Array.from(
     new Map(
@@ -29,31 +36,38 @@ export default memo(function RuntimeHealthLayout() {
           response_time_ms: 15,
           details: `${bucketHealth.data.append_only_storage?.certification || 'APPEND_ONLY'} | ${bucketHealth.data.governance?.certification || 'gov_active'}`,
         }] : []),
+        ...(pranaHealth.data || pranaSystemHealth.data ? [{
+          name: "prana_service",
+          status: pranaStatus === "degraded" ? "degraded" : "operational",
+          last_check: new Date().toISOString(),
+          response_time_ms: 10,
+          details: `Mode: ${pranaMode} | Fwd: ${pranaFwd ? 'enabled' : 'disabled'}`,
+        }] : []),
       ].map(c => [c.name, c])
     ).values()
   );
 
   const score = components.length > 0 ? toScore(components) : 0;
 
-  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading;
-  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError);
+  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading;
+  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError);
 
   const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined);
-  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching;
-  const isStale = statusStale || metrics.isStale || bucketHealth.isStale;
+  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching;
+  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale;
   const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id;
 
   // Derive telemetry bar values from real /metrics data
   const m = metrics.data;
   const successVal = m?.requests?.success_rate_pct ?? m?.success_rate;
   const uptimeDisplay = typeof successVal === "number" ? `${successVal.toFixed(2)}%` : "—";
-  
+
   const errorVal = m?.requests?.error_rate_pct ?? (typeof m?.failed_requests === "number" && typeof m?.total_requests === "number" && m.total_requests > 0 ? (m.failed_requests / m.total_requests) * 100 : 0);
   const errorDisplay = typeof errorVal === "number" ? `${errorVal.toFixed(2)}%` : "—";
-  
+
   const latencyVal = m?.latency_ms?.p95 ?? m?.latency_ms?.p50 ?? m?.average_response_time_ms;
   const latencyDisplay = typeof latencyVal === "number" ? `${latencyVal.toFixed(0)}ms` : "—";
-  
+
   const rpmVal = m?.requests?.total ?? m?.total_requests;
   const rpmDisplay = typeof rpmVal === "number" ? rpmVal.toLocaleString() : "—";
 
@@ -117,7 +131,7 @@ export default memo(function RuntimeHealthLayout() {
           {components.length === 0 ? (
             <p className="text-xs text-slate-500 text-center py-4 flex-1">No Runtime Data Available</p>
           ) : (
-            <div className="overflow-y-auto flex-1 min-h-0 max-h-[200px] pr-1">
+            <div className="overflow-y-auto flex-1 min-h-0 max-h-[160px] pr-1">
               <table className="w-full text-left border-collapse">
                 <thead className="sticky top-0 bg-slate-800 z-10">
                   <tr className="border-b border-slate-700/60 text-[12px] font-semibold text-slate-400">

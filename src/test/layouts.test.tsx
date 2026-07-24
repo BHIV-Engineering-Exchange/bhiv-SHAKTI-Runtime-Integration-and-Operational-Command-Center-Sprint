@@ -69,6 +69,16 @@ vi.mock("@/hooks/useBucketQueries", () => ({
   useMetricsAlerts: () => mockUseMetricsAlerts(),
 }));
 
+const mockUsePranaHealth = vi.fn();
+const mockUsePranaSystemHealth = vi.fn();
+const mockUsePranaPropagationLog = vi.fn();
+
+vi.mock("@/hooks/usePranaQueries", () => ({
+  usePranaHealth: () => mockUsePranaHealth(),
+  usePranaSystemHealth: () => mockUsePranaSystemHealth(),
+  usePranaPropagationLog: () => mockUsePranaPropagationLog(),
+}));
+
 import ExecutiveLayout from "../components/dashboard/layouts/ExecutiveLayout";
 import RuntimeHealthLayout from "../components/dashboard/layouts/RuntimeHealthLayout";
 import WorkflowLayout from "../components/dashboard/layouts/WorkflowLayout";
@@ -99,6 +109,9 @@ describe("Layout Components Integration", () => {
     mockUseMetricsScaleStatus.mockReturnValue(defaultQueryResult);
     mockUseMetricsQueryPerformance.mockReturnValue(defaultQueryResult);
     mockUseMetricsAlerts.mockReturnValue(defaultQueryResult);
+    mockUsePranaHealth.mockReturnValue(defaultQueryResult);
+    mockUsePranaSystemHealth.mockReturnValue(defaultQueryResult);
+    mockUsePranaPropagationLog.mockReturnValue(defaultQueryResult);
   });
 
   describe("ExecutiveLayout Component", () => {

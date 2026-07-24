@@ -103,7 +103,7 @@ export default memo(function OperatorConsoleLayout() {
             {activities.length === 0 ? (
               <p className="text-xs text-slate-500 text-center py-4">No Runtime Data Available</p>
             ) : (
-              <div className="space-y-0 overflow-y-auto flex-1 min-h-0 max-h-[200px] pr-2">
+              <div className="space-y-0 overflow-y-auto flex-1 min-h-0 max-h-[180px] pr-2">
                 {activities.map((a, i, arr) => (
                   <TimelineCard
                     key={a.id}

@@ -4,18 +4,21 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { EvidenceCard } from "@/components/dashboard/primitives/EvidenceCard";
 import { useTelemetryDashboard } from "@/hooks/useQueries";
 import { useBucketArtifacts, useAuditRecent } from "@/hooks/useBucketQueries";
+import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
 import { formatTime, formatRelativeTime } from "@/utils/format";
 
 export default memo(function EvidenceLayout() {
   const telemetry = useTelemetryDashboard();
   const bucket = useBucketArtifacts();
   const audit = useAuditRecent(20);
+  const pranaLog = usePranaPropagationLog(20);
 
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [selectedArtifactTab, setSelectedArtifactTab] = useState<string>("instruction");
 
   const bucketArtifacts = bucket.data?.artifacts ?? [];
   const auditOperations = audit.data?.operations ?? [];
+  const pranaLogs = pranaLog.data?.logs ?? [];
   const telemetryItems = telemetry.data?.recent_telemetry ?? [];
 
   // Active artifact selection
@@ -23,6 +26,8 @@ export default memo(function EvidenceLayout() {
     if (selectedArtifactId) {
       const bArt = bucketArtifacts.find(a => a.artifact_id === selectedArtifactId || a.trace_id === selectedArtifactId);
       if (bArt) return { type: "bucket" as const, bucket: bArt, trace_id: bArt.trace_id };
+      const pLog = pranaLogs.find(l => l.trace_id === selectedArtifactId);
+      if (pLog) return { type: "prana" as const, prana: pLog, trace_id: pLog.trace_id };
       const aOp = auditOperations.find(o => o._id === selectedArtifactId || o.artifact_id === selectedArtifactId);
       if (aOp) return { type: "audit" as const, audit: aOp, trace_id: aOp.data_after?.artifact?.trace_id || aOp._id };
       const tArt = telemetryItems.find(t => t.trace_id === selectedArtifactId);
@@ -30,6 +35,9 @@ export default memo(function EvidenceLayout() {
     }
     if (bucketArtifacts.length > 0) {
       return { type: "bucket" as const, bucket: bucketArtifacts[0], trace_id: bucketArtifacts[0].trace_id };
+    }
+    if (pranaLogs.length > 0) {
+      return { type: "prana" as const, prana: pranaLogs[0], trace_id: pranaLogs[0].trace_id };
     }
     if (auditOperations.length > 0) {
       const aOp = auditOperations[0];
@@ -39,13 +47,13 @@ export default memo(function EvidenceLayout() {
       return { type: "telemetry" as const, telemetry: telemetryItems[0], trace_id: telemetryItems[0].trace_id };
     }
     return null;
-  }, [bucketArtifacts, auditOperations, telemetryItems, selectedArtifactId]);
+  }, [bucketArtifacts, pranaLogs, auditOperations, telemetryItems, selectedArtifactId]);
 
-  const isLoading = bucket.isLoading && audit.isLoading && telemetry.isLoading;
-  const isError = !isLoading && bucket.isError && audit.isError && telemetry.isError;
-  const hasData = bucketArtifacts.length > 0 || auditOperations.length > 0 || telemetryItems.length > 0;
+  const isLoading = bucket.isLoading && audit.isLoading && telemetry.isLoading && pranaLog.isLoading;
+  const isError = !isLoading && bucket.isError && audit.isError && telemetry.isError && pranaLog.isError;
+  const hasData = bucketArtifacts.length > 0 || pranaLogs.length > 0 || auditOperations.length > 0 || telemetryItems.length > 0;
 
-  const timestamp = audit.data ? new Date().toISOString() : bucket.data ? new Date().toISOString() : telemetry.data?.timestamp;
+  const timestamp = pranaLogs.length > 0 ? pranaLogs[0].logged_at : audit.data ? new Date().toISOString() : bucket.data ? new Date().toISOString() : telemetry.data?.timestamp;
 
   return (
     <DashboardCard
@@ -96,6 +104,30 @@ export default memo(function EvidenceLayout() {
                         icon={Database}
                         iconColor="text-cyan-400"
                         secondaryText={`ID: ${art.artifact_id.slice(0, 8)}... | Trace: ${art.trace_id.slice(0, 8)}...`}
+                        noBorder
+                      />
+                    </div>
+                  );
+                })
+              ) : pranaLogs.length > 0 ? (
+                pranaLogs.map((log) => {
+                  const isSelected = activeArtifact?.type === "prana" && activeArtifact.prana.trace_id === log.trace_id;
+                  return (
+                    <div
+                      key={log.trace_id}
+                      onClick={() => {
+                        setSelectedArtifactId(log.trace_id);
+                        setSelectedArtifactTab("instruction");
+                      }}
+                      className={`cursor-pointer rounded p-1 transition-colors ${isSelected ? 'bg-slate-700/40 border border-slate-600/50' : 'hover:bg-slate-800/30 border border-transparent'}`}
+                    >
+                      <EvidenceCard
+                        source={log.destination || "PRANA Forwarder"}
+                        description={`Propagation: ${log.status} | Code: ${log.http_status ?? 'N/A'}`}
+                        confidence={log.status === "success" ? 99.8 : 50.0}
+                        icon={Zap}
+                        iconColor={log.status === "success" ? "text-cyan-400" : "text-amber-400"}
+                        secondaryText={`Trace: ${log.trace_id.slice(0, 10)}... | Attempt: ${log.attempt ?? 1}`}
                         noBorder
                       />
                     </div>
@@ -209,6 +241,17 @@ export default memo(function EvidenceLayout() {
                       {activeArtifact.bucket.hash && (
                         <div className="flex justify-between"><span className="text-slate-500">Hash:</span> <span className="text-emerald-400 font-mono truncate max-w-[140px]">{activeArtifact.bucket.hash}</span></div>
                       )}
+                    </div>
+                  )}
+
+                  {activeArtifact.type === "prana" && (
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between"><span className="text-slate-500">PRANA Log Trace:</span> <span className="text-cyan-400 font-mono font-bold truncate max-w-[140px]">{activeArtifact.prana.trace_id}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Destination:</span> <span className="text-slate-200 font-mono font-semibold">{activeArtifact.prana.destination}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Status:</span> <span className="text-emerald-400 font-mono uppercase font-bold">{activeArtifact.prana.status}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">HTTP Code:</span> <span className="text-slate-300 font-mono">{activeArtifact.prana.http_status ?? 'N/A'}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Attempt:</span> <span className="text-slate-400 font-mono">{activeArtifact.prana.attempt ?? 1}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Time:</span> <span className="text-slate-400 font-mono">{formatRelativeTime(activeArtifact.prana.logged_at)}</span></div>
                     </div>
                   )}
 

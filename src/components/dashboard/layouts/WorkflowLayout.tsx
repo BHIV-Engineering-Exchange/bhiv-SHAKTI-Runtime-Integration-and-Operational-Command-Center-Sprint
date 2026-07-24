@@ -45,7 +45,7 @@ export default memo(function WorkflowLayout() {
       headerRight={data ? <span className="text-xs text-slate-500">{active} active</span> : undefined}
     >
       {data && allOperations.length > 0 && (
-        <div className="overflow-y-auto flex-1 min-h-0 max-h-[230px] pr-1">
+        <div className="overflow-y-auto flex-1 min-h-0 max-h-[280px] pr-1">
           <table className="w-full text-left border-collapse">
             <thead className="sticky top-0 bg-slate-800 z-10">
               <tr className="border-b border-slate-700/60 text-[12px] font-semibold text-slate-400">
