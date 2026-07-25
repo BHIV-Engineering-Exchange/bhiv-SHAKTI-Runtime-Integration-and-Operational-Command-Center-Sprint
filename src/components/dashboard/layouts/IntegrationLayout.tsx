@@ -4,6 +4,7 @@ import { IntegrationCard } from "@/components/dashboard/primitives/IntegrationCa
 import { AlertCard } from "@/components/dashboard/primitives/AlertCard";
 import { useAlertsDashboard, useSystemStatus } from "@/hooks/useQueries";
 import { useMetricsAlerts } from "@/hooks/useBucketQueries";
+import { useNiyantranMergeAnalysis } from "@/hooks/useNiyantranQueries";
 import { toSeverity, toStatus, formatRelativeTime } from "@/utils/format";
 import type { OperationalStatus } from "@/types/api";
 
@@ -11,6 +12,7 @@ export default memo(function IntegrationLayout() {
   const alerts = useAlertsDashboard();
   const status = useSystemStatus();
   const bucketAlerts = useMetricsAlerts();
+  const mergeAnalysis = useNiyantranMergeAnalysis();
 
   const liveAlertsList = useMemo(() => {
     const cpAlerts = (alerts.data?.alerts ?? []).map(a => ({
@@ -33,19 +35,41 @@ export default memo(function IntegrationLayout() {
       acknowledged: false,
     }));
 
-    return [...cpAlerts, ...bAlerts];
-  }, [alerts.data?.alerts, bucketAlerts.data?.alerts]);
+    const mAlerts = mergeAnalysis.data ? [{
+      id: "niyantran-merge-mismatches",
+      message: `NIYANTRAN Merge Mismatches: ${mergeAnalysis.data.mismatches?.total ?? 0} (Beyond 20m: ${mergeAnalysis.data.mismatches?.beyond20min ?? 0})`,
+      severity: (mergeAnalysis.data.mismatches?.beyond20min ?? 0) > 0 ? ("critical" as const) : ("info" as const),
+      source: "niyantran_merge",
+      category: "merge_reconciliation",
+      timestamp: formatRelativeTime(new Date().toISOString()),
+      acknowledged: false,
+    }] : [];
 
-  const unacked = (alerts.data?.unacknowledged ?? 0) + (bucketAlerts.data?.alerts ?? []).length;
+    return [...cpAlerts, ...bAlerts, ...mAlerts];
+  }, [alerts.data?.alerts, bucketAlerts.data?.alerts, mergeAnalysis.data]);
 
-  // Derive integration cards from real /system/status components
-  const integrations = useMemo(() =>
-    (status.data?.components ?? []).map((c) => ({
+  const unacked = (alerts.data?.unacknowledged ?? 0) + (bucketAlerts.data?.alerts ?? []).length + (mergeAnalysis.data?.mappingIssues ?? 0);
+
+  // Derive integration cards from real /system/status components & NIYANTRAN merge analysis
+  const integrations = useMemo(() => {
+    const cpList = (status.data?.components ?? []).map((c) => ({
       name: c.name,
       status: toStatus(c.status) as OperationalStatus,
       latency: c.response_time_ms ?? undefined,
       syncStatus: c.details || undefined,
-    })), [status.data?.components]);
+    }));
+
+    if (mergeAnalysis.data) {
+      cpList.push({
+        name: "niyantran_reconciliation",
+        status: (mergeAnalysis.data.mappingIssues > 0 ? "degraded" : "operational") as OperationalStatus,
+        latency: 20,
+        syncStatus: `Records: ${mergeAnalysis.data.totalRecords} | Cases: ${Object.keys(mergeAnalysis.data.byMergeCase || {}).length}`,
+      });
+    }
+
+    return cpList;
+  }, [status.data?.components, mergeAnalysis.data]);
 
   const isLoading = alerts.isLoading && status.isLoading && bucketAlerts.isLoading;
   const isError = !isLoading && (alerts.isError && status.isError && bucketAlerts.isError);

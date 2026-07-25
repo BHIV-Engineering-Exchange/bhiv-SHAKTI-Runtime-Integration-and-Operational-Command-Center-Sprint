@@ -1,4 +1,9 @@
 import { apiClient } from "./client";
+import {
+  fetchNiyantranAttendanceSummary,
+  fetchNiyantranLeaderboard,
+  fetchNiyantranAims,
+} from "./niyantranEndpoints";
 import type {
   HealthResponse,
   SystemStatusResponse,
@@ -17,6 +22,7 @@ import type {
   EngineeringCapacityResponse,
   DeliveryIntelligenceResponse,
 } from "@/types/runtime";
+
 
 export async function fetchHealth(): Promise<HealthResponse> {
   const { data } = await apiClient.get<HealthResponse>("/health");
@@ -176,16 +182,99 @@ export async function fetchCapabilityRegistry(): Promise<CapabilityRegistryRespo
 }
 
 export async function fetchEmployeeExecution(): Promise<EmployeeExecutionResponse> {
-  const { data } = await apiClient.get<EmployeeExecutionResponse>("/operations/employee-execution");
-  return data;
+  try {
+    const { data } = await apiClient.get<EmployeeExecutionResponse>("/operations/employee-execution");
+    if (data && Array.isArray(data.engineers) && data.engineers.length > 0) {
+      return data;
+    }
+  } catch (err) {
+    // Control plane endpoint unavailable — fallback to NIYANTRAN backend
+  }
+
+  try {
+    const niyantranData = await fetchNiyantranAttendanceSummary();
+    if (niyantranData && Array.isArray(niyantranData.records) && niyantranData.records.length > 0) {
+      return {
+        timestamp: new Date().toISOString(),
+        engineers: niyantranData.records.map((r) => ({
+          engineer: r.employee?.name || "Employee",
+          current_task: r.merge?.case !== "UNKNOWN" ? `Merge Case: ${r.merge.case}` : "Active Work Session",
+          current_product: `Biometric: ${r.employee?.biometricCode || "N/A"}`,
+          progress: r.attendance?.workedHours > 0 ? Math.min(100, Math.round((r.attendance.workedHours / 8) * 100)) : 0,
+          blocked: r.merge?.hasAlert ? (r.merge.alertType || "Mismatch Alert") : false,
+          last_activity: r.times?.clockOut || r.times?.clockIn || "Recorded Today",
+          todays_contribution: `${r.attendance?.workedHours || 0} hrs (${r.salary?.formattedEarnings || "₹0"})`,
+        })),
+      };
+    }
+  } catch (niyantranErr) {
+    // NIYANTRAN backend unreachable
+  }
+
+  return { timestamp: new Date().toISOString(), engineers: [] };
 }
 
 export async function fetchEngineeringCapacity(): Promise<EngineeringCapacityResponse> {
-  const { data } = await apiClient.get<EngineeringCapacityResponse>("/operations/engineering-capacity");
-  return data;
+  try {
+    const { data } = await apiClient.get<EngineeringCapacityResponse>("/operations/engineering-capacity");
+    if (data && Array.isArray(data.engineers) && data.engineers.length > 0) {
+      return data;
+    }
+  } catch (err) {
+    // Control plane endpoint unavailable — fallback to NIYANTRAN backend
+  }
+
+  try {
+    const leaderboard = await fetchNiyantranLeaderboard();
+    if (Array.isArray(leaderboard) && leaderboard.length > 0) {
+      return {
+        timestamp: new Date().toISOString(),
+        engineers: leaderboard.map((u) => ({
+          name: u.name,
+          department: typeof u.department === "object" ? u.department?.name : "Engineering",
+          allocated_capacity_pct: Math.min(100, (u.workload || 1) * 20),
+          active_tasks_count: Math.max(0, (u.totalTasks || 0) - (u.completedTasks || 0)),
+          velocity_rating: u.completionRate > 80 ? "High" : u.completionRate > 50 ? "Medium" : "Low",
+          completion_rate_pct: Math.round(u.completionRate || 0),
+        })),
+      };
+    }
+  } catch (niyantranErr) {
+    // NIYANTRAN backend unreachable
+  }
+
+  return { timestamp: new Date().toISOString(), engineers: [] };
 }
 
 export async function fetchDeliveryIntelligence(): Promise<DeliveryIntelligenceResponse> {
-  const { data } = await apiClient.get<DeliveryIntelligenceResponse>("/operations/delivery-intelligence");
-  return data;
+  try {
+    const { data } = await apiClient.get<DeliveryIntelligenceResponse>("/operations/delivery-intelligence");
+    if (data && Array.isArray(data.deliveries) && data.deliveries.length > 0) {
+      return data;
+    }
+  } catch (err) {
+    // Control plane endpoint unavailable — fallback to NIYANTRAN backend
+  }
+
+  try {
+    const aims = await fetchNiyantranAims();
+    if (Array.isArray(aims) && aims.length > 0) {
+      return {
+        timestamp: new Date().toISOString(),
+        deliveries: aims.map((a) => ({
+          id: a._id,
+          title: a.aims,
+          owner: typeof a.user === "object" ? a.user?.name : "System",
+          target_date: a.date,
+          status: (a.status || "In Progress") as any,
+          progress_pct: a.progressPercentage || 50,
+        })),
+      };
+    }
+  } catch (niyantranErr) {
+    // NIYANTRAN backend unreachable
+  }
+
+  return { timestamp: new Date().toISOString(), deliveries: [] };
 }
+

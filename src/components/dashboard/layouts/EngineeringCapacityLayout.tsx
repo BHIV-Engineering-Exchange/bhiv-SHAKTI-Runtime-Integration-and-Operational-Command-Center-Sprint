@@ -1,13 +1,54 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { useEngineeringCapacity } from "@/hooks/useQueries";
+import { useNiyantranLeaderboard } from "@/hooks/useNiyantranQueries";
 import { formatTime } from "@/utils/format";
 import { Users, UserCheck, ShieldAlert, FileSearch, TestTube2, Rocket } from "lucide-react";
 
 export default memo(function EngineeringCapacityLayout() {
-  const { data, isLoading, isError, refetch, isFetching, isStale } = useEngineeringCapacity();
+  const cpCapacity = useEngineeringCapacity();
+  const niyantranLeaderboard = useNiyantranLeaderboard();
 
-  const timestamp = data?.timestamp;
+  const data = useMemo(() => {
+    if (cpCapacity.data) {
+      return cpCapacity.data;
+    }
+    const leaderboard = niyantranLeaderboard.data;
+    if (leaderboard && leaderboard.length > 0) {
+      const activeDevs = leaderboard.length;
+      const availableDevs = leaderboard.filter(u => u.workload === 0).length;
+      const blockedDevs = leaderboard.filter(u => u.completionRate < 30 && u.totalTasks > 0).length;
+      const reviewPending = leaderboard.reduce((acc, u) => acc + Math.max(0, u.totalTasks - u.completedTasks), 0);
+      const inQa = leaderboard.reduce((acc, u) => acc + u.totalDependencies, 0);
+
+      return {
+        timestamp: new Date().toISOString(),
+        active_developers: activeDevs,
+        available_developers: availableDevs,
+        blocked_developers: blockedDevs,
+        review_pending_count: reviewPending,
+        in_qa_count: inQa,
+        deploying_count: 0,
+        engineers: leaderboard.map((u) => ({
+          name: u.name,
+          department: typeof u.department === "object" ? u.department?.name : "Engineering",
+          allocated_capacity_pct: Math.min(100, (u.workload || 1) * 20),
+          active_tasks_count: Math.max(0, (u.totalTasks || 0) - (u.completedTasks || 0)),
+          velocity_rating: u.completionRate > 80 ? "High" : u.completionRate > 50 ? "Medium" : "Low",
+          completion_rate_pct: Math.round(u.completionRate || 0),
+        })),
+      };
+    }
+    return undefined;
+  }, [cpCapacity.data, niyantranLeaderboard.data]);
+
+  const isLoading = cpCapacity.isLoading && niyantranLeaderboard.isLoading;
+  const isError = !isLoading && cpCapacity.isError && niyantranLeaderboard.isError;
+  const timestamp = data?.timestamp || (niyantranLeaderboard.data ? new Date().toISOString() : undefined);
+  const isFetching = cpCapacity.isFetching || niyantranLeaderboard.isFetching;
+  const isStale = cpCapacity.isStale || niyantranLeaderboard.isStale;
+  const dataSource = cpCapacity.data ? "Control Plane" : "NIYANTRAN";
+
 
   return (
     <DashboardCard
@@ -15,14 +56,14 @@ export default memo(function EngineeringCapacityLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={data !== undefined}
-      onRetry={() => refetch()}
+      onRetry={() => { cpCapacity.refetch(); niyantranLeaderboard.refetch(); }}
       errorMessage="Failed to load Engineering Capacity"
       skeletonCount={6}
       skeletonHeight="h-10"
       timestamp={timestamp}
       isFetching={isFetching}
       isStale={isStale}
-      dataSource="Control Plane"
+      dataSource={dataSource}
     >
       <div className="flex flex-col h-full min-h-0 justify-between gap-3">
         {!data ? (

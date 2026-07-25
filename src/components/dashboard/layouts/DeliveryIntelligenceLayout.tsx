@@ -1,13 +1,54 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { useDeliveryIntelligence } from "@/hooks/useQueries";
+import { useNiyantranAims, useNiyantranEnhancedAims } from "@/hooks/useNiyantranQueries";
 import { formatTime } from "@/utils/format";
 import { CheckCircle2, Clock, CalendarDays, Activity, Gauge, GitBranch } from "lucide-react";
 
 export default memo(function DeliveryIntelligenceLayout() {
-  const { data, isLoading, isError, refetch, isFetching, isStale } = useDeliveryIntelligence();
+  const cpDelivery = useDeliveryIntelligence();
+  const niyantranAims = useNiyantranAims();
+  const niyantranEnhancedAims = useNiyantranEnhancedAims();
 
-  const timestamp = data?.timestamp;
+  const data = useMemo(() => {
+    if (cpDelivery.data) {
+      return cpDelivery.data;
+    }
+    const aimsList = niyantranEnhancedAims.data || niyantranAims.data;
+    if (aimsList && aimsList.length > 0) {
+      const completed = aimsList.filter(a => a.status === "Completed" || (a.progressPercentage != null && a.progressPercentage >= 100)).length;
+      const delayed = aimsList.filter(a => a.status === "Blocked" || a.status === "Delayed").length;
+      const upcoming = aimsList.filter(a => a.status === "Pending" || a.status === "In Progress").length;
+      const avgProgress = Math.round(aimsList.reduce((acc, a) => acc + (a.progressPercentage || 50), 0) / aimsList.length);
+
+      return {
+        timestamp: new Date().toISOString(),
+        completed_tasks: completed,
+        delayed_tasks: delayed,
+        upcoming_deliveries: upcoming,
+        sprint_health_score: avgProgress,
+        delivery_velocity: avgProgress > 80 ? "Optimal" : "Standard",
+        active_sprint_id: "NIYANTRAN_AIMS_SPRINT",
+        deliveries: aimsList.map((a) => ({
+          id: a._id,
+          title: a.aims,
+          owner: typeof a.user === "object" ? a.user?.name : "System",
+          target_date: a.date,
+          status: (a.status || "In Progress") as any,
+          progress_pct: a.progressPercentage || 50,
+        })),
+      };
+    }
+    return undefined;
+  }, [cpDelivery.data, niyantranAims.data, niyantranEnhancedAims.data]);
+
+  const isLoading = cpDelivery.isLoading && niyantranAims.isLoading && niyantranEnhancedAims.isLoading;
+  const isError = !isLoading && cpDelivery.isError && niyantranAims.isError && niyantranEnhancedAims.isError;
+  const timestamp = data?.timestamp || (niyantranAims.data ? new Date().toISOString() : undefined);
+  const isFetching = cpDelivery.isFetching || niyantranAims.isFetching || niyantranEnhancedAims.isFetching;
+  const isStale = cpDelivery.isStale || niyantranAims.isStale || niyantranEnhancedAims.isStale;
+  const dataSource = cpDelivery.data ? "Control Plane" : "NIYANTRAN";
+
 
   return (
     <DashboardCard
@@ -15,14 +56,14 @@ export default memo(function DeliveryIntelligenceLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={data !== undefined}
-      onRetry={() => refetch()}
+      onRetry={() => { cpDelivery.refetch(); niyantranAims.refetch(); niyantranEnhancedAims.refetch(); }}
       errorMessage="Failed to load Delivery Intelligence"
       skeletonCount={6}
       skeletonHeight="h-10"
       timestamp={timestamp}
       isFetching={isFetching}
       isStale={isStale}
-      dataSource="Control Plane"
+      dataSource={dataSource}
     >
       <div className="flex flex-col h-full min-h-0 justify-between gap-3">
         {!data ? (

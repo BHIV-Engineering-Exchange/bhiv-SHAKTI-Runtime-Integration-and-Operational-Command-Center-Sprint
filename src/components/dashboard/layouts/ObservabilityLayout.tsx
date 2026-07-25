@@ -5,6 +5,7 @@ import { TelemetryCard } from "@/components/dashboard/primitives/TelemetryCard";
 import { useTelemetryDashboard } from "@/hooks/useQueries";
 import { useMetricsScaleStatus, useMetricsQueryPerformance } from "@/hooks/useBucketQueries";
 import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
+import { useNiyantranAlerts } from "@/hooks/useNiyantranQueries";
 import { formatTime } from "@/utils/format";
 
 export default memo(function ObservabilityLayout() {
@@ -12,6 +13,7 @@ export default memo(function ObservabilityLayout() {
   const scaleStatus = useMetricsScaleStatus();
   const queryPerf = useMetricsQueryPerformance();
   const pranaLog = usePranaPropagationLog();
+  const niyantranAlerts = useNiyantranAlerts();
 
   const data = telemetry.data;
   const pranaLogs = pranaLog.data?.logs ?? [];

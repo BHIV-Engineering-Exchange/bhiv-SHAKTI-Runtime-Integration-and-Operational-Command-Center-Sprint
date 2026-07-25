@@ -5,6 +5,7 @@ import { TimelineCard } from "@/components/dashboard/primitives/TimelineCard";
 
 import { useAlertsDashboard, useRuntimeDashboard } from "@/hooks/useQueries";
 import { useAuditRecent } from "@/hooks/useBucketQueries";
+import { useNiyantranTasks } from "@/hooks/useNiyantranQueries";
 import { toSeverity, formatRelativeTime } from "@/utils/format";
 
 function toOperatorStatus(status: string): "active" | "away" | "offline" | "busy" {
@@ -17,10 +18,22 @@ export default memo(function OperatorConsoleLayout() {
   const alerts = useAlertsDashboard();
   const runtime = useRuntimeDashboard();
   const audit = useAuditRecent(20);
+  const niyantranTasks = useNiyantranTasks();
 
   const auditOperations = audit.data?.operations ?? [];
 
   const activities = useMemo(() => {
+    if (niyantranTasks.data && niyantranTasks.data.length > 0) {
+      return niyantranTasks.data.slice(0, 10).map((t) => ({
+        id: t._id,
+        message: `Task ${t.title} [${t.priority}] — ${t.status}`,
+        source: typeof t.assignee === "object" ? t.assignee?.name : "Unassigned",
+        category: "task" as const,
+        timestamp: formatRelativeTime(t.createdAt || new Date().toISOString()),
+        severity: t.priority === "High" ? ("critical" as const) : ("info" as const),
+      }));
+    }
+
     if (auditOperations.length > 0) {
       return auditOperations.map(op => ({
         id: op._id,
@@ -41,7 +54,7 @@ export default memo(function OperatorConsoleLayout() {
       timestamp: formatRelativeTime(a.timestamp),
       severity: toSeverity(a.severity),
     }));
-  }, [auditOperations, alerts.data?.alerts]);
+  }, [niyantranTasks.data, auditOperations, alerts.data?.alerts]);
 
   // Derive operator cards from real /dashboard/runtime sessions
   const operators = useMemo(() =>

@@ -1,31 +1,57 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { useEmployeeExecution } from "@/hooks/useQueries";
+import { useNiyantranAttendanceSummary } from "@/hooks/useNiyantranQueries";
 import { formatTime } from "@/utils/format";
 import { UserCheck, ShieldAlert } from "lucide-react";
 
 export default memo(function EmployeeExecutionLayout() {
-  const { data, isLoading, isError, refetch, isFetching, isStale } = useEmployeeExecution();
+  const cpExecution = useEmployeeExecution();
+  const niyantranAttendance = useNiyantranAttendanceSummary();
 
-  const engineers = data?.engineers ?? [];
-  const timestamp = data?.timestamp;
+  const engineers = useMemo(() => {
+    if (cpExecution.data?.engineers && cpExecution.data.engineers.length > 0) {
+      return cpExecution.data.engineers;
+    }
+    const nRecords = niyantranAttendance.data?.records ?? [];
+    if (nRecords.length > 0) {
+      return nRecords.map((r) => ({
+        engineer: r.employee?.name || "Employee",
+        current_task: r.merge?.case !== "UNKNOWN" ? `Merge: ${r.merge.case}` : "Active Work Session",
+        current_product: `Biometric: ${r.employee?.biometricCode || "N/A"}`,
+        progress: r.attendance?.workedHours > 0 ? Math.min(100, Math.round((r.attendance.workedHours / 8) * 100)) : 0,
+        blocked: r.merge?.hasAlert ? (r.merge.alertType || "Mismatch Alert") : false,
+        last_activity: r.times?.clockOut || r.times?.clockIn || "Recorded Today",
+        todays_contribution: `${r.attendance?.workedHours || 0} hrs (${r.salary?.formattedEarnings || "₹0"})`,
+      }));
+    }
+    return [];
+  }, [cpExecution.data?.engineers, niyantranAttendance.data?.records]);
+
+  const isLoading = cpExecution.isLoading && niyantranAttendance.isLoading;
+  const isError = !isLoading && cpExecution.isError && niyantranAttendance.isError;
+  const timestamp = cpExecution.data?.timestamp || (niyantranAttendance.data ? new Date().toISOString() : undefined);
+  const isFetching = cpExecution.isFetching || niyantranAttendance.isFetching;
+  const isStale = cpExecution.isStale || niyantranAttendance.isStale;
+  const dataSource = cpExecution.data?.engineers?.length ? "Control Plane" : "NIYANTRAN";
+
 
   return (
     <DashboardCard
       title="Employee Execution"
       isLoading={isLoading}
       isError={isError}
-      hasData={data !== undefined}
-      onRetry={() => refetch()}
+      hasData={engineers.length > 0 || cpExecution.data !== undefined || niyantranAttendance.data !== undefined}
+      onRetry={() => { cpExecution.refetch(); niyantranAttendance.refetch(); }}
       errorMessage="Failed to load Employee Execution"
       skeletonCount={6}
       skeletonHeight="h-7"
       timestamp={timestamp}
       isFetching={isFetching}
       isStale={isStale}
-      dataSource="Control Plane"
+      dataSource={dataSource}
       headerRight={
-        data ? (
+        engineers.length > 0 ? (
           <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
             {engineers.length} Active Engineers
           </span>
@@ -98,10 +124,10 @@ export default memo(function EmployeeExecutionLayout() {
           </div>
         )}
 
-        {data && (
+        {timestamp && (
           <div className="flex justify-between items-center text-[10px] text-slate-500 shrink-0 pt-1.5 border-t border-slate-800">
             <span>BHEX Engineering Operations</span>
-            <span>Updated {formatTime(data.timestamp)}</span>
+            <span>Updated {formatTime(timestamp)}</span>
           </div>
         )}
       </div>

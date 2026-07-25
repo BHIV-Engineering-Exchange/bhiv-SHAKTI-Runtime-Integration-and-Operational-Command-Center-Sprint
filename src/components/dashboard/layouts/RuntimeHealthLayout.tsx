@@ -3,6 +3,7 @@ import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { useSystemStatus, useMetrics } from "@/hooks/useQueries";
 import { useBucketHealth } from "@/hooks/useBucketQueries";
 import { usePranaHealth, usePranaSystemHealth } from "@/hooks/usePranaQueries";
+import { useNiyantranStats } from "@/hooks/useNiyantranQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
 import type { ComponentStatus } from "@/types/runtime";
 
@@ -18,6 +19,8 @@ export default memo(function RuntimeHealthLayout() {
   const bucketHealth = useBucketHealth();
   const pranaHealth = usePranaHealth();
   const pranaSystemHealth = usePranaSystemHealth();
+  const niyantranStats = useNiyantranStats();
+
 
   const rawComponents = data?.components ?? [];
 
@@ -88,9 +91,16 @@ export default memo(function RuntimeHealthLayout() {
       dataSource="Control Plane"
       headerRight={
         data ? (
-          <span className={`text-xs font-bold ${statusColor(toStatus(data.overall_status))}`}>
-            {data.overall_status}
-          </span>
+          <div className="flex items-center gap-2">
+            {niyantranStats.data?.testerApprovalCount != null && (
+              <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20" title="NIYANTRAN QA Approvals">
+                QA: {niyantranStats.data.testerApprovalCount}
+              </span>
+            )}
+            <span className={`text-xs font-bold ${statusColor(toStatus(data.overall_status))}`}>
+              {data.overall_status}
+            </span>
+          </div>
         ) : undefined
       }
     >
