@@ -16,6 +16,11 @@ import {
   useConstitutionalStatus,
 } from "@/hooks/useBucketQueries";
 import { usePranaHealth } from "@/hooks/usePranaQueries";
+import {
+  useInsightFlowHealth,
+  useInsightFlowBucketStatus,
+  useInsightFlowStageMetrics,
+} from "@/hooks/useInsightFlowQueries";
 import { formatTime, toSeverity } from "@/utils/format";
 
 export default memo(function OperationsLayout() {
@@ -29,6 +34,10 @@ export default memo(function OperationsLayout() {
   const bucketChain = useBucketChainState();
   const constStatus = useConstitutionalStatus();
   const pranaHealth = usePranaHealth();
+
+  const insightFlowHealth = useInsightFlowHealth();
+  const insightFlowBucketStatus = useInsightFlowBucketStatus();
+  const insightFlowStageMetrics = useInsightFlowStageMetrics();
 
   const sysComponents = status.data?.components ?? [];
   const findComp = (name: string) => sysComponents.find((c) => c.name.toLowerCase().includes(name.toLowerCase()));
@@ -91,14 +100,25 @@ export default memo(function OperationsLayout() {
       },
       {
         id: "InsightFlow",
-        hasRuntimeData: Boolean(telemetry.data?.insightflow?.total_events !== undefined),
-        status: telemetry.data ? "healthy" : undefined,
-        latency: telemetry.data?.summary?.avg_response_time,
+        hasRuntimeData: Boolean(
+          telemetry.data?.insightflow?.total_events !== undefined ||
+          insightFlowHealth.data !== undefined
+        ),
+        status: insightFlowHealth.data?.status === "ONLINE"
+          ? "healthy"
+          : (insightFlowHealth.data?.status?.toLowerCase() || (telemetry.data ? "healthy" : undefined)),
+        latency: (() => {
+          if (insightFlowStageMetrics.data && insightFlowStageMetrics.data.length > 0) {
+            const sumP50 = insightFlowStageMetrics.data.reduce((acc, curr) => acc + curr.p50_latency_ms, 0);
+            return Math.round(sumP50 / insightFlowStageMetrics.data.length);
+          }
+          return telemetry.data?.summary?.avg_response_time;
+        })(),
         events: telemetry.data?.insightflow?.total_events,
         dependencies: ["PRANA"],
         replayAvailable: true,
-        evidenceCount: null,
-        lastActivity: telemetry.data?.timestamp,
+        evidenceCount: insightFlowBucketStatus.data?.failed_writes ?? null,
+        lastActivity: telemetry.data?.timestamp || (insightFlowHealth.data ? new Date().toISOString() : null),
       },
       {
         id: "SETU",
@@ -172,6 +192,9 @@ export default memo(function OperationsLayout() {
     bucketStats.data,
     bucketChain.data,
     constStatus.data,
+    insightFlowHealth.data,
+    insightFlowBucketStatus.data,
+    insightFlowStageMetrics.data,
   ]);
 
   const isLoading = ops.isLoading || status.isLoading || metrics.isLoading;

@@ -17,7 +17,8 @@ export default memo(function MigrationQueueLayout() {
       isError={isError}
       hasData={data !== undefined}
       onRetry={() => refetch()}
-      errorMessage="Failed to load Migration Queue"
+      errorTitle="Integration Pending"
+      errorMessage="Waiting for runtime source"
       skeletonCount={6}
       skeletonHeight="h-7"
       timestamp={timestamp}
@@ -36,8 +37,8 @@ export default memo(function MigrationQueueLayout() {
         {migrations.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 flex-1 border border-dashed border-slate-800 rounded-lg bg-slate-900/30">
             <GitPullRequest className="w-8 h-8 text-slate-600 mb-2 opacity-50" />
-            <p className="text-xs font-mono text-slate-400 font-medium">No Runtime Data Available</p>
-            <span className="text-[10px] text-slate-600 mt-1">Migration Queue endpoint has no active items</span>
+            <p className="text-xs font-mono text-slate-400 font-medium">No active migrations</p>
+            <span className="text-[10px] text-slate-600 mt-1">No runtime records available</span>
           </div>
         ) : (
           <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0 max-h-[320px] custom-scrollbar">

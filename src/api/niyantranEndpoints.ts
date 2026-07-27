@@ -103,7 +103,7 @@ export async function fetchNiyantranStats(): Promise<NiyantranDashboardStats> {
       pendingTasksChange: payload.pendingTasksChange ?? 0,
     };
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN stats:", error);
+    logger.error("Failed to fetch NIYANTRAN stats:", error);
     return {
       totalTasks: 0,
       completedTasks: 0,
@@ -126,7 +126,7 @@ export async function fetchNiyantranTasksOverview(): Promise<NiyantranTasksOverv
       priorityData: Array.isArray(payload.priorityData) ? payload.priorityData : [],
     };
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN tasks overview:", error);
+    logger.error("Failed to fetch NIYANTRAN tasks overview:", error);
     return { statusData: [], priorityData: [] };
   }
 }
@@ -140,7 +140,7 @@ export async function fetchNiyantranDepartments(): Promise<NiyantranDepartmentSt
     const list = Array.isArray(data) ? data : data?.data || data?.departments;
     return Array.isArray(list) ? list : [];
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN departments:", error);
+    logger.error("Failed to fetch NIYANTRAN departments:", error);
     return [];
   }
 }
@@ -154,7 +154,7 @@ export async function fetchNiyantranLeaderboard(): Promise<NiyantranLeaderboardU
     const list = Array.isArray(data) ? data : data?.data || data?.users || data?.leaderboard;
     return Array.isArray(list) ? list : [];
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN leaderboard:", error);
+    logger.error("Failed to fetch NIYANTRAN leaderboard:", error);
     return [];
   }
 }
@@ -180,8 +180,8 @@ export async function fetchNiyantranAttendanceSummary(params?: {
       count: payload?.count ?? (Array.isArray(payload?.records) ? payload.records.length : 0),
     };
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN attendance summary:", error);
-    return { records: [], count: 0 };
+    logger.error("Failed to fetch NIYANTRAN attendance summary:", error);
+    return { success: false, records: [], count: 0 };
   }
 }
 
@@ -209,7 +209,7 @@ export async function fetchNiyantranMergeAnalysis(params?: {
       mappingIssues: analysis?.mappingIssues ?? 0,
     };
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN merge analysis:", error);
+    logger.error("Failed to fetch NIYANTRAN merge analysis:", error);
     return {
       totalRecords: 0,
       byMergeCase: {},
@@ -237,8 +237,8 @@ export async function fetchNiyantranExecutionHistory(
       rejections: Array.isArray(payload?.rejections) ? payload.rejections : [],
     };
   } catch (error) {
-    logger.warn(`Failed to fetch execution history for ${executionId}:`, error);
-    return { events: [], rejections: [] };
+    logger.error(`Failed to fetch execution history for ${executionId}:`, error);
+    return { status: "failed", execution_id: executionId, events: [], rejections: [] };
   }
 }
 
@@ -252,7 +252,7 @@ export async function fetchNiyantranAims(): Promise<NiyantranAim[]> {
     const list = Array.isArray(data) ? data : data?.data || data?.aims;
     return Array.isArray(list) ? list : [];
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN aims (Backend 403 / Auth issue):", error);
+    logger.error("Failed to fetch NIYANTRAN aims (Backend 403 / Auth issue):", error);
     return [];
   }
 }
@@ -267,7 +267,7 @@ export async function fetchNiyantranEnhancedAims(): Promise<NiyantranAim[]> {
     const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
     return list;
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN enhanced aims:", error);
+    logger.error("Failed to fetch NIYANTRAN enhanced aims:", error);
     return [];
   }
 }
@@ -281,7 +281,7 @@ export async function fetchNiyantranAlerts(): Promise<NiyantranAlert[]> {
     const list = Array.isArray(data) ? data : data?.alerts || data?.data;
     return Array.isArray(list) ? list : [];
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN alerts:", error);
+    logger.error("Failed to fetch NIYANTRAN alerts:", error);
     return [];
   }
 }
@@ -302,7 +302,7 @@ export async function fetchNiyantranSubmissions(): Promise<NiyantranSubmission[]
       : [];
     return list;
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN submissions:", error);
+    logger.error("Failed to fetch NIYANTRAN submissions:", error);
     return [];
   }
 }
@@ -323,7 +323,7 @@ export async function fetchNiyantranTasks(): Promise<NiyantranTask[]> {
       : [];
     return list;
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN tasks:", error);
+    logger.error("Failed to fetch NIYANTRAN tasks:", error);
     return [];
   }
 }
@@ -347,7 +347,7 @@ export async function fetchNiyantranLiveLocations(params?: {
       : [];
     return list;
   } catch (error) {
-    logger.warn("Failed to fetch NIYANTRAN live locations:", error);
+    logger.error("Failed to fetch NIYANTRAN live locations:", error);
     return [];
   }
 }

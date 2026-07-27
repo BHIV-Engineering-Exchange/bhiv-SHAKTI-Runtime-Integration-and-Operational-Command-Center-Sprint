@@ -396,22 +396,24 @@ export interface EmployeeExecutionResponse {
 
 export interface EngineeringCapacityResponse {
   timestamp: string;
-  active_developers: number;
-  available_developers: number;
-  blocked_developers: number;
-  review_pending: number;
-  testing_pending: number;
-  deployment_pending: number;
+  active_developers?: number;
+  available_developers?: number;
+  blocked_developers?: number;
+  review_pending?: number;
+  testing_pending?: number;
+  deployment_pending?: number;
+  engineers?: any[];
 }
 
 // ─── GET /operations/delivery-intelligence ───────────────────────────────────
 
 export interface DeliveryIntelligenceResponse {
   timestamp: string;
-  completed_tasks: number;
-  delayed_tasks: number;
-  upcoming_deliveries: number;
-  sprint_health: string;
-  execution_velocity: number | string;
-  repository_activity: string | number;
+  completed_tasks?: number;
+  delayed_tasks?: number;
+  upcoming_deliveries?: number;
+  sprint_health?: string;
+  execution_velocity?: number | string;
+  repository_activity?: string | number;
+  deliveries?: any[];
 }

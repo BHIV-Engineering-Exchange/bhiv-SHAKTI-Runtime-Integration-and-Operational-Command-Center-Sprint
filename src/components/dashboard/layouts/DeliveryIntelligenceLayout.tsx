@@ -20,15 +20,15 @@ export default memo(function DeliveryIntelligenceLayout() {
       const delayed = aimsList.filter(a => a.status === "Blocked" || a.status === "Delayed").length;
       const upcoming = aimsList.filter(a => a.status === "Pending" || a.status === "In Progress").length;
       const avgProgress = Math.round(aimsList.reduce((acc, a) => acc + (a.progressPercentage || 50), 0) / aimsList.length);
-
+ 
       return {
         timestamp: new Date().toISOString(),
         completed_tasks: completed,
         delayed_tasks: delayed,
         upcoming_deliveries: upcoming,
-        sprint_health_score: avgProgress,
-        delivery_velocity: avgProgress > 80 ? "Optimal" : "Standard",
-        active_sprint_id: "NIYANTRAN_AIMS_SPRINT",
+        sprint_health: `${avgProgress}%`,
+        execution_velocity: avgProgress > 80 ? "Optimal" : "Standard",
+        repository_activity: "AIMS Sprint Active",
         deliveries: aimsList.map((a) => ({
           id: a._id,
           title: a.aims,

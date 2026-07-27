@@ -127,7 +127,7 @@ export default memo(function IntegrationLayout() {
           <div className="flex-1 flex flex-col min-h-0">
             <h3 className="text-sm font-semibold text-slate-300 mb-2 border-b border-slate-700/60 pb-1">Live Alert Feed</h3>
             {liveAlertsList.length === 0 ? (
-              <p className="text-xs text-slate-500 text-center py-4">No Runtime Data Available</p>
+              <p className="text-xs text-slate-500 text-center py-4">No Active Runtime Alerts</p>
             ) : (
               <div className="space-y-1.5 overflow-y-auto flex-1 min-h-0 max-h-[200px] pr-1">
                 {liveAlertsList.map((a) => (

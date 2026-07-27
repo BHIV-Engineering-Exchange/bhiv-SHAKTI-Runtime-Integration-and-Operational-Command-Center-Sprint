@@ -196,6 +196,7 @@ export async function fetchEmployeeExecution(): Promise<EmployeeExecutionRespons
     if (niyantranData && Array.isArray(niyantranData.records) && niyantranData.records.length > 0) {
       return {
         timestamp: new Date().toISOString(),
+        total_engineers: niyantranData.records.length,
         engineers: niyantranData.records.map((r) => ({
           engineer: r.employee?.name || "Employee",
           current_task: r.merge?.case !== "UNKNOWN" ? `Merge Case: ${r.merge.case}` : "Active Work Session",
@@ -211,7 +212,7 @@ export async function fetchEmployeeExecution(): Promise<EmployeeExecutionRespons
     // NIYANTRAN backend unreachable
   }
 
-  return { timestamp: new Date().toISOString(), engineers: [] };
+  return { timestamp: new Date().toISOString(), total_engineers: 0, engineers: [] };
 }
 
 export async function fetchEngineeringCapacity(): Promise<EngineeringCapacityResponse> {
@@ -227,8 +228,20 @@ export async function fetchEngineeringCapacity(): Promise<EngineeringCapacityRes
   try {
     const leaderboard = await fetchNiyantranLeaderboard();
     if (Array.isArray(leaderboard) && leaderboard.length > 0) {
+      const activeDevs = leaderboard.length;
+      const availableDevs = leaderboard.filter(u => u.workload === 0).length;
+      const blockedDevs = leaderboard.filter(u => u.completionRate < 30 && u.totalTasks > 0).length;
+      const reviewPending = leaderboard.reduce((acc, u) => acc + Math.max(0, u.totalTasks - u.completedTasks), 0);
+      const inQa = leaderboard.reduce((acc, u) => acc + u.totalDependencies, 0);
+
       return {
         timestamp: new Date().toISOString(),
+        active_developers: activeDevs,
+        available_developers: availableDevs,
+        blocked_developers: blockedDevs,
+        review_pending: reviewPending,
+        testing_pending: inQa,
+        deployment_pending: 0,
         engineers: leaderboard.map((u) => ({
           name: u.name,
           department: typeof u.department === "object" ? u.department?.name : "Engineering",
@@ -243,7 +256,16 @@ export async function fetchEngineeringCapacity(): Promise<EngineeringCapacityRes
     // NIYANTRAN backend unreachable
   }
 
-  return { timestamp: new Date().toISOString(), engineers: [] };
+  return {
+    timestamp: new Date().toISOString(),
+    active_developers: 0,
+    available_developers: 0,
+    blocked_developers: 0,
+    review_pending: 0,
+    testing_pending: 0,
+    deployment_pending: 0,
+    engineers: [],
+  };
 }
 
 export async function fetchDeliveryIntelligence(): Promise<DeliveryIntelligenceResponse> {
@@ -259,8 +281,19 @@ export async function fetchDeliveryIntelligence(): Promise<DeliveryIntelligenceR
   try {
     const aims = await fetchNiyantranAims();
     if (Array.isArray(aims) && aims.length > 0) {
+      const completed = aims.filter(a => a.status === "Completed" || (a.progressPercentage != null && a.progressPercentage >= 100)).length;
+      const delayed = aims.filter(a => a.status === "Blocked" || a.status === "Delayed").length;
+      const upcoming = aims.filter(a => a.status === "Pending" || a.status === "In Progress").length;
+      const avgProgress = Math.round(aims.reduce((acc, a) => acc + (a.progressPercentage || 50), 0) / aims.length);
+
       return {
         timestamp: new Date().toISOString(),
+        completed_tasks: completed,
+        delayed_tasks: delayed,
+        upcoming_deliveries: upcoming,
+        sprint_health: `${avgProgress}%`,
+        execution_velocity: avgProgress > 80 ? "Optimal" : "Standard",
+        repository_activity: "AIMS Sprint Active",
         deliveries: aims.map((a) => ({
           id: a._id,
           title: a.aims,
@@ -275,6 +308,15 @@ export async function fetchDeliveryIntelligence(): Promise<DeliveryIntelligenceR
     // NIYANTRAN backend unreachable
   }
 
-  return { timestamp: new Date().toISOString(), deliveries: [] };
+  return {
+    timestamp: new Date().toISOString(),
+    completed_tasks: 0,
+    delayed_tasks: 0,
+    upcoming_deliveries: 0,
+    sprint_health: "—",
+    execution_velocity: "—",
+    repository_activity: "—",
+    deliveries: [],
+  };
 }
 

@@ -24,6 +24,8 @@ interface DashboardCardProps {
   onRetry?: () => void;
   /** Error message shown in error state */
   errorMessage?: string;
+  /** Custom title for error state instead of default */
+  errorTitle?: string;
   /** When true, show the empty state message instead of children */
   isEmpty?: boolean;
   /** Empty state message */
@@ -76,6 +78,7 @@ export function DashboardCard({
   isStale = false,
   traceId,
   dataSource,
+  errorTitle,
 }: DashboardCardProps) {
   let runtimeStatus: "LIVE" | "STALE" | "OFFLINE" = "LIVE";
   if (isError && !hasData) {
@@ -111,7 +114,7 @@ export function DashboardCard({
         </div>
       ) : isError && !hasData ? (
         <div className="flex flex-col items-center justify-center py-8 px-4 flex-1 border border-dashed border-slate-800 rounded-lg bg-slate-900/30 my-auto text-center gap-1">
-          <p className="text-xs font-mono font-medium text-slate-400">No Runtime Data Available</p>
+          <p className="text-xs font-mono font-medium text-slate-400">{errorTitle ?? "No Runtime Data Available"}</p>
           <span className="text-[10px] text-slate-600 font-mono">{errorMessage}</span>
           {onRetry && (
             <button

@@ -57,23 +57,23 @@ export default memo(function ExecutiveLayout() {
         icon: Users,
         hasData: Boolean(engCapacity.data || metrics.data),
         value: engCapacity.data
-          ? `${engCapacity.data.active_developers} Active Devs`
+          ? `${engCapacity.data.active_developers ?? 0} Active Devs`
           : (metrics.data?.requests?.total ?? metrics.data?.total_requests) != null
           ? `${(metrics.data?.requests?.total ?? metrics.data?.total_requests ?? 0).toLocaleString()} Reqs`
-          : undefined,
+          : "—",
         status: engCapacity.data?.blocked_developers
           ? engCapacity.data.blocked_developers > 0
             ? "degraded"
             : "online"
           : "online",
-        detail: engCapacity.data ? `${engCapacity.data.blocked_developers} Blocked` : undefined,
+        detail: engCapacity.data ? `${engCapacity.data.blocked_developers ?? 0} Blocked` : "—",
       },
       {
         id: "repository",
         title: "Repository Health",
         icon: FolderGit2,
         hasData: Boolean(repoRegistry.data?.total_repositories !== undefined && (repoRegistry.data.repositories ?? []).length > 0),
-        value: repoRegistry.data ? `${repoRegistry.data.total_repositories} Repositories` : undefined,
+        value: repoRegistry.data ? `${repoRegistry.data.total_repositories ?? 0} Repositories` : "—",
         status: "online",
         detail: "Source Registry Sync",
       },
@@ -82,16 +82,31 @@ export default memo(function ExecutiveLayout() {
         title: "Runtime Health",
         icon: Activity,
         hasData: Boolean(status.data?.overall_status),
-        value: status.data ? status.data.overall_status.toUpperCase() : undefined,
+        value: status.data ? (status.data.overall_status || "—").toUpperCase() : "—",
         status: status.data ? (toStatus(status.data.overall_status) as OperationalStatus) : "offline",
-        detail: status.data ? `${(status.data.components ?? []).length} Monitored Services` : undefined,
+        detail: status.data
+          ? (() => {
+              const components = status.data.components ?? [];
+              const crashLooping = components.filter(c => c.status === "CRASH_LOOPING").length;
+              const offline = components.filter(c => c.status === "offline" || c.status === "failed" || c.status === "unhealthy").length;
+              const degraded = components.filter(c => c.status === "degraded" || c.status === "warning").length;
+              
+              if (status.data.overall_status === "degraded" || status.data.overall_status === "offline") {
+                if (crashLooping > 0) return `${crashLooping} Crash Looping ${crashLooping === 1 ? 'Service' : 'Services'}`;
+                if (offline > 0) return `${offline} ${offline === 1 ? 'Service' : 'Services'} Offline`;
+                if (degraded > 0) return `${degraded} ${degraded === 1 ? 'Service' : 'Services'} Degraded`;
+                return "Telemetry Unavailable";
+              }
+              return `${components.length} Monitored Services`;
+            })()
+          : "—",
       },
       {
         id: "capability",
         title: "Capability Health",
         icon: Layers,
         hasData: Boolean(capRegistry.data?.total_capabilities !== undefined && (capRegistry.data.capabilities ?? []).length > 0),
-        value: capRegistry.data ? `${capRegistry.data.total_capabilities} Capabilities` : undefined,
+        value: capRegistry.data ? `${capRegistry.data.total_capabilities ?? 0} Capabilities` : "—",
         status: "online",
         detail: "Ecosystem Capabilities",
       },
@@ -100,7 +115,7 @@ export default memo(function ExecutiveLayout() {
         title: "Employee Health",
         icon: UserCheck,
         hasData: Boolean(employeeExec.data?.total_engineers !== undefined && (employeeExec.data.engineers ?? []).length > 0),
-        value: employeeExec.data ? `${employeeExec.data.total_engineers} Engineers` : undefined,
+        value: employeeExec.data ? `${employeeExec.data.total_engineers ?? 0} Engineers` : "—",
         status: "online",
         detail: "Active Contributions",
       },
@@ -109,16 +124,16 @@ export default memo(function ExecutiveLayout() {
         title: "Execution Health",
         icon: Zap,
         hasData: Boolean(ops.data?.active_operations !== undefined),
-        value: ops.data ? `${ops.data.active_operations} Active Ops` : undefined,
+        value: ops.data ? `${ops.data.active_operations ?? 0} Active Ops` : "—",
         status: ops.data ? (ops.data.system_load > 85 ? "degraded" : "online") : "offline",
-        detail: ops.data ? `${ops.data.system_load}% System Load` : undefined,
+        detail: ops.data ? `${ops.data.system_load ?? 0}% System Load` : "—",
       },
       {
         id: "testing",
         title: "Testing Health",
         icon: TestTube2,
         hasData: Boolean(engCapacity.data?.testing_pending !== undefined),
-        value: engCapacity.data ? `${engCapacity.data.testing_pending} Pending` : undefined,
+        value: engCapacity.data ? `${engCapacity.data.testing_pending ?? 0} Pending` : "—",
         status: "online",
         detail: "Automated Test Pipeline",
       },
@@ -127,7 +142,7 @@ export default memo(function ExecutiveLayout() {
         title: "Review Health",
         icon: ClipboardCheck,
         hasData: Boolean(reviewQueue.data?.total_reviews !== undefined && (reviewQueue.data.reviews ?? []).length > 0),
-        value: reviewQueue.data ? `${reviewQueue.data.total_reviews} Reviews` : undefined,
+        value: reviewQueue.data ? `${reviewQueue.data.total_reviews ?? 0} Reviews` : "—",
         status: "online",
         detail: "Quality Gate Reviews",
       },
@@ -136,7 +151,7 @@ export default memo(function ExecutiveLayout() {
         title: "Deployment Health",
         icon: Rocket,
         hasData: Boolean(buildRegistry.data?.total_builds !== undefined && (buildRegistry.data.builds ?? []).length > 0),
-        value: buildRegistry.data ? `${buildRegistry.data.total_builds} Builds` : undefined,
+        value: buildRegistry.data ? `${buildRegistry.data.total_builds ?? 0} Builds` : "—",
         status: "online",
         detail: "CI/CD Deployment Pipeline",
       },

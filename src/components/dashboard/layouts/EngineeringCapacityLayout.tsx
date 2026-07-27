@@ -26,9 +26,9 @@ export default memo(function EngineeringCapacityLayout() {
         active_developers: activeDevs,
         available_developers: availableDevs,
         blocked_developers: blockedDevs,
-        review_pending_count: reviewPending,
-        in_qa_count: inQa,
-        deploying_count: 0,
+        review_pending: reviewPending,
+        testing_pending: inQa,
+        deployment_pending: 0,
         engineers: leaderboard.map((u) => ({
           name: u.name,
           department: typeof u.department === "object" ? u.department?.name : "Engineering",
@@ -79,7 +79,7 @@ export default memo(function EngineeringCapacityLayout() {
               <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-slate-400">
                 <Users size={12} className="text-cyan-400" /> Active Developers
               </div>
-              <span className="text-lg font-bold font-mono text-slate-100">{data.active_developers ?? 0}</span>
+              <span className="text-lg font-bold font-mono text-slate-100">{data.active_developers != null ? data.active_developers : "—"}</span>
             </div>
 
             {/* Available Developers */}
@@ -87,7 +87,7 @@ export default memo(function EngineeringCapacityLayout() {
               <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-slate-400">
                 <UserCheck size={12} className="text-emerald-400" /> Available Developers
               </div>
-              <span className="text-lg font-bold font-mono text-emerald-400">{data.available_developers ?? 0}</span>
+              <span className="text-lg font-bold font-mono text-emerald-400">{data.available_developers != null ? data.available_developers : "—"}</span>
             </div>
 
             {/* Blocked Developers */}
@@ -95,7 +95,7 @@ export default memo(function EngineeringCapacityLayout() {
               <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-slate-400">
                 <ShieldAlert size={12} className="text-red-400" /> Blocked Developers
               </div>
-              <span className="text-lg font-bold font-mono text-red-400">{data.blocked_developers ?? 0}</span>
+              <span className="text-lg font-bold font-mono text-red-400">{data.blocked_developers != null ? data.blocked_developers : "—"}</span>
             </div>
 
             {/* Review Pending */}
@@ -103,7 +103,7 @@ export default memo(function EngineeringCapacityLayout() {
               <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-slate-400">
                 <FileSearch size={12} className="text-indigo-400" /> Review Pending
               </div>
-              <span className="text-lg font-bold font-mono text-indigo-400">{data.review_pending ?? 0}</span>
+              <span className="text-lg font-bold font-mono text-indigo-400">{data.review_pending != null ? data.review_pending : "—"}</span>
             </div>
 
             {/* Testing Pending */}
@@ -111,7 +111,7 @@ export default memo(function EngineeringCapacityLayout() {
               <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-slate-400">
                 <TestTube2 size={12} className="text-amber-400" /> Testing Pending
               </div>
-              <span className="text-lg font-bold font-mono text-amber-400">{data.testing_pending ?? 0}</span>
+              <span className="text-lg font-bold font-mono text-amber-400">{data.testing_pending != null ? data.testing_pending : "—"}</span>
             </div>
 
             {/* Deployment Pending */}
@@ -119,7 +119,7 @@ export default memo(function EngineeringCapacityLayout() {
               <div className="flex items-center gap-1.5 text-[10px] font-mono uppercase text-slate-400">
                 <Rocket size={12} className="text-purple-400" /> Deployment Pending
               </div>
-              <span className="text-lg font-bold font-mono text-purple-400">{data.deployment_pending ?? 0}</span>
+              <span className="text-lg font-bold font-mono text-purple-400">{data.deployment_pending != null ? data.deployment_pending : "—"}</span>
             </div>
           </div>
         )}

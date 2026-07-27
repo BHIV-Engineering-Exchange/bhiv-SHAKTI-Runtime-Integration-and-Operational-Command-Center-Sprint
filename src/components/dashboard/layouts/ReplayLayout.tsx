@@ -3,7 +3,7 @@ import { Play, CheckCircle, AlertOctagon } from "lucide-react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { ReplayCard } from "@/components/dashboard/primitives/ReplayCard";
 import { useRuntimeDashboard } from "@/hooks/useQueries";
-import { useNiyantranExecutionHistory } from "@/hooks/useNiyantranQueries";
+
 import { formatRelativeTime } from "@/utils/format";
 
 type ReplayStatus = "running" | "completed" | "failed" | "idle";
@@ -35,8 +35,8 @@ export default memo(function ReplayLayout() {
     return allSessions[0] || null;
   }, [allSessions, selectedSessionId]);
 
-  const targetExecutionId = activeSession?.session_id || selectedSessionId || undefined;
-  const niyantranHistory = useNiyantranExecutionHistory(targetExecutionId);
+
+
 
 
   return (

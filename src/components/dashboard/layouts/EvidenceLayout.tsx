@@ -5,7 +5,7 @@ import { EvidenceCard } from "@/components/dashboard/primitives/EvidenceCard";
 import { useTelemetryDashboard } from "@/hooks/useQueries";
 import { useBucketArtifacts, useAuditRecent } from "@/hooks/useBucketQueries";
 import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
-import { useNiyantranSubmissions } from "@/hooks/useNiyantranQueries";
+
 import { formatTime, formatRelativeTime } from "@/utils/format";
 
 export default memo(function EvidenceLayout() {
@@ -13,7 +13,7 @@ export default memo(function EvidenceLayout() {
   const bucket = useBucketArtifacts();
   const audit = useAuditRecent(20);
   const pranaLog = usePranaPropagationLog(20);
-  const niyantranSubmissions = useNiyantranSubmissions();
+
 
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [selectedArtifactTab, setSelectedArtifactTab] = useState<string>("instruction");
@@ -22,7 +22,7 @@ export default memo(function EvidenceLayout() {
   const auditOperations = audit.data?.operations ?? [];
   const pranaLogs = pranaLog.data?.logs ?? [];
   const telemetryItems = telemetry.data?.recent_telemetry ?? [];
-  const nSubmissions = niyantranSubmissions.data ?? [];
+
 
   // Active artifact selection
   const activeArtifact = useMemo(() => {

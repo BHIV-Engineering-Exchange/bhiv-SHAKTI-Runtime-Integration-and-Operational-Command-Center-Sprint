@@ -140,8 +140,9 @@ export const TelemetryCard = memo(function TelemetryCard({
           </div>
         </div>
       ) : (
-        <div className="flex-1 flex items-center justify-center w-full min-h-[120px]">
-          <p className="text-xs text-slate-500">No telemetry data available</p>
+        <div className="flex-1 flex flex-col items-center justify-center w-full min-h-[200px] border border-dashed border-slate-800 rounded bg-slate-950/20">
+          <p className="text-xs font-semibold text-slate-300 font-mono">Telemetry stream connected.</p>
+          <p className="text-[10px] text-slate-500 font-mono mt-1">Awaiting historical samples.</p>
         </div>
       )}
     </div>

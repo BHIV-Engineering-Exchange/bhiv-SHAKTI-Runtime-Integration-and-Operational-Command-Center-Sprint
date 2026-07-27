@@ -5,7 +5,8 @@ import { TelemetryCard } from "@/components/dashboard/primitives/TelemetryCard";
 import { useTelemetryDashboard } from "@/hooks/useQueries";
 import { useMetricsScaleStatus, useMetricsQueryPerformance } from "@/hooks/useBucketQueries";
 import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
-import { useNiyantranAlerts } from "@/hooks/useNiyantranQueries";
+
+import { useInsightFlowStageMetrics } from "@/hooks/useInsightFlowQueries";
 import { formatTime } from "@/utils/format";
 
 export default memo(function ObservabilityLayout() {
@@ -13,7 +14,8 @@ export default memo(function ObservabilityLayout() {
   const scaleStatus = useMetricsScaleStatus();
   const queryPerf = useMetricsQueryPerformance();
   const pranaLog = usePranaPropagationLog();
-  const niyantranAlerts = useNiyantranAlerts();
+
+  const stageMetrics = useInsightFlowStageMetrics();
 
   const data = telemetry.data;
   const pranaLogs = pranaLog.data?.logs ?? [];
@@ -34,15 +36,35 @@ export default memo(function ObservabilityLayout() {
         rate: data.metrics?.event_rates?.[i]?.value != null ? +(data.metrics.event_rates[i].value).toFixed(1) : 0,
       }));
     }
-    if (scaleStatus.data || queryPerf.data) {
+    const hasMeaningfulBucketTelemetry = Boolean(
+      (queryPerf.data && (
+        (queryPerf.data.p50_ms ?? 0) > 0 ||
+        (queryPerf.data.p99_ms ?? 0) > 0 ||
+        (queryPerf.data.p999_ms ?? 0) > 0 ||
+        (queryPerf.data.queries_per_sec ?? 0) > 0
+      )) ||
+      (scaleStatus.data && (
+        (scaleStatus.data.concurrent_writes?.current ?? 0) > 0 ||
+        (scaleStatus.data.write_throughput?.current_writes_per_sec ?? 0) > 0
+      ))
+    );
+
+    if (hasMeaningfulBucketTelemetry) {
       const now = formatTime(new Date().toISOString());
       return [
         { time: now, response: queryPerf.data?.p50_ms ?? 0, rate: scaleStatus.data?.concurrent_writes?.current ?? 0 },
         { time: now, response: queryPerf.data?.p99_ms ?? 0, rate: scaleStatus.data?.write_throughput?.current_writes_per_sec ?? 0 },
       ];
     }
+    if (stageMetrics.data && stageMetrics.data.length > 0) {
+      return stageMetrics.data.map((m) => ({
+        time: m.stage.toUpperCase(),
+        response: m.p50_latency_ms,
+        rate: m.events_per_sec,
+      }));
+    }
     return [];
-  }, [pranaLogs, data, scaleStatus.data, queryPerf.data]);
+  }, [pranaLogs, data, scaleStatus.data, queryPerf.data, stageMetrics.data]);
 
   const series = useMemo(() => [
     { name: "HTTP / Response Status", dataKey: "response", color: "#6366f1" },
@@ -73,15 +95,21 @@ export default memo(function ObservabilityLayout() {
         list.push({ label: "Concurrent Writes", value: `${scaleStatus.data.concurrent_writes.current}/${scaleStatus.data.concurrent_writes.limit}` });
         list.push({ label: "Storage Used", value: `${scaleStatus.data.storage.usage_percent.toFixed(1)}%` });
       }
+      if (stageMetrics.data && stageMetrics.data.length > 0) {
+        const activeStages = stageMetrics.data.filter(s => s.status === "live").length;
+        list.push({ label: "InsightFlow Stages", value: `${activeStages}/${stageMetrics.data.length} live` });
+        const totalPipelineEvents = stageMetrics.data.reduce((acc, curr) => acc + curr.total_events, 0);
+        list.push({ label: "Pipeline Events", value: totalPipelineEvents.toLocaleString() });
+      }
     }
     return list;
-  }, [pranaLogs, data, queryPerf.data, scaleStatus.data]);
+  }, [pranaLogs, data, queryPerf.data, scaleStatus.data, stageMetrics.data]);
 
-  const isLoading = telemetry.isLoading && scaleStatus.isLoading && queryPerf.isLoading && pranaLog.isLoading;
-  const isError = !isLoading && (telemetry.isError && scaleStatus.isError && queryPerf.isError && pranaLog.isError);
-  const hasData = pranaLogs.length > 0 || data !== undefined || scaleStatus.data !== undefined || queryPerf.data !== undefined;
+  const isLoading = telemetry.isLoading && scaleStatus.isLoading && queryPerf.isLoading && pranaLog.isLoading && stageMetrics.isLoading;
+  const isError = !isLoading && (telemetry.isError && scaleStatus.isError && queryPerf.isError && pranaLog.isError && stageMetrics.isError);
+  const hasData = pranaLogs.length > 0 || data !== undefined || scaleStatus.data !== undefined || queryPerf.data !== undefined || (stageMetrics.data !== undefined && stageMetrics.data.length > 0);
 
-  const timestamp = pranaLogs.length > 0 ? pranaLogs[0].logged_at : (scaleStatus.data?.timestamp || data?.timestamp || new Date().toISOString());
+  const timestamp = pranaLogs.length > 0 ? pranaLogs[0].logged_at : (scaleStatus.data?.timestamp || data?.timestamp || (stageMetrics.data ? new Date().toISOString() : undefined) || new Date().toISOString());
 
   return (
     <DashboardCard
@@ -97,9 +125,9 @@ export default memo(function ObservabilityLayout() {
       isEmpty={!isLoading && !hasData}
       emptyMessage="No Runtime Data Available"
       timestamp={timestamp}
-      isFetching={telemetry.isFetching || scaleStatus.isFetching || queryPerf.isFetching || pranaLog.isFetching}
-      isStale={telemetry.isStale || scaleStatus.isStale || queryPerf.isStale || pranaLog.isStale}
-      traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : (data as any)?.trace_id}
+      isFetching={telemetry.isFetching || scaleStatus.isFetching || queryPerf.isFetching || pranaLog.isFetching || stageMetrics.isFetching}
+      isStale={telemetry.isStale || scaleStatus.isStale || queryPerf.isStale || pranaLog.isStale || stageMetrics.isStale}
+      traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : ((data as any)?.trace_id || (stageMetrics.data as any)?.trace_id)}
       dataSource="PRANA Log & Bucket Metrics"
       headerRight={
         pranaLogs.length > 0 ? (
@@ -118,6 +146,13 @@ export default memo(function ObservabilityLayout() {
             Uptime:{" "}
             <span className="text-emerald-400 font-medium">
               {(data.summary?.uptime_percentage ?? 100).toFixed(1)}%
+            </span>
+          </span>
+        ) : stageMetrics.data && stageMetrics.data.length > 0 ? (
+          <span className="text-xs text-slate-500">
+            Pipeline:{" "}
+            <span className="text-emerald-400 font-medium">
+              {stageMetrics.data.length} stages
             </span>
           </span>
         ) : undefined
