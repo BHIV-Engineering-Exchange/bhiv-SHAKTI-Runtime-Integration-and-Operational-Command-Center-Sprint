@@ -5,14 +5,44 @@ import { CapabilityCard } from "@/components/dashboard/primitives/CapabilityCard
 
 import { useOperationsDashboard } from "@/hooks/useQueries";
 import { useNiyantranAims } from "@/hooks/useNiyantranQueries";
+import { useSanskarRanking } from "@/hooks/useSanskarQueries";
 import { toSeverity } from "@/utils/format";
+
+function getPriority(score: number): { priority: string; severity: "critical" | "high" | "medium" | "low" | "info"; reason: string } {
+  if (score >= 0.8) {
+    return { priority: "critical", severity: "critical" as const, reason: "Score >= 0.8: critical priority -- immediate action required" };
+  }
+  if (score >= 0.6) {
+    return { priority: "high", severity: "high" as const, reason: "Score >= 0.6: high priority -- action recommended within current cycle" };
+  }
+  if (score >= 0.4) {
+    return { priority: "medium", severity: "medium" as const, reason: "Score >= 0.4: medium priority -- schedule for next cycle" };
+  }
+  return { priority: "low", severity: "low" as const, reason: "Score < 0.4: low priority -- monitor only" };
+}
 
 export default memo(function DecisionIntelligenceLayout() {
   const cpOperations = useOperationsDashboard();
   const niyantranAims = useNiyantranAims();
+  const sanskarRanking = useSanskarRanking();
 
-  // Map real operations or NIYANTRAN aims directly
+  // Map SANSKAR ranking, or fallback to real operations or NIYANTRAN aims
   const decisions = useMemo(() => {
+    if (sanskarRanking.data && Array.isArray(sanskarRanking.data.entities) && sanskarRanking.data.entities.length > 0) {
+      return sanskarRanking.data.entities.map((e, index) => {
+        const priorityInfo = getPriority(e.score);
+        return {
+          id: e.entity_id,
+          action: `Rank #${index + 1}: Region ${e.entity_id}`,
+          actor: "SANSKAR Intelligence",
+          reason: `Score: ${e.score} | Confidence: ${e.confidence}. ${priorityInfo.reason}`,
+          status: e.score >= 0.6 ? ("executed" as const) : ("pending_approval" as const),
+          severity: priorityInfo.severity,
+          isAutomated: true,
+        };
+      });
+    }
+
     const rawOps = cpOperations.data?.operations ?? [];
     if (rawOps.length > 0) {
       const sortedOps = [...rawOps].sort((a, b) => {
@@ -26,7 +56,7 @@ export default memo(function DecisionIntelligenceLayout() {
         action: op.description,
         actor: op.agent,
         reason: `Priority: ${op.priority}. Progress: ${op.progress}%.`,
-        status: op.status === "completed" ? "executed" as const : "pending_approval" as const,
+        status: op.status === "completed" ? ("executed" as const) : ("pending_approval" as const),
         severity: toSeverity(op.priority),
         isAutomated: true,
       }));
@@ -38,19 +68,18 @@ export default memo(function DecisionIntelligenceLayout() {
       action: a.aims,
       actor: typeof a.user === "object" ? a.user?.name : "Strategic Objective",
       reason: `Target Date: ${a.date}. Progress: ${a.progressPercentage || 50}%.`,
-      status: a.status === "Completed" ? "executed" as const : "pending_approval" as const,
+      status: a.status === "Completed" ? ("executed" as const) : ("pending_approval" as const),
       severity: a.status === "Blocked" ? ("critical" as const) : ("info" as const),
       isAutomated: true,
     }));
-  }, [cpOperations.data?.operations, niyantranAims.data]);
+  }, [sanskarRanking.data, cpOperations.data?.operations, niyantranAims.data]);
 
-  const isLoading = cpOperations.isLoading && niyantranAims.isLoading;
-  const isError = !isLoading && cpOperations.isError && niyantranAims.isError;
-  const timestamp = cpOperations.data?.timestamp || (niyantranAims.data ? new Date().toISOString() : undefined);
-  const isFetching = cpOperations.isFetching || niyantranAims.isFetching;
-  const isStale = cpOperations.isStale || niyantranAims.isStale;
-  const dataSource = cpOperations.data ? "Control Plane" : "NIYANTRAN";
-
+  const isLoading = cpOperations.isLoading && niyantranAims.isLoading && sanskarRanking.isLoading;
+  const isError = !isLoading && cpOperations.isError && niyantranAims.isError && sanskarRanking.isError;
+  const timestamp = sanskarRanking.data?.contract_version ? new Date().toISOString() : (cpOperations.data?.timestamp || (niyantranAims.data ? new Date().toISOString() : undefined));
+  const isFetching = cpOperations.isFetching || niyantranAims.isFetching || sanskarRanking.isFetching;
+  const isStale = cpOperations.isStale || niyantranAims.isStale || sanskarRanking.isStale;
+  const dataSource = sanskarRanking.data?.entities ? "SANSKAR Domain Intelligence" : (cpOperations.data ? "Control Plane" : "NIYANTRAN");
 
   const loadSheddingActive = useMemo(() => cpOperations.data ? cpOperations.data.system_load > 85 : false, [cpOperations.data?.system_load]);
   const autoScalingActive = useMemo(() => cpOperations.data ? cpOperations.data.active_operations > 5 : false, [cpOperations.data?.active_operations]);
@@ -62,7 +91,7 @@ export default memo(function DecisionIntelligenceLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={decisions.length > 0 || cpOperations.data !== undefined || niyantranAims.data !== undefined}
-      onRetry={() => { cpOperations.refetch(); niyantranAims.refetch(); }}
+      onRetry={() => { cpOperations.refetch(); niyantranAims.refetch(); sanskarRanking.refetch(); }}
       errorMessage="Failed to load intelligence data"
       skeletonCount={4}
       skeletonHeight="h-20"

@@ -33,15 +33,15 @@ export async function fetchSystemStatus(): Promise<SystemStatusResponse> {
   const { data } = await apiClient.get<SystemStatusResponse>("/system/status");
   const components = data.components || (data.services
     ? Object.entries(data.services).map(([name, svc]) => ({
-        name,
-        status: svc.status === "healthy" ? "operational" : svc.status.toLowerCase(),
-        last_check: svc.last_restart_at || data.timestamp,
-        response_time_ms: svc.port ? svc.port % 100 : 0,
-        details: svc.healthy !== false ? `PID: ${svc.pid ?? 'N/A'}, Restarts: ${svc.restarts ?? 0}` : `Status: ${svc.status}`,
-        pid: svc.pid,
-        port: svc.port,
-        restarts: svc.restarts,
-      }))
+      name,
+      status: svc.status === "healthy" ? "operational" : svc.status.toLowerCase(),
+      last_check: svc.last_restart_at || data.timestamp,
+      response_time_ms: svc.port ? svc.port % 100 : 0,
+      details: svc.healthy !== false ? `PID: ${svc.pid ?? 'N/A'}, Restarts: ${svc.restarts ?? 0}` : `Status: ${svc.status}`,
+      pid: svc.pid,
+      port: svc.port,
+      restarts: svc.restarts,
+    }))
     : []);
 
   return {
@@ -68,23 +68,28 @@ export async function fetchMetrics(): Promise<MetricsResponse> {
 }
 
 export async function fetchExecutiveDashboard(): Promise<ExecutiveDashboardResponse> {
-  const { data } = await apiClient.get<ExecutiveDashboardResponse>("/dashboard/executive");
-  return data;
+  // Disabled temporarily due to missing backend route
+  return {
+    timestamp: new Date().toISOString(),
+    total_pipeline_executions_today: 0,
+    active_alerts_by_severity: {},
+    overall_system_status: "operational",
+  };
 }
 
 export async function fetchOperationsDashboard(): Promise<OperationsDashboardResponse> {
   const { data } = await apiClient.get<OperationsDashboardResponse>("/dashboard/operations");
   const operations = data.operations || (data.runtime_services
     ? Object.entries(data.runtime_services).map(([id, svc]) => ({
-        id,
-        type: `${id.toUpperCase()}_SERVICE`,
-        status: svc.status === "healthy" ? "running" : svc.status === "CRASH_LOOPING" ? "failed" : "pending",
-        priority: svc.status === "CRASH_LOOPING" ? "critical" : "medium",
-        started_at: svc.last_restart_at || data.timestamp,
-        description: `Service ${id} running on port ${svc.port ?? 'N/A'} (restarts: ${svc.restarts ?? 0})`,
-        progress: svc.status === "healthy" ? 100 : 0,
-        agent: "control_plane",
-      }))
+      id,
+      type: `${id.toUpperCase()}_SERVICE`,
+      status: svc.status === "healthy" ? "running" : svc.status === "CRASH_LOOPING" ? "failed" : "pending",
+      priority: svc.status === "CRASH_LOOPING" ? "critical" : "medium",
+      started_at: svc.last_restart_at || data.timestamp,
+      description: `Service ${id} running on port ${svc.port ?? 'N/A'} (restarts: ${svc.restarts ?? 0})`,
+      progress: svc.status === "healthy" ? 100 : 0,
+      agent: "control_plane",
+    }))
     : []);
 
   return {
@@ -111,14 +116,14 @@ export async function fetchRuntimeDashboard(): Promise<RuntimeDashboardResponse>
   const { data } = await apiClient.get<RuntimeDashboardResponse>("/dashboard/runtime");
   const sessions = data.sessions || (data.services
     ? Object.entries(data.services).map(([name, svc]) => ({
-        session_id: name,
-        status: svc.status === "healthy" ? "active" : svc.status === "CRASH_LOOPING" ? "failed" : "idle",
-        started_at: svc.last_restart_at || data.timestamp,
-        last_activity: data.timestamp,
-        events_processed: svc.restarts ?? 0,
-        current_operation: `${name.toUpperCase()} Service`,
-        progress: svc.status === "healthy" ? 100 : 0,
-      }))
+      session_id: name,
+      status: svc.status === "healthy" ? "active" : svc.status === "CRASH_LOOPING" ? "failed" : "idle",
+      started_at: svc.last_restart_at || data.timestamp,
+      last_activity: data.timestamp,
+      events_processed: svc.restarts ?? 0,
+      current_operation: `${name.toUpperCase()} Service`,
+      progress: svc.status === "healthy" ? 100 : 0,
+    }))
     : []);
 
   return {
@@ -157,28 +162,48 @@ export async function fetchTelemetryDashboard(): Promise<TelemetryDashboardRespo
 }
 
 export async function fetchRepositoryRegistry(): Promise<RepositoryRegistryResponse> {
-  const { data } = await apiClient.get<RepositoryRegistryResponse>("/registry/repositories");
-  return data;
+  // Disabled temporarily due to missing backend route
+  return {
+    timestamp: new Date().toISOString(),
+    total_repositories: 0,
+    repositories: [],
+  };
 }
 
 export async function fetchBuildRegistry(): Promise<BuildRegistryResponse> {
-  const { data } = await apiClient.get<BuildRegistryResponse>("/registry/builds");
-  return data;
+  // Disabled temporarily due to missing backend route
+  return {
+    timestamp: new Date().toISOString(),
+    total_builds: 0,
+    builds: [],
+  };
 }
 
 export async function fetchMigrationQueue(): Promise<MigrationQueueResponse> {
-  const { data } = await apiClient.get<MigrationQueueResponse>("/queue/migration");
-  return data;
+  // Disabled temporarily due to missing backend route
+  return {
+    timestamp: new Date().toISOString(),
+    total_migrations: 0,
+    migrations: [],
+  };
 }
 
 export async function fetchReviewQueue(): Promise<ReviewQueueResponse> {
-  const { data } = await apiClient.get<ReviewQueueResponse>("/queue/review");
-  return data;
+  // Disabled temporarily due to missing backend route
+  return {
+    timestamp: new Date().toISOString(),
+    total_items: 0,
+    items: [],
+  };
 }
 
 export async function fetchCapabilityRegistry(): Promise<CapabilityRegistryResponse> {
-  const { data } = await apiClient.get<CapabilityRegistryResponse>("/registry/capabilities");
-  return data;
+  // Disabled temporarily due to missing backend route
+  return {
+    timestamp: new Date().toISOString(),
+    total_capabilities: 0,
+    capabilities: [],
+  };
 }
 
 export async function fetchEmployeeExecution(): Promise<EmployeeExecutionResponse> {

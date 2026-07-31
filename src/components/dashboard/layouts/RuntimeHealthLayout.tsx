@@ -6,6 +6,8 @@ import { usePranaHealth, usePranaSystemHealth } from "@/hooks/usePranaQueries";
 import { useNiyantranStats } from "@/hooks/useNiyantranQueries";
 import { useInsightFlowHealth } from "@/hooks/useInsightFlowQueries";
 import { useTantraHealth } from "@/hooks/useTantraQueries";
+import { useRajyaHealth } from "@/hooks/useRajyaQueries";
+import { useSanskarHealth } from "@/hooks/useSanskarQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
 import type { ComponentStatus } from "@/types/runtime";
 
@@ -24,7 +26,8 @@ export default memo(function RuntimeHealthLayout() {
   const niyantranStats = useNiyantranStats();
   const insightFlowHealth = useInsightFlowHealth();
   const tantraHealth = useTantraHealth();
-
+  const rajyaHealth = useRajyaHealth();
+  const sanskarHealth = useSanskarHealth();
 
   const rawComponents = data?.components ?? [];
 
@@ -64,6 +67,20 @@ export default memo(function RuntimeHealthLayout() {
           response_time_ms: null,
           details: `Version: ${tantraHealth.data.version ?? "1.0.0"} | Uptime: ${tantraHealth.data.uptime_seconds != null ? tantraHealth.data.uptime_seconds + "s" : "N/A"}`,
         }] : []),
+        ...(rajyaHealth.data || rajyaHealth.isError || rajyaHealth.isLoading ? [{
+          name: "RAJYA Sovereign Core",
+          status: rajyaHealth.isLoading ? "degraded" : (rajyaHealth.data?.status === "healthy" ? "operational" : "degraded"),
+          last_check: new Date().toISOString(),
+          response_time_ms: null,
+          details: rajyaHealth.isLoading ? "Cold starting..." : `Status: ${rajyaHealth.data?.status || 'degraded'}`,
+        }] : []),
+        ...(sanskarHealth.data || sanskarHealth.isError || sanskarHealth.isLoading ? [{
+          name: "SANSKAR Domain Intelligence",
+          status: sanskarHealth.isLoading ? "degraded" : (sanskarHealth.data?.status === "healthy" ? "operational" : "degraded"),
+          last_check: new Date().toISOString(),
+          response_time_ms: null,
+          details: sanskarHealth.isLoading ? "Cold starting..." : `Version: ${sanskarHealth.data?.contract_version || 'v1'} | Service: ${sanskarHealth.data?.service || 'sanskar'}`,
+        }] : []),
       ].map(c => [c.name, c])
     ).values()
   );
@@ -74,8 +91,8 @@ export default memo(function RuntimeHealthLayout() {
   const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError);
 
   const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined) || (insightFlowHealth.data ? new Date().toISOString() : undefined) || (tantraHealth.data ? new Date().toISOString() : undefined);
-  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching;
-  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale;
+  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching || rajyaHealth.isFetching || sanskarHealth.isFetching;
+  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale || rajyaHealth.isStale || sanskarHealth.isStale;
   const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id || (insightFlowHealth.data as any)?.trace_id || (tantraHealth.data as any)?.trace_id;
 
   // Derive telemetry bar values from real /metrics data
@@ -98,7 +115,7 @@ export default memo(function RuntimeHealthLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={data !== undefined}
-      onRetry={() => { statusRefetch(); metrics.refetch(); }}
+      onRetry={() => { statusRefetch(); metrics.refetch(); rajyaHealth.refetch(); sanskarHealth.refetch(); }}
       errorMessage="Failed to load system health"
       skeletonCount={4}
       skeletonHeight="h-8"

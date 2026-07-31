@@ -5,6 +5,7 @@ import { EvidenceCard } from "@/components/dashboard/primitives/EvidenceCard";
 import { useTelemetryDashboard } from "@/hooks/useQueries";
 import { useBucketArtifacts, useAuditRecent } from "@/hooks/useBucketQueries";
 import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
+import { useSanskarTrace } from "@/hooks/useSanskarQueries";
 
 import { formatTime, formatRelativeTime } from "@/utils/format";
 
@@ -14,7 +15,6 @@ export default memo(function EvidenceLayout() {
   const audit = useAuditRecent(20);
   const pranaLog = usePranaPropagationLog(20);
 
-
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [selectedArtifactTab, setSelectedArtifactTab] = useState<string>("instruction");
 
@@ -22,7 +22,6 @@ export default memo(function EvidenceLayout() {
   const auditOperations = audit.data?.operations ?? [];
   const pranaLogs = pranaLog.data?.logs ?? [];
   const telemetryItems = telemetry.data?.recent_telemetry ?? [];
-
 
   // Active artifact selection
   const activeArtifact = useMemo(() => {
@@ -52,6 +51,8 @@ export default memo(function EvidenceLayout() {
     return null;
   }, [bucketArtifacts, pranaLogs, auditOperations, telemetryItems, selectedArtifactId]);
 
+  const sanskarTrace = useSanskarTrace(activeArtifact?.trace_id);
+
   const isLoading = bucket.isLoading && audit.isLoading && telemetry.isLoading && pranaLog.isLoading;
   const isError = !isLoading && bucket.isError && audit.isError && telemetry.isError && pranaLog.isError;
   const hasData = bucketArtifacts.length > 0 || pranaLogs.length > 0 || auditOperations.length > 0 || telemetryItems.length > 0;
@@ -64,15 +65,15 @@ export default memo(function EvidenceLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={hasData}
-      onRetry={() => { bucket.refetch(); audit.refetch(); telemetry.refetch(); }}
+      onRetry={() => { bucket.refetch(); audit.refetch(); telemetry.refetch(); if (activeArtifact?.trace_id) sanskarTrace.refetch(); }}
       errorMessage="Failed to load evidence"
       skeletonCount={4}
       skeletonHeight="h-10"
       isEmpty={!isLoading && !hasData}
       emptyMessage="No Runtime Data Available"
       timestamp={timestamp}
-      isFetching={bucket.isFetching || audit.isFetching || telemetry.isFetching}
-      isStale={bucket.isStale || audit.isStale || telemetry.isStale}
+      isFetching={bucket.isFetching || audit.isFetching || telemetry.isFetching || sanskarTrace.isFetching}
+      isStale={bucket.isStale || audit.isStale || telemetry.isStale || sanskarTrace.isStale}
       traceId={activeArtifact?.trace_id}
       dataSource="Bucket Service & Audit Trail"
       headerRight={timestamp ? <span className="text-xs text-slate-500">{formatTime(timestamp)}</span> : undefined}
@@ -303,7 +304,59 @@ export default memo(function EvidenceLayout() {
                     <div className="space-y-1.5">
                       <div className="flex justify-between"><span className="text-slate-500">Status:</span> <span className="text-emerald-400 font-bold uppercase">COMPLETED</span></div>
                       <div className="flex justify-between"><span className="text-slate-500">Storage:</span> <span className="text-cyan-400 font-mono font-semibold">Bucket Append-Only Log</span></div>
-                      <div className="flex justify-between"><span className="text-slate-500">Trace ID:</span> <span className="text-slate-300 font-mono">{activeArtifact.trace_id}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Trace ID:</span> <span className="text-slate-300 font-mono truncate max-w-[140px]" title={activeArtifact.trace_id}>{activeArtifact.trace_id}</span></div>
+                      {sanskarTrace.data && (
+                        <div className="mt-2 pt-2 border-t border-slate-800 space-y-1.5 bg-slate-900/20 p-1.5 rounded text-[10px]">
+                          <h5 className="font-semibold text-slate-300 uppercase tracking-wider text-[8px] flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                            SANSKAR Intelligence Enrichment
+                          </h5>
+                          {sanskarTrace.data.pipeline_status && (
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Pipeline:</span> 
+                              <span className={`font-bold font-mono text-[9px] ${sanskarTrace.data.pipeline_status === "SUCCESS" ? "text-emerald-400" : "text-red-400"}`}>
+                                {sanskarTrace.data.pipeline_status}
+                              </span>
+                            </div>
+                          )}
+                          {sanskarTrace.data.core_decision?.selected_entity && (
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Target Region:</span> 
+                              <span className="text-cyan-300 font-mono font-semibold">
+                                {sanskarTrace.data.core_decision.selected_entity} (Score: {sanskarTrace.data.core_decision.selected_score})
+                              </span>
+                            </div>
+                          )}
+                          {sanskarTrace.data.truth?.pipeline_hash && (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-slate-500">Chain Hash:</span> 
+                              <span className="text-[9px] font-mono text-slate-400 break-all select-all leading-normal bg-slate-950 p-1 rounded border border-slate-900">
+                                {sanskarTrace.data.truth.pipeline_hash}
+                              </span>
+                            </div>
+                          )}
+                          {sanskarTrace.data.truth?.trace_continuity && (
+                            <div className="flex justify-between">
+                              <span className="text-slate-500">Continuity:</span> 
+                              <span className="text-emerald-400 font-mono font-semibold">
+                                {sanskarTrace.data.truth.trace_continuity}
+                              </span>
+                            </div>
+                          )}
+                          {sanskarTrace.data.truth?.stages_completed && (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="text-slate-500">Completed Stages:</span> 
+                              <div className="flex flex-wrap gap-1 mt-0.5">
+                                {sanskarTrace.data.truth.stages_completed.map((stage) => (
+                                  <span key={stage} className="text-[8px] bg-slate-800 px-1 py-0.5 rounded text-slate-350 font-mono border border-slate-700/50">
+                                    {stage}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
