@@ -7,6 +7,7 @@ import { useMetricsScaleStatus, useMetricsQueryPerformance } from "@/hooks/useBu
 import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
 
 import { useInsightFlowStageMetrics } from "@/hooks/useInsightFlowQueries";
+import { useTantraTelemetry } from "@/hooks/useTantraQueries";
 import { formatTime } from "@/utils/format";
 
 export default memo(function ObservabilityLayout() {
@@ -16,6 +17,7 @@ export default memo(function ObservabilityLayout() {
   const pranaLog = usePranaPropagationLog();
 
   const stageMetrics = useInsightFlowStageMetrics();
+  const tantraTelemetry = useTantraTelemetry();
 
   const data = telemetry.data;
   const pranaLogs = pranaLog.data?.logs ?? [];
@@ -63,8 +65,15 @@ export default memo(function ObservabilityLayout() {
         rate: m.events_per_sec,
       }));
     }
+    if (tantraTelemetry.data?.metrics?.response_times && tantraTelemetry.data.metrics.response_times.length > 0) {
+      return tantraTelemetry.data.metrics.response_times.map((rt, i) => ({
+        time: rt ? formatTime(rt.timestamp) : "",
+        response: rt && rt.value != null ? +rt.value.toFixed(1) : 0,
+        rate: tantraTelemetry.data?.metrics?.event_rates?.[i]?.value != null ? +(tantraTelemetry.data.metrics.event_rates[i].value).toFixed(1) : 0,
+      }));
+    }
     return [];
-  }, [pranaLogs, data, scaleStatus.data, queryPerf.data, stageMetrics.data]);
+  }, [pranaLogs, data, scaleStatus.data, queryPerf.data, stageMetrics.data, tantraTelemetry.data]);
 
   const series = useMemo(() => [
     { name: "HTTP / Response Status", dataKey: "response", color: "#6366f1" },
@@ -101,15 +110,20 @@ export default memo(function ObservabilityLayout() {
         const totalPipelineEvents = stageMetrics.data.reduce((acc, curr) => acc + curr.total_events, 0);
         list.push({ label: "Pipeline Events", value: totalPipelineEvents.toLocaleString() });
       }
+      if (tantraTelemetry.data?.summary) {
+        list.push({ label: "TANTRA Avg Response", value: `${tantraTelemetry.data.summary.avg_response_time_ms}ms` });
+        list.push({ label: "TANTRA Events", value: tantraTelemetry.data.summary.total_events.toLocaleString() });
+        list.push({ label: "TANTRA Error Rate", value: `${(tantraTelemetry.data.summary.error_rate * 100).toFixed(2)}%` });
+      }
     }
     return list;
-  }, [pranaLogs, data, queryPerf.data, scaleStatus.data, stageMetrics.data]);
+  }, [pranaLogs, data, queryPerf.data, scaleStatus.data, stageMetrics.data, tantraTelemetry.data]);
 
-  const isLoading = telemetry.isLoading && scaleStatus.isLoading && queryPerf.isLoading && pranaLog.isLoading && stageMetrics.isLoading;
-  const isError = !isLoading && (telemetry.isError && scaleStatus.isError && queryPerf.isError && pranaLog.isError && stageMetrics.isError);
-  const hasData = pranaLogs.length > 0 || data !== undefined || scaleStatus.data !== undefined || queryPerf.data !== undefined || (stageMetrics.data !== undefined && stageMetrics.data.length > 0);
+  const isLoading = telemetry.isLoading && scaleStatus.isLoading && queryPerf.isLoading && pranaLog.isLoading && stageMetrics.isLoading && tantraTelemetry.isLoading;
+  const isError = !isLoading && (telemetry.isError && scaleStatus.isError && queryPerf.isError && pranaLog.isError && stageMetrics.isError && tantraTelemetry.isError);
+  const hasData = pranaLogs.length > 0 || data !== undefined || scaleStatus.data !== undefined || queryPerf.data !== undefined || (stageMetrics.data !== undefined && stageMetrics.data.length > 0) || (tantraTelemetry.data?.metrics?.response_times && tantraTelemetry.data.metrics.response_times.length > 0);
 
-  const timestamp = pranaLogs.length > 0 ? pranaLogs[0].logged_at : (scaleStatus.data?.timestamp || data?.timestamp || (stageMetrics.data ? new Date().toISOString() : undefined) || new Date().toISOString());
+  const timestamp = pranaLogs.length > 0 ? pranaLogs[0].logged_at : (scaleStatus.data?.timestamp || data?.timestamp || (stageMetrics.data ? new Date().toISOString() : undefined) || (tantraTelemetry.data ? new Date().toISOString() : undefined) || new Date().toISOString());
 
   return (
     <DashboardCard
@@ -118,16 +132,16 @@ export default memo(function ObservabilityLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={hasData}
-      onRetry={() => { telemetry.refetch(); scaleStatus.refetch(); queryPerf.refetch(); pranaLog.refetch(); }}
+      onRetry={() => { telemetry.refetch(); scaleStatus.refetch(); queryPerf.refetch(); pranaLog.refetch(); tantraTelemetry.refetch(); }}
       errorMessage="Failed to load telemetry"
       skeletonCount={1}
       skeletonHeight="h-48"
       isEmpty={!isLoading && !hasData}
       emptyMessage="No Runtime Data Available"
       timestamp={timestamp}
-      isFetching={telemetry.isFetching || scaleStatus.isFetching || queryPerf.isFetching || pranaLog.isFetching || stageMetrics.isFetching}
-      isStale={telemetry.isStale || scaleStatus.isStale || queryPerf.isStale || pranaLog.isStale || stageMetrics.isStale}
-      traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : ((data as any)?.trace_id || (stageMetrics.data as any)?.trace_id)}
+      isFetching={telemetry.isFetching || scaleStatus.isFetching || queryPerf.isFetching || pranaLog.isFetching || stageMetrics.isFetching || tantraTelemetry.isFetching}
+      isStale={telemetry.isStale || scaleStatus.isStale || queryPerf.isStale || pranaLog.isStale || stageMetrics.isStale || tantraTelemetry.isStale}
+      traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : ((data as any)?.trace_id || (stageMetrics.data as any)?.trace_id || (tantraTelemetry.data as any)?.trace_id)}
       dataSource="PRANA Log & Bucket Metrics"
       headerRight={
         pranaLogs.length > 0 ? (
@@ -155,6 +169,13 @@ export default memo(function ObservabilityLayout() {
               {stageMetrics.data.length} stages
             </span>
           </span>
+        ) : tantraTelemetry.data?.summary ? (
+          <span className="text-xs text-slate-500">
+            TANTRA Uptime:{" "}
+            <span className="text-emerald-400 font-medium">
+              {tantraTelemetry.data.summary.uptime_percentage.toFixed(1)}%
+            </span>
+          </span>
         ) : undefined
       }
     >
@@ -165,7 +186,7 @@ export default memo(function ObservabilityLayout() {
             xAxisKey="time"
             series={series}
             summaryMetrics={summaryMetrics}
-            traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : (data as any)?.trace_id}
+            traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : ((data as any)?.trace_id || (tantraTelemetry.data as any)?.trace_id)}
           />
         </div>
       )}

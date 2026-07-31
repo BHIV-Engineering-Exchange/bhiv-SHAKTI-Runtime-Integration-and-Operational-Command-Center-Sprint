@@ -5,6 +5,7 @@ import { useBucketHealth } from "@/hooks/useBucketQueries";
 import { usePranaHealth, usePranaSystemHealth } from "@/hooks/usePranaQueries";
 import { useNiyantranStats } from "@/hooks/useNiyantranQueries";
 import { useInsightFlowHealth } from "@/hooks/useInsightFlowQueries";
+import { useTantraHealth } from "@/hooks/useTantraQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
 import type { ComponentStatus } from "@/types/runtime";
 
@@ -22,6 +23,7 @@ export default memo(function RuntimeHealthLayout() {
   const pranaSystemHealth = usePranaSystemHealth();
   const niyantranStats = useNiyantranStats();
   const insightFlowHealth = useInsightFlowHealth();
+  const tantraHealth = useTantraHealth();
 
 
   const rawComponents = data?.components ?? [];
@@ -55,19 +57,26 @@ export default memo(function RuntimeHealthLayout() {
           response_time_ms: null,
           details: `Errors (60s): ${insightFlowHealth.data.error_count_60s ?? 0}`,
         }] : []),
+        ...(tantraHealth.data ? [{
+          name: "tantra_gated_bridge",
+          status: tantraHealth.data.status === "healthy" || tantraHealth.data.status === "operational" ? "operational" : "degraded",
+          last_check: tantraHealth.data.timestamp || new Date().toISOString(),
+          response_time_ms: null,
+          details: `Version: ${tantraHealth.data.version ?? "1.0.0"} | Uptime: ${tantraHealth.data.uptime_seconds != null ? tantraHealth.data.uptime_seconds + "s" : "N/A"}`,
+        }] : []),
       ].map(c => [c.name, c])
     ).values()
   );
 
   const score = components.length > 0 ? toScore(components) : 0;
 
-  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading;
-  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError);
+  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading && tantraHealth.isLoading;
+  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError);
 
-  const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined) || (insightFlowHealth.data ? new Date().toISOString() : undefined);
-  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching;
-  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale;
-  const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id || (insightFlowHealth.data as any)?.trace_id;
+  const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined) || (insightFlowHealth.data ? new Date().toISOString() : undefined) || (tantraHealth.data ? new Date().toISOString() : undefined);
+  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching;
+  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale;
+  const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id || (insightFlowHealth.data as any)?.trace_id || (tantraHealth.data as any)?.trace_id;
 
   // Derive telemetry bar values from real /metrics data
   const m = metrics.data;

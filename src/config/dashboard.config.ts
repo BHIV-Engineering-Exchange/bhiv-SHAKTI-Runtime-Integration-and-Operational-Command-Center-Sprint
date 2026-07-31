@@ -20,7 +20,7 @@ export const defaultDashboardConfig: DashboardConfig = {
 
   zones: {
     executiveSummary: {
-      visible: true,
+      visible: false,
       label: "Executive Layout",
       colSpan: "col-span-12",
     },
@@ -70,12 +70,12 @@ export const defaultDashboardConfig: DashboardConfig = {
       colSpan: "col-span-12",
     },
     repositoryRegistry: {
-      visible: true,
+      visible: false,
       label: "Repository Registry Layout",
       colSpan: "col-span-12 lg:col-span-6",
     },
     buildRegistry: {
-      visible: true,
+      visible: false,
       label: "Build Registry Layout",
       colSpan: "col-span-12 lg:col-span-6",
     },
@@ -85,12 +85,12 @@ export const defaultDashboardConfig: DashboardConfig = {
       colSpan: "col-span-12 lg:col-span-6",
     },
     reviewQueue: {
-      visible: true,
+      visible: false,
       label: "Review Queue Layout",
       colSpan: "col-span-12 lg:col-span-6",
     },
     capabilityRegistry: {
-      visible: true,
+      visible: false,
       label: "Capability Registry Layout",
       colSpan: "col-span-12",
     },
@@ -110,7 +110,7 @@ export const defaultDashboardConfig: DashboardConfig = {
       colSpan: "col-span-12 lg:col-span-6",
     },
     capabilityDependencyGraph: {
-      visible: true,
+      visible: false,
       label: "Capability Dependency Graph Layout",
       colSpan: "col-span-12",
     },

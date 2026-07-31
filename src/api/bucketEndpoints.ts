@@ -11,8 +11,13 @@ import type {
   ConstitutionalStatusResponse,
 } from "@/types/bucket";
 
-const BUCKET_BASE_URL =
+let BUCKET_BASE_URL =
   import.meta.env.VITE_BUCKET_SERVICE_URL ?? import.meta.env.VITE_BUCKET_URL ?? "";
+
+// Normalize base URL if it's a Vercel domain missing the /api prefix
+if (BUCKET_BASE_URL.includes("vercel.app") && !BUCKET_BASE_URL.includes("/api/")) {
+  BUCKET_BASE_URL = `${BUCKET_BASE_URL.replace(/\/$/, "")}/api/bucket`;
+}
 
 export const bucketClient = axios.create({
   baseURL: BUCKET_BASE_URL,

@@ -6,8 +6,13 @@ import type {
   InsightFlowBucketStatus,
 } from "@/types/insightflow";
 
-const INSIGHTFLOW_BASE_URL =
+let INSIGHTFLOW_BASE_URL =
   import.meta.env.VITE_INSIGHTFLOW_URL || "http://localhost:8000";
+
+// Normalize base URL if it's a Vercel domain missing the /api prefix
+if (INSIGHTFLOW_BASE_URL.includes("vercel.app") && !INSIGHTFLOW_BASE_URL.includes("/api/")) {
+  INSIGHTFLOW_BASE_URL = `${INSIGHTFLOW_BASE_URL.replace(/\/$/, "")}/api/insightflow`;
+}
 
 export const insightflowClient = axios.create({
   baseURL: INSIGHTFLOW_BASE_URL,

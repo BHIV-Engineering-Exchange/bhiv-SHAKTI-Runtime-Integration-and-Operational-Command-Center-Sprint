@@ -106,7 +106,7 @@ export default memo(function EvidenceLayout() {
                         confidence={99.9}
                         icon={Database}
                         iconColor="text-cyan-400"
-                        secondaryText={`ID: ${art.artifact_id.slice(0, 8)}... | Trace: ${art.trace_id.slice(0, 8)}...`}
+                        secondaryText={`ID: ${(art.artifact_id || "").slice(0, 8)}... | Trace: ${(art.trace_id || "").slice(0, 8)}...`}
                         noBorder
                       />
                     </div>
@@ -130,7 +130,7 @@ export default memo(function EvidenceLayout() {
                         confidence={log.status === "success" ? 99.8 : 50.0}
                         icon={Zap}
                         iconColor={log.status === "success" ? "text-cyan-400" : "text-amber-400"}
-                        secondaryText={`Trace: ${log.trace_id.slice(0, 10)}... | Attempt: ${log.attempt ?? 1}`}
+                        secondaryText={`Trace: ${(log.trace_id || "").slice(0, 10)}... | Attempt: ${log.attempt ?? 1}`}
                         noBorder
                       />
                     </div>
@@ -158,7 +158,7 @@ export default memo(function EvidenceLayout() {
                         confidence={op.status === "success" ? 99.5 : 45.0}
                         icon={ShieldCheck}
                         iconColor={op.status === "success" ? "text-emerald-400" : "text-amber-400"}
-                        secondaryText={`ID: ${artId.slice(0, 8)}... | ${formatRelativeTime(op.timestamp)}`}
+                        secondaryText={`ID: ${(artId || "").slice(0, 8)}... | ${formatRelativeTime(op.timestamp)}`}
                         noBorder
                       />
                     </div>
@@ -187,7 +187,7 @@ export default memo(function EvidenceLayout() {
                         confidence={confidence}
                         icon={icon}
                         iconColor={iconColor}
-                        secondaryText={`Trace: ${item.trace_id.slice(0, 10)}...`}
+                        secondaryText={`Trace: ${(item.trace_id || "").slice(0, 10)}...`}
                         noBorder
                       />
                     </div>
@@ -288,7 +288,7 @@ export default memo(function EvidenceLayout() {
 
                   {activeArtifact.type === "telemetry" && selectedArtifactTab === "blueprint" && activeArtifact.telemetry.signal && (
                     <div className="space-y-1.5">
-                      <div className="flex justify-between"><span className="text-slate-500">Signal ID:</span> <span className="text-slate-300 font-mono">{activeArtifact.telemetry.signal.signal_id.slice(0, 12)}</span></div>
+                      <div className="flex justify-between"><span className="text-slate-500">Signal ID:</span> <span className="text-slate-350 font-mono">{(activeArtifact.telemetry.signal.signal_id || "").slice(0, 12)}</span></div>
                       <div className="flex justify-between"><span className="text-slate-500">Classification:</span> <span className="text-yellow-400 font-semibold uppercase">{activeArtifact.telemetry.signal.classification}</span></div>
                       <div className="mt-1 pt-1.5 border-t border-slate-800/80">
                         <span className="text-slate-500 block mb-1">Instruction prompt:</span>

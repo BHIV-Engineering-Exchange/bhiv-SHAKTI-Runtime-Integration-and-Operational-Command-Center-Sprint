@@ -1,11 +1,16 @@
 import axios, { type AxiosError } from "axios";
 import { logger } from "@/utils/logger";
 
-const BASE_URL = import.meta.env.VITE_CONTROL_PLANE_URL ?? "";
+let BASE_URL = import.meta.env.VITE_CONTROL_PLANE_URL ?? "";
+
+// Normalize base URL if it's a Vercel domain missing the /api prefix
+if (BASE_URL.includes("vercel.app") && !BASE_URL.includes("/api/")) {
+  BASE_URL = `${BASE_URL.replace(/\/$/, "")}/api/control-plane`;
+}
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 250000,
+  timeout: 300000,
   headers: { "Content-Type": "application/json" },
 });
 

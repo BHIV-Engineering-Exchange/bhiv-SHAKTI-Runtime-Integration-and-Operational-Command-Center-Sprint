@@ -21,6 +21,7 @@ import {
   useInsightFlowBucketStatus,
   useInsightFlowStageMetrics,
 } from "@/hooks/useInsightFlowQueries";
+import { useTantraHealth, useTantraTelemetrySummary } from "@/hooks/useTantraQueries";
 import { formatTime, toSeverity } from "@/utils/format";
 
 export default memo(function OperationsLayout() {
@@ -38,6 +39,8 @@ export default memo(function OperationsLayout() {
   const insightFlowHealth = useInsightFlowHealth();
   const insightFlowBucketStatus = useInsightFlowBucketStatus();
   const insightFlowStageMetrics = useInsightFlowStageMetrics();
+  const tantraHealth = useTantraHealth();
+  const tantraTelemetrySummary = useTantraTelemetrySummary();
 
   const sysComponents = status.data?.components ?? [];
   const findComp = (name: string) => sysComponents.find((c) => c.name.toLowerCase().includes(name.toLowerCase()));
@@ -175,6 +178,17 @@ export default memo(function OperationsLayout() {
         evidenceCount: null,
         lastActivity: execEngineComp?.last_check,
       },
+      {
+        id: "TANTRA Gated Bridge",
+        hasRuntimeData: Boolean(tantraHealth.data || tantraTelemetrySummary.data),
+        status: tantraHealth.data ? (tantraHealth.data.status === "healthy" || tantraHealth.data.status === "operational" ? "healthy" : "degraded") : undefined,
+        latency: tantraTelemetrySummary.data?.avg_response_time_ms ?? undefined,
+        events: tantraTelemetrySummary.data?.total_events ?? 0,
+        dependencies: ["Sarathi", "Control Plane"],
+        replayAvailable: false,
+        evidenceCount: tantraTelemetrySummary.data?.error_rate != null ? Math.round(tantraTelemetrySummary.data.error_rate * 100) / 100 : null,
+        lastActivity: tantraHealth.data?.timestamp,
+      },
     ];
   }, [
     bhivBucketComp,
@@ -195,6 +209,8 @@ export default memo(function OperationsLayout() {
     insightFlowHealth.data,
     insightFlowBucketStatus.data,
     insightFlowStageMetrics.data,
+    tantraHealth.data,
+    tantraTelemetrySummary.data,
   ]);
 
   const isLoading = ops.isLoading || status.isLoading || metrics.isLoading;
@@ -214,6 +230,8 @@ export default memo(function OperationsLayout() {
         metrics.refetch();
         telemetry.refetch();
         capabilityRegistry.refetch();
+        tantraHealth.refetch();
+        tantraTelemetrySummary.refetch();
       }}
       errorMessage="Failed to load BHIV operations"
       skeletonCount={5}
@@ -226,8 +244,8 @@ export default memo(function OperationsLayout() {
       headerRight={
         <div className="flex items-center gap-2">
           {timestamp && <span className="text-xs text-slate-500">{formatTime(timestamp)}</span>}
-          <button onClick={() => { ops.refetch(); status.refetch(); }} className="text-slate-500 hover:text-slate-300 transition-colors">
-            <RefreshCw size={12} className={ops.isFetching ? "animate-spin" : ""} />
+          <button onClick={() => { ops.refetch(); status.refetch(); tantraHealth.refetch(); tantraTelemetrySummary.refetch(); }} className="text-slate-500 hover:text-slate-300 transition-colors">
+            <RefreshCw size={12} className={ops.isFetching || tantraHealth.isFetching || tantraTelemetrySummary.isFetching ? "animate-spin" : ""} />
           </button>
         </div>
       }

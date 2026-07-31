@@ -5,8 +5,13 @@ import type {
   PranaPropagationLogResponse,
 } from "@/types/prana";
 
-const PRANA_BASE_URL =
+let PRANA_BASE_URL =
   import.meta.env.VITE_PRANA_SERVICE_URL ?? import.meta.env.VITE_PRANA_URL ?? "";
+
+// Normalize base URL if it's a Vercel domain missing the /api prefix
+if (PRANA_BASE_URL.includes("vercel.app") && !PRANA_BASE_URL.includes("/api/")) {
+  PRANA_BASE_URL = `${PRANA_BASE_URL.replace(/\/$/, "")}/api/prana`;
+}
 
 export const pranaClient = axios.create({
   baseURL: PRANA_BASE_URL,
