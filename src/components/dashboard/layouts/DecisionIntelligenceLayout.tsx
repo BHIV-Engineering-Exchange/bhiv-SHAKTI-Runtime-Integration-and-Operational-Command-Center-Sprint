@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
 import { DecisionCard } from "@/components/dashboard/primitives/DecisionCard";
 import { CapabilityCard } from "@/components/dashboard/primitives/CapabilityCard";
@@ -6,6 +6,7 @@ import { CapabilityCard } from "@/components/dashboard/primitives/CapabilityCard
 import { useOperationsDashboard } from "@/hooks/useQueries";
 import { useNiyantranAims } from "@/hooks/useNiyantranQueries";
 import { useSanskarRanking } from "@/hooks/useSanskarQueries";
+import { useKarmaConfidence, useKarmaReasoning } from "@/hooks/useKarmaQueries";
 import { toSeverity } from "@/utils/format";
 
 function getPriority(score: number): { priority: string; severity: "critical" | "high" | "medium" | "low" | "info"; reason: string } {
@@ -74,11 +75,17 @@ export default memo(function DecisionIntelligenceLayout() {
     }));
   }, [sanskarRanking.data, cpOperations.data?.operations, niyantranAims.data]);
 
+  const [selectedTrajectoryId, setSelectedTrajectoryId] = useState<string | null>(null);
+
+  const activeTrajectoryId = selectedTrajectoryId || decisions[0]?.id;
+  const karmaConfidence = useKarmaConfidence(activeTrajectoryId);
+  const karmaReasoning = useKarmaReasoning(activeTrajectoryId);
+
   const isLoading = cpOperations.isLoading && niyantranAims.isLoading && sanskarRanking.isLoading;
   const isError = !isLoading && cpOperations.isError && niyantranAims.isError && sanskarRanking.isError;
   const timestamp = sanskarRanking.data?.contract_version ? new Date().toISOString() : (cpOperations.data?.timestamp || (niyantranAims.data ? new Date().toISOString() : undefined));
-  const isFetching = cpOperations.isFetching || niyantranAims.isFetching || sanskarRanking.isFetching;
-  const isStale = cpOperations.isStale || niyantranAims.isStale || sanskarRanking.isStale;
+  const isFetching = cpOperations.isFetching || niyantranAims.isFetching || sanskarRanking.isFetching || karmaConfidence.isFetching || karmaReasoning.isFetching;
+  const isStale = cpOperations.isStale || niyantranAims.isStale || sanskarRanking.isStale || karmaConfidence.isStale || karmaReasoning.isStale;
   const dataSource = sanskarRanking.data?.entities ? "SANSKAR Domain Intelligence" : (cpOperations.data ? "Control Plane" : "NIYANTRAN");
 
   const loadSheddingActive = useMemo(() => cpOperations.data ? cpOperations.data.system_load > 85 : false, [cpOperations.data?.system_load]);
@@ -91,7 +98,7 @@ export default memo(function DecisionIntelligenceLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={decisions.length > 0 || cpOperations.data !== undefined || niyantranAims.data !== undefined}
-      onRetry={() => { cpOperations.refetch(); niyantranAims.refetch(); sanskarRanking.refetch(); }}
+      onRetry={() => { cpOperations.refetch(); niyantranAims.refetch(); sanskarRanking.refetch(); karmaConfidence.refetch(); karmaReasoning.refetch(); }}
       errorMessage="Failed to load intelligence data"
       skeletonCount={4}
       skeletonHeight="h-20"
@@ -123,19 +130,63 @@ export default memo(function DecisionIntelligenceLayout() {
           <div className="flex-1 flex flex-col min-h-0">
             <h3 className="text-sm font-semibold text-slate-300 mb-1.5 border-b border-slate-700/60 pb-0.5">Recent Decisions</h3>
             <div className="space-y-1 overflow-y-auto flex-1 min-h-0 max-h-[250px]">
-              {decisions.map(d => (
-                <DecisionCard
-                  key={d.id}
-                  action={d.action}
-                  actor={d.actor}
-                  reason={d.reason}
-                  status={d.status}
-                  severity={d.severity}
-                  isAutomated={d.isAutomated}
-                />
-              ))}
+              {decisions.map(d => {
+                const isSelected = activeTrajectoryId === d.id;
+                return (
+                  <div
+                    key={d.id}
+                    onClick={() => setSelectedTrajectoryId(d.id)}
+                    className={`cursor-pointer rounded transition-colors ${isSelected ? 'bg-indigo-950/40 border border-indigo-500/30' : 'hover:bg-slate-800/30 border border-transparent'}`}
+                  >
+                    <DecisionCard
+                      action={d.action}
+                      actor={d.actor}
+                      reason={d.reason}
+                      status={d.status}
+                      severity={d.severity}
+                      isAutomated={d.isAutomated}
+                    />
+                  </div>
+                );
+              })}
             </div>
           </div>
+
+          {/* KARMA Trajectory Analysis Enrichment */}
+          {(karmaConfidence.data || karmaReasoning.data) && (
+            <div className="mt-3 p-2 bg-slate-900/40 border border-slate-800 rounded text-[11px] space-y-1.5 shrink-0">
+              <h5 className="font-semibold text-indigo-400 uppercase tracking-wider text-[9px] flex items-center gap-1.5 border-b border-slate-850 pb-1 mb-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                KARMA Trajectory Analysis
+              </h5>
+              {karmaConfidence.data && (
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Confidence Score:</span>
+                  <span className="text-emerald-400 font-mono font-bold">
+                    {typeof karmaConfidence.data.confidence_score === 'number'
+                      ? `${(karmaConfidence.data.confidence_score * 100).toFixed(1)}%`
+                      : "—"}
+                  </span>
+                </div>
+              )}
+              {karmaConfidence.data?.explanation && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-500">Explanation:</span>
+                  <span className="text-slate-350 leading-relaxed bg-slate-950 p-1.5 rounded border border-slate-900 font-sans">
+                    {karmaConfidence.data.explanation}
+                  </span>
+                </div>
+              )}
+              {karmaReasoning.data?.reasoning && (
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-slate-500">Explainable Reasoning:</span>
+                  <span className="text-slate-300 leading-relaxed bg-slate-950 p-1.5 rounded border border-slate-900 font-sans">
+                    {karmaReasoning.data.reasoning}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
     </DashboardCard>

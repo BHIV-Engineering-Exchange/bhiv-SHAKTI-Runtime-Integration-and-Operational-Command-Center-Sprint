@@ -71,9 +71,10 @@ export async function fetchExecutiveDashboard(): Promise<ExecutiveDashboardRespo
   // Disabled temporarily due to missing backend route
   return {
     timestamp: new Date().toISOString(),
-    total_pipeline_executions_today: 0,
-    active_alerts_by_severity: {},
-    overall_system_status: "operational",
+    summary: [],
+    key_metrics: {},
+    alerts_count: 0,
+    active_sessions: 0,
   };
 }
 
@@ -192,8 +193,8 @@ export async function fetchReviewQueue(): Promise<ReviewQueueResponse> {
   // Disabled temporarily due to missing backend route
   return {
     timestamp: new Date().toISOString(),
-    total_items: 0,
-    items: [],
+    total_reviews: 0,
+    reviews: [],
   };
 }
 
@@ -294,15 +295,6 @@ export async function fetchEngineeringCapacity(): Promise<EngineeringCapacityRes
 }
 
 export async function fetchDeliveryIntelligence(): Promise<DeliveryIntelligenceResponse> {
-  try {
-    const { data } = await apiClient.get<DeliveryIntelligenceResponse>("/operations/delivery-intelligence");
-    if (data && Array.isArray(data.deliveries) && data.deliveries.length > 0) {
-      return data;
-    }
-  } catch (err) {
-    // Control plane endpoint unavailable — fallback to NIYANTRAN backend
-  }
-
   try {
     const aims = await fetchNiyantranAims();
     if (Array.isArray(aims) && aims.length > 0) {

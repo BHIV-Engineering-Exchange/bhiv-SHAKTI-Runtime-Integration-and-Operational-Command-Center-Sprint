@@ -11,6 +11,7 @@ import {
   useOperationsDashboard,
   useTelemetryDashboard,
 } from "@/hooks/useQueries";
+import { useKarmaLineage } from "@/hooks/useKarmaQueries";
 import { formatTime } from "@/utils/format";
 
 export default memo(function CapabilityDependencyGraphLayout() {
@@ -18,6 +19,7 @@ export default memo(function CapabilityDependencyGraphLayout() {
   const status = useSystemStatus();
   const ops = useOperationsDashboard();
   const telemetry = useTelemetryDashboard();
+  const karmaLineage = useKarmaLineage();
 
   // Extract Nodes & Relationship Edges from live backend APIs
   const { nodes, edges } = useMemo(() => {
@@ -110,12 +112,48 @@ export default memo(function CapabilityDependencyGraphLayout() {
       }
     }
 
+    // Map KARMA lineage to Nodes & Edges if available
+    const karmaNodes = karmaLineage.data?.nodes ?? [];
+    const karmaEdges = karmaLineage.data?.edges ?? [];
+
+    karmaNodes.forEach((n) => {
+      // Avoid duplicate node IDs
+      if (!nodesList.some(existing => existing.id === n.id)) {
+        nodesList.push({
+          id: n.id,
+          label: n.label || n.id,
+          layer: n.layer || "KARMA Ledger",
+          runtimeStatus: n.runtimeStatus || "operational",
+          replayStatus: n.replayStatus || "Available",
+          repository: n.repository || "karma-core",
+          owner: n.owner || "KARMA Service",
+          documentation: n.documentation || "https://docs.bhiv.io/karma",
+          evidence: n.evidence || "Verified",
+          version: n.version || "v1.0.0",
+        });
+      }
+    });
+
+    karmaEdges.forEach((e) => {
+      // Validate relationship type matches GraphEdgeData expected values
+      const type = (e.type === "Depends On" || e.type === "Consumes" || e.type === "Provides" || e.type === "Publishes" || e.type === "Subscribes")
+        ? e.type
+        : "Depends On";
+
+      edgesList.push({
+        id: e.id || `edge-karma-${e.source}-${e.target}`,
+        source: e.source,
+        target: e.target,
+        type,
+      });
+    });
+
     return { nodes: nodesList, edges: edgesList };
-  }, [capRegistry.data, status.data, ops.data]);
+  }, [capRegistry.data, status.data, ops.data, karmaLineage.data]);
 
   const isLoading = capRegistry.isLoading || status.isLoading;
-  const isError = !isLoading && (capRegistry.isError && status.isError);
-  const timestamp = capRegistry.data?.timestamp || status.data?.timestamp;
+  const isError = !isLoading && (capRegistry.isError && status.isError && karmaLineage.isError);
+  const timestamp = capRegistry.data?.timestamp || status.data?.timestamp || (karmaLineage.data ? new Date().toISOString() : undefined);
 
   return (
     <DashboardCard
@@ -128,14 +166,15 @@ export default memo(function CapabilityDependencyGraphLayout() {
         status.refetch();
         ops.refetch();
         telemetry.refetch();
+        karmaLineage.refetch();
       }}
       errorMessage="Failed to load Capability Dependency Graph"
       skeletonCount={4}
       skeletonHeight="h-16"
       timestamp={timestamp}
-      isFetching={capRegistry.isFetching || status.isFetching}
-      isStale={capRegistry.isStale || status.isStale}
-      dataSource="BHEX Control Plane"
+      isFetching={capRegistry.isFetching || status.isFetching || karmaLineage.isFetching}
+      isStale={capRegistry.isStale || status.isStale || karmaLineage.isStale}
+      dataSource="BHEX Control Plane & KARMA Lineage"
       headerRight={
         timestamp ? (
           <span className="text-[10px] font-mono text-slate-400">

@@ -6,6 +6,7 @@ import { useTelemetryDashboard } from "@/hooks/useQueries";
 import { useBucketArtifacts, useAuditRecent } from "@/hooks/useBucketQueries";
 import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
 import { useSanskarTrace } from "@/hooks/useSanskarQueries";
+import { useKarmaLatestHash } from "@/hooks/useKarmaQueries";
 
 import { formatTime, formatRelativeTime } from "@/utils/format";
 
@@ -14,6 +15,7 @@ export default memo(function EvidenceLayout() {
   const bucket = useBucketArtifacts();
   const audit = useAuditRecent(20);
   const pranaLog = usePranaPropagationLog(20);
+  const karmaLatestHash = useKarmaLatestHash();
 
   const [selectedArtifactId, setSelectedArtifactId] = useState<string | null>(null);
   const [selectedArtifactTab, setSelectedArtifactTab] = useState<string>("instruction");
@@ -53,8 +55,8 @@ export default memo(function EvidenceLayout() {
 
   const sanskarTrace = useSanskarTrace(activeArtifact?.trace_id);
 
-  const isLoading = bucket.isLoading && audit.isLoading && telemetry.isLoading && pranaLog.isLoading;
-  const isError = !isLoading && bucket.isError && audit.isError && telemetry.isError && pranaLog.isError;
+  const isLoading = bucket.isLoading && audit.isLoading && telemetry.isLoading && pranaLog.isLoading && karmaLatestHash.isLoading;
+  const isError = !isLoading && bucket.isError && audit.isError && telemetry.isError && pranaLog.isError && karmaLatestHash.isError;
   const hasData = bucketArtifacts.length > 0 || pranaLogs.length > 0 || auditOperations.length > 0 || telemetryItems.length > 0;
 
   const timestamp = pranaLogs.length > 0 ? pranaLogs[0].logged_at : audit.data ? new Date().toISOString() : bucket.data ? new Date().toISOString() : telemetry.data?.timestamp;
@@ -65,15 +67,15 @@ export default memo(function EvidenceLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={hasData}
-      onRetry={() => { bucket.refetch(); audit.refetch(); telemetry.refetch(); if (activeArtifact?.trace_id) sanskarTrace.refetch(); }}
+      onRetry={() => { bucket.refetch(); audit.refetch(); telemetry.refetch(); karmaLatestHash.refetch(); if (activeArtifact?.trace_id) sanskarTrace.refetch(); }}
       errorMessage="Failed to load evidence"
       skeletonCount={4}
       skeletonHeight="h-10"
       isEmpty={!isLoading && !hasData}
       emptyMessage="No Runtime Data Available"
       timestamp={timestamp}
-      isFetching={bucket.isFetching || audit.isFetching || telemetry.isFetching || sanskarTrace.isFetching}
-      isStale={bucket.isStale || audit.isStale || telemetry.isStale || sanskarTrace.isStale}
+      isFetching={bucket.isFetching || audit.isFetching || telemetry.isFetching || sanskarTrace.isFetching || karmaLatestHash.isFetching}
+      isStale={bucket.isStale || audit.isStale || telemetry.isStale || sanskarTrace.isStale || karmaLatestHash.isStale}
       traceId={activeArtifact?.trace_id}
       dataSource="Bucket Service & Audit Trail"
       headerRight={timestamp ? <span className="text-xs text-slate-500">{formatTime(timestamp)}</span> : undefined}
@@ -360,6 +362,31 @@ export default memo(function EvidenceLayout() {
                     </div>
                   )}
                 </div>
+                {/* KARMA Deterministic Hash Enrichment */}
+                {karmaLatestHash.data && (
+                  <div className="mt-2 p-2 bg-slate-900/40 border border-slate-800 rounded text-[11px] space-y-1">
+                    <h5 className="font-semibold text-indigo-400 uppercase tracking-wider text-[9px] flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                      KARMA Ledger Verification
+                    </h5>
+                    <div className="flex justify-between">
+                      <span className="text-slate-500">Hash Type:</span>
+                      <span className="text-slate-300 font-mono">{karmaLatestHash.data.hash_type || "SHA-256"}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-slate-500">Latest Hash:</span>
+                      <span className="text-[9px] font-mono text-emerald-400 break-all select-all leading-normal bg-slate-950 p-1 rounded border border-slate-900">
+                        {karmaLatestHash.data.latest_hash}
+                      </span>
+                    </div>
+                    {karmaLatestHash.data.timestamp && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-500">Timestamp:</span>
+                        <span className="text-slate-400 font-mono">{formatTime(karmaLatestHash.data.timestamp)}</span>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             ) : (
               <p className="text-xs text-slate-500 text-center py-4">No trace details selected</p>

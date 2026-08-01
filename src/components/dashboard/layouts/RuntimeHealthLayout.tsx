@@ -8,6 +8,7 @@ import { useInsightFlowHealth } from "@/hooks/useInsightFlowQueries";
 import { useTantraHealth } from "@/hooks/useTantraQueries";
 import { useRajyaHealth } from "@/hooks/useRajyaQueries";
 import { useSanskarHealth } from "@/hooks/useSanskarQueries";
+import { useKarmaHealth } from "@/hooks/useKarmaQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
 import type { ComponentStatus } from "@/types/runtime";
 
@@ -28,6 +29,7 @@ export default memo(function RuntimeHealthLayout() {
   const tantraHealth = useTantraHealth();
   const rajyaHealth = useRajyaHealth();
   const sanskarHealth = useSanskarHealth();
+  const karmaHealth = useKarmaHealth();
 
   const rawComponents = data?.components ?? [];
 
@@ -81,18 +83,25 @@ export default memo(function RuntimeHealthLayout() {
           response_time_ms: null,
           details: sanskarHealth.isLoading ? "Cold starting..." : `Version: ${sanskarHealth.data?.contract_version || 'v1'} | Service: ${sanskarHealth.data?.service || 'sanskar'}`,
         }] : []),
+        ...(karmaHealth.data || karmaHealth.isError || karmaHealth.isLoading ? [{
+          name: "karma_runtime",
+          status: karmaHealth.isLoading ? "degraded" : (karmaHealth.data?.status === "healthy" || karmaHealth.data?.status === "operational" || karmaHealth.data?.status === "OK" ? "operational" : "degraded"),
+          last_check: new Date().toISOString(),
+          response_time_ms: null,
+          details: karmaHealth.isLoading ? "Cold starting..." : `Service: karma`,
+        }] : []),
       ].map(c => [c.name, c])
     ).values()
   );
 
   const score = components.length > 0 ? toScore(components) : 0;
 
-  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading && tantraHealth.isLoading;
-  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError);
+  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading && tantraHealth.isLoading && karmaHealth.isLoading;
+  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError && karmaHealth.isError);
 
   const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined) || (insightFlowHealth.data ? new Date().toISOString() : undefined) || (tantraHealth.data ? new Date().toISOString() : undefined);
-  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching || rajyaHealth.isFetching || sanskarHealth.isFetching;
-  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale || rajyaHealth.isStale || sanskarHealth.isStale;
+  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching || rajyaHealth.isFetching || sanskarHealth.isFetching || karmaHealth.isFetching;
+  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale || rajyaHealth.isStale || sanskarHealth.isStale || karmaHealth.isStale;
   const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id || (insightFlowHealth.data as any)?.trace_id || (tantraHealth.data as any)?.trace_id;
 
   // Derive telemetry bar values from real /metrics data
@@ -115,7 +124,7 @@ export default memo(function RuntimeHealthLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={data !== undefined}
-      onRetry={() => { statusRefetch(); metrics.refetch(); rajyaHealth.refetch(); sanskarHealth.refetch(); }}
+      onRetry={() => { statusRefetch(); metrics.refetch(); rajyaHealth.refetch(); sanskarHealth.refetch(); karmaHealth.refetch(); }}
       errorMessage="Failed to load system health"
       skeletonCount={4}
       skeletonHeight="h-8"
