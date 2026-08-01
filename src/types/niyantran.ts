@@ -165,6 +165,8 @@ export interface NiyantranAim {
   date: string;
   aims: string;
   status?: string;
+  completionStatus?: string;
+  completed?: boolean;
   progressPercentage?: number;
   targetMetrics?: Record<string, unknown>;
   createdAt?: string;

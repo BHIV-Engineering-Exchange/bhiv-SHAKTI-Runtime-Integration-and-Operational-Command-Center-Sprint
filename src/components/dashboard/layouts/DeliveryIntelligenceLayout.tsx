@@ -16,9 +16,9 @@ export default memo(function DeliveryIntelligenceLayout() {
     }
     const aimsList = niyantranEnhancedAims.data || niyantranAims.data;
     if (aimsList && aimsList.length > 0) {
-      const completed = aimsList.filter(a => a.status === "Completed" || (a.progressPercentage != null && a.progressPercentage >= 100)).length;
-      const delayed = aimsList.filter(a => a.status === "Blocked" || a.status === "Delayed").length;
-      const upcoming = aimsList.filter(a => a.status === "Pending" || a.status === "In Progress").length;
+      const completed = aimsList.filter(a => (a.status === "Completed" || a.completionStatus === "Completed" || a.completed === true) || (a.progressPercentage != null && a.progressPercentage >= 100)).length;
+      const delayed = aimsList.filter(a => a.status === "Blocked" || a.completionStatus === "Blocked" || a.status === "Delayed" || a.completionStatus === "Delayed").length;
+      const upcoming = aimsList.filter(a => a.status === "Pending" || a.completionStatus === "Pending" || a.status === "In Progress" || a.completionStatus === "In Progress" || (!a.status && !a.completionStatus)).length;
       const avgProgress = Math.round(aimsList.reduce((acc, a) => acc + (a.progressPercentage || 50), 0) / aimsList.length);
  
       return {
@@ -34,7 +34,7 @@ export default memo(function DeliveryIntelligenceLayout() {
           title: a.aims,
           owner: typeof a.user === "object" ? a.user?.name : "System",
           target_date: a.date,
-          status: (a.status || "In Progress") as any,
+          status: (a.status || a.completionStatus || "In Progress") as any,
           progress_pct: a.progressPercentage || 50,
         })),
       };

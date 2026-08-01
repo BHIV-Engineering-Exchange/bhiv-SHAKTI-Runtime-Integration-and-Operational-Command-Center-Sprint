@@ -91,7 +91,7 @@ export const useNiyantranExecutionHistory = (executionId?: string) =>
 export const useNiyantranAims = () =>
   useQuery({
     queryKey: ["niyantran-aims"],
-    queryFn: fetchNiyantranAims,
+    queryFn: () => fetchNiyantranAims(),
     refetchInterval: 15_000,
     placeholderData: keepPreviousData,
     retry: 1,
@@ -100,7 +100,7 @@ export const useNiyantranAims = () =>
 export const useNiyantranEnhancedAims = () =>
   useQuery({
     queryKey: ["niyantran-enhanced-aims"],
-    queryFn: fetchNiyantranEnhancedAims,
+    queryFn: () => fetchNiyantranEnhancedAims(),
     refetchInterval: 15_000,
     placeholderData: keepPreviousData,
     retry: 1,

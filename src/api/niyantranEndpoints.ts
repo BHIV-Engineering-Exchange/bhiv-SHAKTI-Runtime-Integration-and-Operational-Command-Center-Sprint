@@ -169,9 +169,22 @@ export async function fetchNiyantranAttendanceSummary(params?: {
   status?: string;
 }): Promise<NiyantranAttendanceSummary> {
   try {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
+
+    const queryParams = {
+      startDate: params?.startDate || todayStr,
+      endDate: params?.endDate || todayStr,
+      departmentId: params?.departmentId,
+      status: params?.status,
+    };
+
     const { data } = await niyantranClient.get<any>(
       "/api/dashboard/attendance-summary",
-      { params }
+      { params: queryParams }
     );
     const payload = data || {};
     return {
@@ -195,9 +208,21 @@ export async function fetchNiyantranMergeAnalysis(params?: {
   departmentId?: string;
 }): Promise<NiyantranMergeAnalysis> {
   try {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
+
+    const queryParams = {
+      startDate: params?.startDate || todayStr,
+      endDate: params?.endDate || todayStr,
+      departmentId: params?.departmentId,
+    };
+
     const { data } = await niyantranClient.get<any>(
       "/api/dashboard/merge-analysis",
-      { params }
+      { params: queryParams }
     );
     const analysis = data?.analysis || data || {};
     return {
@@ -246,9 +271,19 @@ export async function fetchNiyantranExecutionHistory(
  * BUG #5 FIX: Fetch Universal AIMS (Goals & Progress)
  * Gracefully returns [] if backend returns 403 due to missing auth middleware
  */
-export async function fetchNiyantranAims(): Promise<NiyantranAim[]> {
+export async function fetchNiyantranAims(params?: { date?: string }): Promise<NiyantranAim[]> {
   try {
-    const { data } = await niyantranClient.get<any>("/api/aims");
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
+
+    const queryParams = {
+      date: params?.date || todayStr,
+    };
+
+    const { data } = await niyantranClient.get<any>("/api/aims", { params: queryParams });
     const list = Array.isArray(data) ? data : data?.data || data?.aims;
     return Array.isArray(list) ? list : [];
   } catch (error) {
@@ -259,11 +294,21 @@ export async function fetchNiyantranAims(): Promise<NiyantranAim[]> {
 
 /**
  * BUG #4 FIX: Fetch Enhanced AIMS with progress tracking
- * Calls `/api/enhanced-aims/with-progress` and unwraps `data.data`
+ * Calls `/api/aims/with-progress` and unwraps `data.data`
  */
-export async function fetchNiyantranEnhancedAims(): Promise<NiyantranAim[]> {
+export async function fetchNiyantranEnhancedAims(params?: { date?: string }): Promise<NiyantranAim[]> {
   try {
-    const { data } = await niyantranClient.get<any>("/api/enhanced-aims/with-progress");
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    const todayStr = `${year}-${month}-${day}`;
+
+    const queryParams = {
+      date: params?.date || todayStr,
+    };
+
+    const { data } = await niyantranClient.get<any>("/api/aims/with-progress", { params: queryParams });
     const list = Array.isArray(data?.data) ? data.data : Array.isArray(data) ? data : [];
     return list;
   } catch (error) {
