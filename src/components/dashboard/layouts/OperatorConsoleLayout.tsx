@@ -24,7 +24,7 @@ export default memo(function OperatorConsoleLayout() {
 
   const activities = useMemo(() => {
     if (niyantranTasks.data && niyantranTasks.data.length > 0) {
-      return niyantranTasks.data.slice(0, 10).map((t) => ({
+      return niyantranTasks.data.slice(0, 20).map((t) => ({
         id: t._id,
         message: `Task ${t.title} [${t.priority}] — ${t.status}`,
         source: typeof t.assignee === "object" ? t.assignee?.name : "Unassigned",
