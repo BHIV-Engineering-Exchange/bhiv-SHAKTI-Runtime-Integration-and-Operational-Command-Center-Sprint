@@ -14,6 +14,7 @@ import {
   useKarmaDharmaSevaFlow,
   useKarmaPaapPunyaRatio,
 } from "@/hooks/useKarmaQueries";
+import { useKeshavMetrics } from "@/hooks/useKeshavQueries";
 import { formatTime } from "@/utils/format";
 
 export default memo(function ObservabilityLayout() {
@@ -31,6 +32,7 @@ export default memo(function ObservabilityLayout() {
   const karmaTrends = useKarmaTrends();
   const karmaDharmaSevaFlow = useKarmaDharmaSevaFlow();
   const karmaPaapPunyaRatio = useKarmaPaapPunyaRatio();
+  const keshavMetrics = useKeshavMetrics();
 
   const data = telemetry.data;
   const pranaLogs = pranaLog.data?.logs ?? [];
@@ -169,15 +171,29 @@ export default memo(function ObservabilityLayout() {
         list.push({ label: "TANTRA Events", value: tantraTelemetry.data.summary.total_events.toLocaleString() });
         list.push({ label: "TANTRA Error Rate", value: `${(tantraTelemetry.data.summary.error_rate * 100).toFixed(2)}%` });
       }
+      if (keshavMetrics.data) {
+        if (keshavMetrics.data.request_count != null) {
+          list.push({ label: "KESHAV Requests", value: keshavMetrics.data.request_count.toLocaleString() });
+        }
+        if (keshavMetrics.data.avg_latency_seconds != null) {
+          list.push({ label: "KESHAV Avg Latency", value: (keshavMetrics.data.avg_latency_seconds * 1000).toFixed(0), unit: "ms" });
+        }
+        if (keshavMetrics.data.request_success_rate != null) {
+          list.push({ label: "KESHAV Error Rate", value: ((1 - keshavMetrics.data.request_success_rate) * 100).toFixed(2), unit: "%" });
+        }
+        if (keshavMetrics.data.unique_traces_processed != null) {
+          list.push({ label: "KESHAV Traces", value: keshavMetrics.data.unique_traces_processed.toLocaleString() });
+        }
+      }
     }
     return list;
-  }, [activeTab, pranaLogs, data, queryPerf.data, scaleStatus.data, stageMetrics.data, tantraTelemetry.data, karmaLiveMetrics.data, karmaTrends.data, karmaDharmaSevaFlow.data, karmaPaapPunyaRatio.data]);
+  }, [activeTab, pranaLogs, data, queryPerf.data, scaleStatus.data, stageMetrics.data, tantraTelemetry.data, karmaLiveMetrics.data, karmaTrends.data, karmaDharmaSevaFlow.data, karmaPaapPunyaRatio.data, keshavMetrics.data]);
 
-  const isLoading = telemetry.isLoading && scaleStatus.isLoading && queryPerf.isLoading && pranaLog.isLoading && stageMetrics.isLoading && tantraTelemetry.isLoading;
-  const isError = !isLoading && (telemetry.isError && scaleStatus.isError && queryPerf.isError && pranaLog.isError && stageMetrics.isError && tantraTelemetry.isError && (activeTab !== "karma" || (karmaTrends.isError && karmaLiveMetrics.isError)));
-  const hasData = pranaLogs.length > 0 || data !== undefined || scaleStatus.data !== undefined || queryPerf.data !== undefined || (stageMetrics.data !== undefined && stageMetrics.data.length > 0) || (tantraTelemetry.data?.metrics?.response_times && tantraTelemetry.data.metrics.response_times.length > 0) || (activeTab === "karma" && (karmaTrends.data !== undefined || karmaLiveMetrics.data !== undefined));
+  const isLoading = telemetry.isLoading && scaleStatus.isLoading && queryPerf.isLoading && pranaLog.isLoading && stageMetrics.isLoading && tantraTelemetry.isLoading && keshavMetrics.isLoading;
+  const isError = !isLoading && (telemetry.isError && scaleStatus.isError && queryPerf.isError && pranaLog.isError && stageMetrics.isError && tantraTelemetry.isError && keshavMetrics.isError && (activeTab !== "karma" || (karmaTrends.isError && karmaLiveMetrics.isError)));
+  const hasData = pranaLogs.length > 0 || data !== undefined || scaleStatus.data !== undefined || queryPerf.data !== undefined || (stageMetrics.data !== undefined && stageMetrics.data.length > 0) || (tantraTelemetry.data?.metrics?.response_times && tantraTelemetry.data.metrics.response_times.length > 0) || keshavMetrics.data !== undefined || (activeTab === "karma" && (karmaTrends.data !== undefined || karmaLiveMetrics.data !== undefined));
 
-  const timestamp = activeTab === "karma" ? (new Date().toISOString()) : (pranaLogs.length > 0 ? pranaLogs[0].logged_at : (scaleStatus.data?.timestamp || data?.timestamp || (stageMetrics.data ? new Date().toISOString() : undefined) || (tantraTelemetry.data ? new Date().toISOString() : undefined) || new Date().toISOString()));
+  const timestamp = activeTab === "karma" ? (new Date().toISOString()) : (pranaLogs.length > 0 ? pranaLogs[0].logged_at : (scaleStatus.data?.timestamp || data?.timestamp || (stageMetrics.data ? new Date().toISOString() : undefined) || (tantraTelemetry.data ? new Date().toISOString() : undefined) || (keshavMetrics.data ? new Date().toISOString() : undefined) || new Date().toISOString()));
 
   return (
     <DashboardCard
@@ -186,16 +202,16 @@ export default memo(function ObservabilityLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={hasData}
-      onRetry={() => { telemetry.refetch(); scaleStatus.refetch(); queryPerf.refetch(); pranaLog.refetch(); tantraTelemetry.refetch(); karmaLiveMetrics.refetch(); karmaTrends.refetch(); karmaDharmaSevaFlow.refetch(); karmaPaapPunyaRatio.refetch(); }}
+      onRetry={() => { telemetry.refetch(); scaleStatus.refetch(); queryPerf.refetch(); pranaLog.refetch(); tantraTelemetry.refetch(); karmaLiveMetrics.refetch(); karmaTrends.refetch(); karmaDharmaSevaFlow.refetch(); karmaPaapPunyaRatio.refetch(); keshavMetrics.refetch(); }}
       errorMessage="Failed to load telemetry"
       skeletonCount={1}
       skeletonHeight="h-48"
       isEmpty={!isLoading && !hasData}
       emptyMessage="No Runtime Data Available"
       timestamp={timestamp}
-      isFetching={telemetry.isFetching || scaleStatus.isFetching || queryPerf.isFetching || pranaLog.isFetching || stageMetrics.isFetching || tantraTelemetry.isFetching || karmaLiveMetrics.isFetching || karmaTrends.isFetching || karmaDharmaSevaFlow.isFetching || karmaPaapPunyaRatio.isFetching}
-      isStale={telemetry.isStale || scaleStatus.isStale || queryPerf.isStale || pranaLog.isStale || stageMetrics.isStale || tantraTelemetry.isStale || karmaLiveMetrics.isStale || karmaTrends.isStale || karmaDharmaSevaFlow.isStale || karmaPaapPunyaRatio.isStale}
-      traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : ((data as any)?.trace_id || (stageMetrics.data as any)?.trace_id || (tantraTelemetry.data as any)?.trace_id)}
+      isFetching={telemetry.isFetching || scaleStatus.isFetching || queryPerf.isFetching || pranaLog.isFetching || stageMetrics.isFetching || tantraTelemetry.isFetching || karmaLiveMetrics.isFetching || karmaTrends.isFetching || karmaDharmaSevaFlow.isFetching || karmaPaapPunyaRatio.isFetching || keshavMetrics.isFetching}
+      isStale={telemetry.isStale || scaleStatus.isStale || queryPerf.isStale || pranaLog.isStale || stageMetrics.isStale || tantraTelemetry.isStale || karmaLiveMetrics.isStale || karmaTrends.isStale || karmaDharmaSevaFlow.isStale || karmaPaapPunyaRatio.isStale || keshavMetrics.isStale}
+      traceId={pranaLogs.length > 0 ? pranaLogs[0].trace_id : ((data as any)?.trace_id || (stageMetrics.data as any)?.trace_id || (tantraTelemetry.data as any)?.trace_id || (keshavMetrics.data as any)?.trace_id)}
       dataSource={activeTab === "karma" ? "KARMA Analytics Service" : "PRANA Log & Bucket Metrics"}
       headerRight={
         activeTab === "karma" ? (
@@ -234,6 +250,13 @@ export default memo(function ObservabilityLayout() {
             TANTRA Uptime:{" "}
             <span className="text-emerald-400 font-medium">
               {tantraTelemetry.data.summary.uptime_percentage.toFixed(1)}%
+            </span>
+          </span>
+        ) : keshavMetrics.data ? (
+          <span className="text-xs text-slate-500">
+            KESHAV Success:{" "}
+            <span className="text-emerald-400 font-medium">
+              {((keshavMetrics.data.request_success_rate ?? 1.0) * 100).toFixed(1)}%
             </span>
           </span>
         ) : undefined

@@ -10,6 +10,39 @@ vi.mock("@/hooks/useQueries", () => ({
   useOperationsDashboard: () => mockUseOperationsDashboard(),
 }));
 
+vi.mock("@/hooks/useNiyantranQueries", () => ({
+  useNiyantranAims: () => vi.fn().mockReturnValue({
+    data: [],
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  })(),
+}));
+
+vi.mock("@/hooks/useSanskarQueries", () => ({
+  useSanskarRanking: () => vi.fn().mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  })(),
+}));
+
+vi.mock("@/hooks/useKarmaQueries", () => ({
+  useKarmaConfidence: () => vi.fn().mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  })(),
+  useKarmaReasoning: () => vi.fn().mockReturnValue({
+    data: undefined,
+    isLoading: false,
+    isError: false,
+    refetch: vi.fn(),
+  })(),
+}));
+
 describe("DecisionIntelligenceLayout Component", () => {
   beforeEach(() => {
     vi.resetAllMocks();

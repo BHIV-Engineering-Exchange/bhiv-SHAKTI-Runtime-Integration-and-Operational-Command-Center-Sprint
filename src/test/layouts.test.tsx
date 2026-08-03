@@ -79,6 +79,55 @@ vi.mock("@/hooks/usePranaQueries", () => ({
   usePranaPropagationLog: () => mockUsePranaPropagationLog(),
 }));
 
+const mockUseNiyantranStats = vi.fn();
+vi.mock("@/hooks/useNiyantranQueries", () => ({
+  useNiyantranStats: () => mockUseNiyantranStats(),
+  useNiyantranAims: () => vi.fn().mockReturnValue(defaultQueryResult)(),
+}));
+
+const mockUseInsightFlowHealth = vi.fn();
+vi.mock("@/hooks/useInsightFlowQueries", () => ({
+  useInsightFlowHealth: () => mockUseInsightFlowHealth(),
+  useInsightFlowStageMetrics: () => vi.fn().mockReturnValue(defaultQueryResult)(),
+}));
+
+const mockUseTantraHealth = vi.fn();
+const mockUseTantraTelemetry = vi.fn();
+vi.mock("@/hooks/useTantraQueries", () => ({
+  useTantraHealth: () => mockUseTantraHealth(),
+  useTantraTelemetry: () => mockUseTantraTelemetry(),
+}));
+
+const mockUseRajyaHealth = vi.fn();
+vi.mock("@/hooks/useRajyaQueries", () => ({
+  useRajyaHealth: () => mockUseRajyaHealth(),
+}));
+
+const mockUseSanskarHealth = vi.fn();
+vi.mock("@/hooks/useSanskarQueries", () => ({
+  useSanskarHealth: () => mockUseSanskarHealth(),
+}));
+
+const mockUseKarmaHealth = vi.fn();
+const mockUseKarmaLiveMetrics = vi.fn();
+const mockUseKarmaTrends = vi.fn();
+const mockUseKarmaDharmaSevaFlow = vi.fn();
+const mockUseKarmaPaapPunyaRatio = vi.fn();
+vi.mock("@/hooks/useKarmaQueries", () => ({
+  useKarmaHealth: () => mockUseKarmaHealth(),
+  useKarmaLiveMetrics: () => mockUseKarmaLiveMetrics(),
+  useKarmaTrends: () => mockUseKarmaTrends(),
+  useKarmaDharmaSevaFlow: () => mockUseKarmaDharmaSevaFlow(),
+  useKarmaPaapPunyaRatio: () => mockUseKarmaPaapPunyaRatio(),
+}));
+
+const mockUseKeshavHealth = vi.fn();
+const mockUseKeshavMetrics = vi.fn();
+vi.mock("@/hooks/useKeshavQueries", () => ({
+  useKeshavHealth: () => mockUseKeshavHealth(),
+  useKeshavMetrics: () => mockUseKeshavMetrics(),
+}));
+
 import ExecutiveLayout from "../components/dashboard/layouts/ExecutiveLayout";
 import RuntimeHealthLayout from "../components/dashboard/layouts/RuntimeHealthLayout";
 import WorkflowLayout from "../components/dashboard/layouts/WorkflowLayout";
@@ -112,6 +161,19 @@ describe("Layout Components Integration", () => {
     mockUsePranaHealth.mockReturnValue(defaultQueryResult);
     mockUsePranaSystemHealth.mockReturnValue(defaultQueryResult);
     mockUsePranaPropagationLog.mockReturnValue(defaultQueryResult);
+    mockUseNiyantranStats.mockReturnValue(defaultQueryResult);
+    mockUseInsightFlowHealth.mockReturnValue(defaultQueryResult);
+    mockUseTantraHealth.mockReturnValue(defaultQueryResult);
+    mockUseTantraTelemetry.mockReturnValue(defaultQueryResult);
+    mockUseRajyaHealth.mockReturnValue(defaultQueryResult);
+    mockUseSanskarHealth.mockReturnValue(defaultQueryResult);
+    mockUseKarmaHealth.mockReturnValue(defaultQueryResult);
+    mockUseKarmaLiveMetrics.mockReturnValue(defaultQueryResult);
+    mockUseKarmaTrends.mockReturnValue(defaultQueryResult);
+    mockUseKarmaDharmaSevaFlow.mockReturnValue(defaultQueryResult);
+    mockUseKarmaPaapPunyaRatio.mockReturnValue(defaultQueryResult);
+    mockUseKeshavHealth.mockReturnValue(defaultQueryResult);
+    mockUseKeshavMetrics.mockReturnValue(defaultQueryResult);
   });
 
   describe("ExecutiveLayout Component", () => {
