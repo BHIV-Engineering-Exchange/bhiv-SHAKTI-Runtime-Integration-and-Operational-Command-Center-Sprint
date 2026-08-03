@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { DashboardCard } from "@/components/dashboard/DashboardCard";
+import { useQueries } from "@tanstack/react-query";
 import {
   useSystemStatus,
   useExecutiveDashboard,
@@ -24,6 +25,8 @@ import {
   useEmployeeExecution,
   useEngineeringCapacity,
 } from "@/hooks/useQueries";
+import { useSetuProjects } from "@/hooks/useSetuQueries";
+import { getProjectMilestones } from "@/api/setuEndpoints";
 import { toStatus, formatTime } from "@/utils/format";
 import type { OperationalStatus } from "@/types/api";
 
@@ -48,6 +51,24 @@ export default memo(function ExecutiveLayout() {
   const reviewQueue = useReviewQueue();
   const employeeExec = useEmployeeExecution();
   const engCapacity = useEngineeringCapacity();
+  const setuProjects = useSetuProjects();
+  
+  const projects = setuProjects.data ?? [];
+  const milestoneQueries = useQueries({
+    queries: projects.map((p) => ({
+      queryKey: ["setu", "project-milestones", p.id],
+      queryFn: () => getProjectMilestones(p.id),
+      enabled: !!p.id,
+    })),
+  });
+
+  const totalMilestones = useMemo(() => {
+    let count = 0;
+    milestoneQueries.forEach((q) => {
+      if (q.data) count += q.data.length;
+    });
+    return count;
+  }, [milestoneQueries]);
 
   const healthSummaries = useMemo<HealthSummaryItem[]>(() => {
     return [
@@ -164,6 +185,24 @@ export default memo(function ExecutiveLayout() {
         status: status.data?.overall_status === "ok" || status.data?.overall_status === "operational" ? "online" : "degraded",
         detail: "Ecosystem Readiness Index",
       },
+      {
+        id: "setu_projects",
+        title: "Total Projects",
+        icon: FolderGit2,
+        hasData: Boolean(setuProjects.data),
+        value: setuProjects.data ? `${setuProjects.data.length} Projects` : "—",
+        status: "online",
+        detail: "SETU Project Tracking",
+      },
+      {
+        id: "setu_milestones",
+        title: "Total Milestones",
+        icon: ClipboardCheck,
+        hasData: Boolean(setuProjects.data),
+        value: setuProjects.data ? `${totalMilestones} Milestones` : "—",
+        status: "online",
+        detail: "SETU Milestone Tracking",
+      },
     ];
   }, [
     engCapacity.data,
@@ -176,12 +215,14 @@ export default memo(function ExecutiveLayout() {
     reviewQueue.data,
     buildRegistry.data,
     exec.data,
+    setuProjects.data,
+    totalMilestones,
   ]);
 
-  const isLoading = exec.isLoading && status.isLoading && engCapacity.isLoading && repoRegistry.isLoading;
+  const isLoading = exec.isLoading && status.isLoading && engCapacity.isLoading && repoRegistry.isLoading && setuProjects.isLoading && milestoneQueries.every(q => q.isLoading);
   const hasData = healthSummaries.some((s) => s.hasData);
   const isError = !isLoading && healthSummaries.every((s) => !s.hasData);
-  const timestamp = exec.data?.timestamp || status.data?.timestamp;
+  const timestamp = exec.data?.timestamp || status.data?.timestamp || (setuProjects.data ? new Date().toISOString() : undefined);
 
   return (
     <section aria-label="Executive Command Center" className="w-full space-y-2">
@@ -195,13 +236,15 @@ export default memo(function ExecutiveLayout() {
           status.refetch();
           metrics.refetch();
           ops.refetch();
+          setuProjects.refetch();
+          milestoneQueries.forEach(q => q.refetch());
         }}
         errorMessage="Failed to load Executive Command Center"
         skeletonCount={5}
         skeletonHeight="h-20"
         timestamp={timestamp}
-        isFetching={exec.isFetching || status.isFetching}
-        isStale={exec.isStale || status.isStale}
+        isFetching={exec.isFetching || status.isFetching || setuProjects.isFetching || milestoneQueries.some(q => q.isFetching)}
+        isStale={exec.isStale || status.isStale || setuProjects.isStale || milestoneQueries.some(q => q.isStale)}
         dataSource="BHEX Control Plane"
         headerRight={
           timestamp ? (

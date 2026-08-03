@@ -10,6 +10,7 @@ import { useRajyaHealth } from "@/hooks/useRajyaQueries";
 import { useSanskarHealth } from "@/hooks/useSanskarQueries";
 import { useKarmaHealth } from "@/hooks/useKarmaQueries";
 import { useKeshavHealth } from "@/hooks/useKeshavQueries";
+import { useSetuHealth, useSetuReady } from "@/hooks/useSetuQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
 import type { ComponentStatus } from "@/types/runtime";
 
@@ -32,6 +33,8 @@ export default memo(function RuntimeHealthLayout() {
   const sanskarHealth = useSanskarHealth();
   const karmaHealth = useKarmaHealth();
   const keshavHealth = useKeshavHealth();
+  const setuHealth = useSetuHealth();
+  const setuReady = useSetuReady();
 
   const rawComponents = data?.components ?? [];
 
@@ -107,19 +110,34 @@ export default memo(function RuntimeHealthLayout() {
               ? "Connection failed" 
               : `Uptime: ${keshavHealth.data?.uptime_seconds != null ? keshavHealth.data.uptime_seconds + 's' : 'N/A'}`,
         }] : []),
+        ...(setuHealth.data || setuHealth.isError || setuHealth.isLoading || setuReady.data || setuReady.isError || setuReady.isLoading ? [{
+          name: "SETU PMC",
+          status: (setuHealth.isLoading || setuReady.isLoading)
+            ? "degraded"
+            : (setuHealth.isError || setuReady.isError)
+              ? "offline"
+              : (setuHealth.data?.status === "ok" && setuReady.data?.status === "ready" ? "operational" : "degraded"),
+          last_check: new Date().toISOString(),
+          response_time_ms: null,
+          details: (setuHealth.isLoading || setuReady.isLoading)
+            ? "Loading..."
+            : (setuHealth.isError || setuReady.isError)
+              ? "Connection failed"
+              : `Status: ${setuHealth.data?.status || "N/A"}/${setuReady.data?.status || "N/A"} v${setuHealth.data?.version || "1.0.0"}`,
+        }] : []),
       ].map(c => [c.name, c])
     ).values()
   );
 
   const score = components.length > 0 ? toScore(components) : 0;
 
-  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading && tantraHealth.isLoading && karmaHealth.isLoading && keshavHealth.isLoading;
-  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError && karmaHealth.isError && keshavHealth.isError);
+  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading && tantraHealth.isLoading && karmaHealth.isLoading && keshavHealth.isLoading && setuHealth.isLoading && setuReady.isLoading;
+  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError && karmaHealth.isError && keshavHealth.isError && setuHealth.isError && setuReady.isError);
 
-  const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined) || (insightFlowHealth.data ? new Date().toISOString() : undefined) || (tantraHealth.data ? new Date().toISOString() : undefined) || (keshavHealth.data ? new Date().toISOString() : undefined);
-  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching || rajyaHealth.isFetching || sanskarHealth.isFetching || karmaHealth.isFetching || keshavHealth.isFetching;
-  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale || rajyaHealth.isStale || sanskarHealth.isStale || karmaHealth.isStale || keshavHealth.isStale;
-  const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id || (insightFlowHealth.data as any)?.trace_id || (tantraHealth.data as any)?.trace_id || (keshavHealth.data as any)?.trace_id;
+  const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined) || (insightFlowHealth.data ? new Date().toISOString() : undefined) || (tantraHealth.data ? new Date().toISOString() : undefined) || (keshavHealth.data ? new Date().toISOString() : undefined) || (setuHealth.data ? new Date().toISOString() : undefined);
+  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching || rajyaHealth.isFetching || sanskarHealth.isFetching || karmaHealth.isFetching || keshavHealth.isFetching || setuHealth.isFetching || setuReady.isFetching;
+  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale || rajyaHealth.isStale || sanskarHealth.isStale || karmaHealth.isStale || keshavHealth.isStale || setuHealth.isStale || setuReady.isStale;
+  const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id || (insightFlowHealth.data as any)?.trace_id || (tantraHealth.data as any)?.trace_id || (keshavHealth.data as any)?.trace_id || (setuHealth.data as any)?.trace_id;
 
   // Derive telemetry bar values from real /metrics data
   const m = metrics.data;
@@ -141,7 +159,7 @@ export default memo(function RuntimeHealthLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={data !== undefined}
-      onRetry={() => { statusRefetch(); metrics.refetch(); rajyaHealth.refetch(); sanskarHealth.refetch(); karmaHealth.refetch(); keshavHealth.refetch(); }}
+      onRetry={() => { statusRefetch(); metrics.refetch(); rajyaHealth.refetch(); sanskarHealth.refetch(); karmaHealth.refetch(); keshavHealth.refetch(); setuHealth.refetch(); setuReady.refetch(); }}
       errorMessage="Failed to load system health"
       skeletonCount={4}
       skeletonHeight="h-8"

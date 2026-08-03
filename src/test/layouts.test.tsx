@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import React from "react";
+import { useQueries } from "@tanstack/react-query";
 
 // Mock the react-router-dom if any layout uses it
 vi.mock("react-router-dom", () => ({
@@ -128,6 +129,40 @@ vi.mock("@/hooks/useKeshavQueries", () => ({
   useKeshavMetrics: () => mockUseKeshavMetrics(),
 }));
 
+const mockUseSetuHealth = vi.fn();
+const mockUseSetuReady = vi.fn();
+const mockUseSetuProjects = vi.fn();
+const mockUseSetuProject = vi.fn();
+const mockUseSetuProjectMilestones = vi.fn();
+const mockUseSetuTask = vi.fn();
+const mockUseSetuTaskAssignments = vi.fn();
+vi.mock("@/hooks/useSetuQueries", () => ({
+  useSetuHealth: () => mockUseSetuHealth(),
+  useSetuReady: () => mockUseSetuReady(),
+  useSetuProjects: () => mockUseSetuProjects(),
+  useSetuProject: () => mockUseSetuProject(),
+  useSetuProjectMilestones: () => mockUseSetuProjectMilestones(),
+  useSetuTask: () => mockUseSetuTask(),
+  useSetuTaskAssignments: () => mockUseSetuTaskAssignments(),
+}));
+
+const mockUseQueries = vi.fn();
+vi.mock("@tanstack/react-query", () => ({
+  useQuery: () => ({}),
+  useQueries: () => mockUseQueries(),
+  keepPreviousData: (v: any) => v,
+}));
+
+vi.mock("@/api/setuEndpoints", () => ({
+  getProjectMilestones: vi.fn().mockResolvedValue([]),
+  getHealth: vi.fn().mockResolvedValue({ status: "ok", version: "1.0.0" }),
+  getReady: vi.fn().mockResolvedValue({ status: "ready", version: "1.0.0" }),
+  getProjects: vi.fn().mockResolvedValue([]),
+  getProject: vi.fn().mockResolvedValue({}),
+  getTask: vi.fn().mockResolvedValue({}),
+  getTaskAssignments: vi.fn().mockResolvedValue([]),
+}));
+
 import ExecutiveLayout from "../components/dashboard/layouts/ExecutiveLayout";
 import RuntimeHealthLayout from "../components/dashboard/layouts/RuntimeHealthLayout";
 import WorkflowLayout from "../components/dashboard/layouts/WorkflowLayout";
@@ -135,6 +170,7 @@ import WorkflowLayout from "../components/dashboard/layouts/WorkflowLayout";
 describe("Layout Components Integration", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mockUseQueries.mockReturnValue([]);
     mockUseExecutiveDashboard.mockReturnValue(defaultQueryResult);
     mockUseSystemStatus.mockReturnValue(defaultQueryResult);
     mockUseMetrics.mockReturnValue(defaultQueryResult);
@@ -174,6 +210,13 @@ describe("Layout Components Integration", () => {
     mockUseKarmaPaapPunyaRatio.mockReturnValue(defaultQueryResult);
     mockUseKeshavHealth.mockReturnValue(defaultQueryResult);
     mockUseKeshavMetrics.mockReturnValue(defaultQueryResult);
+    mockUseSetuHealth.mockReturnValue(defaultQueryResult);
+    mockUseSetuReady.mockReturnValue(defaultQueryResult);
+    mockUseSetuProjects.mockReturnValue(defaultQueryResult);
+    mockUseSetuProject.mockReturnValue(defaultQueryResult);
+    mockUseSetuProjectMilestones.mockReturnValue(defaultQueryResult);
+    mockUseSetuTask.mockReturnValue(defaultQueryResult);
+    mockUseSetuTaskAssignments.mockReturnValue(defaultQueryResult);
   });
 
   describe("ExecutiveLayout Component", () => {
@@ -299,45 +342,58 @@ describe("Layout Components Integration", () => {
 
   describe("WorkflowLayout Component", () => {
     test("renders active operations and steps in table", () => {
-      mockUseOperationsDashboard.mockReturnValue({
-        data: {
-          timestamp: "2026-07-15T16:53:18.000Z",
-          operations: [
-            {
-              id: "op_01",
-              status: "running",
-              description: "Blueprint validation running",
-              agent: "creator",
-              started_at: "2026-07-15T16:50:00.000Z",
-            },
-          ],
-        },
+      mockUseSetuProjects.mockReturnValue({
+        data: [
+          {
+            id: "proj_01",
+            name: "SETU Dashboard Integration",
+            description: "Phase 2 implementation",
+            created_at: "2026-07-15T16:53:18.000Z",
+          },
+        ],
         isLoading: false,
         isError: false,
         refetch: vi.fn(),
       });
+
+      mockUseQueries.mockReturnValue([
+        {
+          data: [
+            {
+              id: "ms_01",
+              name: "Step 1: Setu API Integration",
+              project_id: "proj_01",
+              description: "Create endpoints and query hooks",
+              status: "IN_PROGRESS",
+            },
+          ],
+          isLoading: false,
+          isError: false,
+          refetch: vi.fn(),
+        },
+      ]);
 
       render(<WorkflowLayout />);
 
       expect(screen.getByText("Active Workflows")).toBeInTheDocument();
-      expect(screen.getByText("Blueprint validation running")).toBeInTheDocument();
-      expect(screen.getByText("creator")).toBeInTheDocument();
-      expect(screen.getByText("#op_01")).toBeInTheDocument();
+      expect(screen.getByText("SETU Dashboard Integration")).toBeInTheDocument();
+      expect(screen.getByText("Step 1: Setu API Integration")).toBeInTheDocument();
+      expect(screen.getByText("IN_PROGRESS")).toBeInTheDocument();
+      expect(screen.getByText("#proj_0")).toBeInTheDocument();
     });
 
     test("renders empty row fallback when no workflows are returned", () => {
-      mockUseOperationsDashboard.mockReturnValue({
-        data: {
-          timestamp: "2026-07-15T16:53:18.000Z",
-          operations: [],
-        },
+      mockUseSetuProjects.mockReturnValue({
+        data: [],
         isLoading: false,
         isError: false,
         refetch: vi.fn(),
       });
+      mockUseQueries.mockReturnValue([]);
 
       render(<WorkflowLayout />);
       expect(screen.getByText("No Runtime Data Available")).toBeInTheDocument();
     });
   });
+
 });
