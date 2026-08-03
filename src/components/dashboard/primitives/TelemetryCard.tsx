@@ -74,16 +74,18 @@ export const TelemetryCard = memo(function TelemetryCard({
   return (
     <div className="flex flex-col flex-1 min-h-0 gap-3 w-full">
       {summaryMetrics && summaryMetrics.length > 0 && (
-        <div className={`grid gap-2 grid-cols-${Math.min(summaryMetrics.length, 4)} shrink-0`}>
-          {summaryMetrics.map((sm, i) => (
-            <div key={i} className="bg-slate-700/30 border border-slate-600/30 rounded p-2">
-              <p className="text-[12px] text-slate-400 font-semibold uppercase tracking-wider">{sm.label}</p>
-              <p className="text-[14px] font-bold text-slate-200 mt-0.5">
-                {sm.value}
-                {sm.unit && <span className="text-[11px] font-normal text-slate-500 ml-1">{sm.unit}</span>}
-              </p>
-            </div>
-          ))}
+        <div className="max-h-[132px] overflow-y-auto pr-1 shrink-0 scrollbar-thin">
+          <div className={`grid gap-2 grid-cols-${Math.min(summaryMetrics.length, 4)}`}>
+            {summaryMetrics.map((sm, i) => (
+              <div key={i} className="bg-slate-700/30 border border-slate-600/30 rounded p-2">
+                <p className="text-[12px] text-slate-400 font-semibold uppercase tracking-wider">{sm.label}</p>
+                <p className="text-[14px] font-bold text-slate-200 mt-0.5">
+                  {sm.value}
+                  {sm.unit && <span className="text-[11px] font-normal text-slate-500 ml-1">{sm.unit}</span>}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

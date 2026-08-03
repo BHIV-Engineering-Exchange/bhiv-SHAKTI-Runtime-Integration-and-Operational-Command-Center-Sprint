@@ -59,8 +59,8 @@ export default memo(function ExecutiveLayout() {
         value: engCapacity.data
           ? `${engCapacity.data.active_developers ?? 0} Active Devs`
           : (metrics.data?.requests?.total ?? metrics.data?.total_requests) != null
-          ? `${(metrics.data?.requests?.total ?? metrics.data?.total_requests ?? 0).toLocaleString()} Reqs`
-          : "—",
+            ? `${(metrics.data?.requests?.total ?? metrics.data?.total_requests ?? 0).toLocaleString()} Reqs`
+            : "—",
         status: engCapacity.data?.blocked_developers
           ? engCapacity.data.blocked_developers > 0
             ? "degraded"
@@ -86,19 +86,19 @@ export default memo(function ExecutiveLayout() {
         status: status.data ? (toStatus(status.data.overall_status) as OperationalStatus) : "offline",
         detail: status.data
           ? (() => {
-              const components = status.data.components ?? [];
-              const crashLooping = components.filter(c => c.status === "CRASH_LOOPING").length;
-              const offline = components.filter(c => c.status === "offline" || c.status === "failed" || c.status === "unhealthy").length;
-              const degraded = components.filter(c => c.status === "degraded" || c.status === "warning").length;
-              
-              if (status.data.overall_status === "degraded" || status.data.overall_status === "offline") {
-                if (crashLooping > 0) return `${crashLooping} Crash Looping ${crashLooping === 1 ? 'Service' : 'Services'}`;
-                if (offline > 0) return `${offline} ${offline === 1 ? 'Service' : 'Services'} Offline`;
-                if (degraded > 0) return `${degraded} ${degraded === 1 ? 'Service' : 'Services'} Degraded`;
-                return "Telemetry Unavailable";
-              }
-              return `${components.length} Monitored Services`;
-            })()
+            const components = status.data.components ?? [];
+            const crashLooping = components.filter(c => c.status === "CRASH_LOOPING").length;
+            const offline = components.filter(c => c.status === "offline" || c.status === "failed" || c.status === "unhealthy").length;
+            const degraded = components.filter(c => c.status === "degraded" || c.status === "warning").length;
+
+            if (status.data.overall_status === "degraded" || status.data.overall_status === "offline") {
+              if (crashLooping > 0) return `${crashLooping} Crash Looping ${crashLooping === 1 ? 'Service' : 'Services'}`;
+              if (offline > 0) return `${offline} ${offline === 1 ? 'Service' : 'Services'} Offline`;
+              if (degraded > 0) return `${degraded} ${degraded === 1 ? 'Service' : 'Services'} Degraded`;
+              return "Telemetry Unavailable";
+            }
+            return `${components.length} Monitored Services`;
+          })()
           : "—",
       },
       {
@@ -218,8 +218,8 @@ export default memo(function ExecutiveLayout() {
               summary.status === "online"
                 ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
                 : summary.status === "degraded"
-                ? "text-amber-400 bg-amber-500/10 border-amber-500/20"
-                : "text-red-400 bg-red-500/10 border-red-500/20";
+                  ? "text-amber-400 bg-amber-500/10 border-amber-500/20"
+                  : "text-red-400 bg-red-500/10 border-red-500/20";
 
             return (
               <div

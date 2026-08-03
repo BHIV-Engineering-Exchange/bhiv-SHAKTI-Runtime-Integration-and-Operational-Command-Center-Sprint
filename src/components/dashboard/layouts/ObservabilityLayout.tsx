@@ -220,46 +220,63 @@ export default memo(function ObservabilityLayout() {
               Live Score: <span className="text-indigo-400 font-medium">{karmaLiveMetrics.data.live_score ?? "N/A"}</span>
             </span>
           ) : undefined
-        ) : pranaLogs.length > 0 ? (
-          <span className="text-xs text-slate-500">
-            PRANA Logged: <span className="text-emerald-400 font-medium">{pranaLogs.length} events</span>
-          </span>
-        ) : scaleStatus.data ? (
-          <span className="text-xs text-slate-500">
-            Storage:{" "}
-            <span className="text-emerald-400 font-medium">
-              {scaleStatus.data.storage.used_gb} GB / {scaleStatus.data.storage.total_gb} GB
-            </span>
-          </span>
-        ) : data ? (
-          <span className="text-xs text-slate-500">
-            Uptime:{" "}
-            <span className="text-emerald-400 font-medium">
-              {(data.summary?.uptime_percentage ?? 100).toFixed(1)}%
-            </span>
-          </span>
-        ) : stageMetrics.data && stageMetrics.data.length > 0 ? (
-          <span className="text-xs text-slate-500">
-            Pipeline:{" "}
-            <span className="text-emerald-400 font-medium">
-              {stageMetrics.data.length} stages
-            </span>
-          </span>
-        ) : tantraTelemetry.data?.summary ? (
-          <span className="text-xs text-slate-500">
-            TANTRA Uptime:{" "}
-            <span className="text-emerald-400 font-medium">
-              {tantraTelemetry.data.summary.uptime_percentage.toFixed(1)}%
-            </span>
-          </span>
-        ) : keshavMetrics.data ? (
-          <span className="text-xs text-slate-500">
-            KESHAV Success:{" "}
-            <span className="text-emerald-400 font-medium">
-              {((keshavMetrics.data.request_success_rate ?? 1.0) * 100).toFixed(1)}%
-            </span>
-          </span>
-        ) : undefined
+        ) : (() => {
+          const items: React.ReactNode[] = [];
+          
+          if (pranaLogs.length > 0) {
+            items.push(
+              <span key="prana" className="flex items-center gap-1">
+                <span className="text-slate-500">PRANA:</span>
+                <span className="text-emerald-400 font-semibold">{pranaLogs.length}e</span>
+              </span>
+            );
+          }
+          if (scaleStatus.data) {
+            items.push(
+              <span key="storage" className="flex items-center gap-1">
+                <span className="text-slate-500">Storage:</span>
+                <span className="text-cyan-400 font-semibold">
+                  {scaleStatus.data.storage.used_gb}G/{scaleStatus.data.storage.total_gb}G
+                </span>
+              </span>
+            );
+          }
+          if (data) {
+            items.push(
+              <span key="uptime" className="flex items-center gap-1">
+                <span className="text-slate-500">Uptime:</span>
+                <span className="text-emerald-400 font-semibold">
+                  {(data.summary?.uptime_percentage ?? 100).toFixed(1)}%
+                </span>
+              </span>
+            );
+          }
+          if (keshavMetrics.data) {
+            items.push(
+              <span key="keshav" className="flex items-center gap-1">
+                <span className="text-slate-500">KESHAV:</span>
+                <span className="text-indigo-400 font-semibold">
+                  {((keshavMetrics.data.request_success_rate ?? 1.0) * 100).toFixed(1)}%
+                </span>
+              </span>
+            );
+          }
+          
+          if (items.length === 0) return undefined;
+          
+          return (
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] font-mono">
+              {items.reduce((acc, curr, index) => {
+                if (index === 0) return [curr];
+                return [
+                  ...(acc as React.ReactNode[]),
+                  <span key={`divider-${index}`} className="text-slate-700 font-sans select-none">•</span>,
+                  curr
+                ];
+              }, [] as React.ReactNode[])}
+            </div>
+          );
+        })()
       }
     >
       {hasData && (

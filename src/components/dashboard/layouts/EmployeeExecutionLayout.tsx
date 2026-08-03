@@ -67,7 +67,7 @@ export default memo(function EmployeeExecutionLayout() {
             <span className="text-[10px] text-slate-600 mt-1">Awaiting engineering runtime</span>
           </div>
         ) : (
-          <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0 max-h-[320px] custom-scrollbar">
+          <div className="overflow-x-auto overflow-y-auto flex-1 min-h-0 max-h-[150px] custom-scrollbar">
             <table className="w-full text-left border-collapse min-w-[780px]">
               <thead className="sticky top-0 bg-slate-900/95 backdrop-blur z-10">
                 <tr className="border-b border-slate-700/60 text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
