@@ -13,10 +13,12 @@ import {
   fetchMigrationQueue,
   fetchReviewQueue,
   fetchCapabilityRegistry,
-  fetchEmployeeExecution,
-  fetchEngineeringCapacity,
   fetchDeliveryIntelligence,
 } from "@/api/endpoints";
+import {
+  fetchEmployeeExecution,
+  fetchEngineeringCapacity,
+} from "@/api/niyantranEndpoints";
 
 // GET /health — lightweight liveness probe
 export const useHealth = () =>

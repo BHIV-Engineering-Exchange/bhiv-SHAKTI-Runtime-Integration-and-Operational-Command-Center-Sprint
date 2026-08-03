@@ -14,6 +14,10 @@ import type {
   NiyantranTask,
   NiyantranLiveLocationUser,
 } from "@/types/niyantran";
+import type {
+  EmployeeExecutionResponse,
+  EngineeringCapacityResponse,
+} from "@/types/runtime";
 
 const NIYANTRAN_BASE_URL =
   import.meta.env.VITE_NIYANTRAN_URL || "http://localhost:5000";
@@ -395,4 +399,73 @@ export async function fetchNiyantranLiveLocations(params?: {
     logger.error("Failed to fetch NIYANTRAN live locations:", error);
     return [];
   }
+}
+
+export async function fetchEmployeeExecution(): Promise<EmployeeExecutionResponse> {
+  try {
+    const niyantranData = await fetchNiyantranAttendanceSummary();
+    if (niyantranData && Array.isArray(niyantranData.records) && niyantranData.records.length > 0) {
+      return {
+        timestamp: new Date().toISOString(),
+        total_engineers: niyantranData.records.length,
+        engineers: niyantranData.records.map((r) => ({
+          engineer: r.employee?.name || "Employee",
+          current_task: r.merge?.case !== "UNKNOWN" ? `Merge Case: ${r.merge.case}` : "Active Work Session",
+          current_product: `Biometric: ${r.employee?.biometricCode || "N/A"}`,
+          progress: r.attendance?.workedHours > 0 ? Math.min(100, Math.round((r.attendance.workedHours / 8) * 100)) : 0,
+          blocked: r.merge?.hasAlert ? (r.merge.alertType || "Mismatch Alert") : false,
+          last_activity: r.times?.clockOut || r.times?.clockIn || "Recorded Today",
+          todays_contribution: `${r.attendance?.workedHours || 0} hrs (${r.salary?.formattedEarnings || "₹0"})`,
+        })),
+      };
+    }
+  } catch (niyantranErr) {
+    // NIYANTRAN backend unreachable
+  }
+
+  return { timestamp: new Date().toISOString(), total_engineers: 0, engineers: [] };
+}
+
+export async function fetchEngineeringCapacity(): Promise<EngineeringCapacityResponse> {
+  try {
+    const leaderboard = await fetchNiyantranLeaderboard();
+    if (Array.isArray(leaderboard) && leaderboard.length > 0) {
+      const activeDevs = leaderboard.length;
+      const availableDevs = leaderboard.filter(u => u.workload === 0).length;
+      const blockedDevs = leaderboard.filter(u => u.completionRate < 30 && u.totalTasks > 0).length;
+      const reviewPending = leaderboard.reduce((acc, u) => acc + Math.max(0, u.totalTasks - u.completedTasks), 0);
+      const inQa = leaderboard.reduce((acc, u) => acc + u.totalDependencies, 0);
+
+      return {
+        timestamp: new Date().toISOString(),
+        active_developers: activeDevs,
+        available_developers: availableDevs,
+        blocked_developers: blockedDevs,
+        review_pending: reviewPending,
+        testing_pending: inQa,
+        deployment_pending: 0,
+        engineers: leaderboard.map((u) => ({
+          name: u.name,
+          department: typeof u.department === "object" ? u.department?.name : "Engineering",
+          allocated_capacity_pct: Math.min(100, (u.workload || 1) * 20),
+          active_tasks_count: Math.max(0, (u.totalTasks || 0) - (u.completedTasks || 0)),
+          velocity_rating: u.completionRate > 80 ? "High" : u.completionRate > 50 ? "Medium" : "Low",
+          completion_rate_pct: Math.round(u.completionRate || 0),
+        })),
+      };
+    }
+  } catch (niyantranErr) {
+    // NIYANTRAN backend unreachable
+  }
+
+  return {
+    timestamp: new Date().toISOString(),
+    active_developers: 0,
+    available_developers: 0,
+    blocked_developers: 0,
+    review_pending: 0,
+    testing_pending: 0,
+    deployment_pending: 0,
+    engineers: [],
+  };
 }
