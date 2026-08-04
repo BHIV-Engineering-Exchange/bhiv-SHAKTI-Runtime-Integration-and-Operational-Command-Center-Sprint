@@ -7,7 +7,7 @@ import type {
 } from "@/types/tantra";
 
 let TANTRA_BASE_URL =
-  import.meta.env.VITE_TANTRA_BASE_URL || "https://tantra-gated-bridge-infrastructure.onrender.com";
+  import.meta.env.VITE_TANTRA_BASE_URL || "";
 
 // Normalize base URL if it's a Vercel domain missing the /api prefix
 if (TANTRA_BASE_URL.includes("vercel.app") && !TANTRA_BASE_URL.includes("/api/")) {

@@ -20,7 +20,7 @@ import type {
 } from "@/types/runtime";
 
 const NIYANTRAN_BASE_URL =
-  import.meta.env.VITE_NIYANTRAN_URL || "http://localhost:5000";
+  import.meta.env.VITE_NIYANTRAN_URL || "";
 
 const DEFAULT_EXECUTION_KEY =
   import.meta.env.VITE_NIYANTRAN_EXECUTION_KEY || "niyantran-dev-exec-key";

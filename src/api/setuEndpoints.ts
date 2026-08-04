@@ -7,12 +7,15 @@ import type {
   Assignment,
 } from "@/types/setu";
 
-const SETU_BASE_URL = import.meta.env.VITE_SETU_URL || "http://localhost:8000";
+const SETU_BASE_URL = import.meta.env.VITE_SETU_URL || "";
 
 export const setuClient = axios.create({
   baseURL: `${SETU_BASE_URL.replace(/\/$/, "")}/api/v1`,
   timeout: 10000,
-  headers: { "Content-Type": "application/json" },
+  headers: {
+    "Content-Type": "application/json",
+    "ngrok-skip-browser-warning": "true"
+  },
 });
 
 export async function getHealth(): Promise<HealthResponse> {

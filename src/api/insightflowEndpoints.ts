@@ -7,7 +7,7 @@ import type {
 } from "@/types/insightflow";
 
 let INSIGHTFLOW_BASE_URL =
-  import.meta.env.VITE_INSIGHTFLOW_URL || "http://localhost:8000";
+  import.meta.env.VITE_INSIGHTFLOW_URL || "";
 
 // Normalize base URL if it's a Vercel domain missing the /api prefix
 if (INSIGHTFLOW_BASE_URL.includes("vercel.app") && !INSIGHTFLOW_BASE_URL.includes("/api/")) {

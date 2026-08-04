@@ -2,7 +2,7 @@ import axios, { type AxiosError } from "axios";
 import { logger } from "@/utils/logger";
 
 let RAJYA_BASE_URL =
-  import.meta.env.VITE_RAJYA_BASE_URL || "https://text-risk-scoring-service.onrender.com";
+  import.meta.env.VITE_RAJYA_BASE_URL || "";
 
 // Normalize base URL if it's a Vercel domain missing the /api prefix
 if (RAJYA_BASE_URL.includes("vercel.app") && !RAJYA_BASE_URL.includes("/api/")) {

@@ -1,7 +1,7 @@
 import axios from "axios";
 
 let KARMA_BASE_URL =
-  import.meta.env.VITE_KARMA_URL || "http://127.0.0.1:8102";
+  import.meta.env.VITE_KARMA_URL || "";
 
 // Normalize base URL if it's a Vercel domain missing the /api prefix
 if (KARMA_BASE_URL.includes("vercel.app") && !KARMA_BASE_URL.includes("/api/")) {

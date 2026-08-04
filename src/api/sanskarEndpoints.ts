@@ -2,7 +2,7 @@ import axios, { type AxiosError } from "axios";
 import { logger } from "@/utils/logger";
 
 let SANSKAR_BASE_URL =
-  import.meta.env.VITE_SANSKAR_BASE_URL || "http://localhost:8000";
+  import.meta.env.VITE_SANSKAR_BASE_URL || "";
 
 // Normalize base URL if it's a Vercel domain missing the /api prefix
 if (SANSKAR_BASE_URL.includes("vercel.app") && !SANSKAR_BASE_URL.includes("/api/")) {
