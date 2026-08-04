@@ -254,7 +254,7 @@ export default memo(function ExecutiveLayout() {
           ) : undefined
         }
       >
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
+        <div className="grid grid-cols-2 md:grid-cols-6 gap-2">
           {healthSummaries.map((summary) => {
             const Icon = summary.icon;
             const statusColorClass =
