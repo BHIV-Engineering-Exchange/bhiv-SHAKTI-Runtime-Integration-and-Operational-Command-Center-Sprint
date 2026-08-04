@@ -159,7 +159,11 @@ export async function fetchTelemetryDashboard(): Promise<TelemetryDashboardRespo
 }
 
 export async function fetchRepositoryRegistry(): Promise<RepositoryRegistryResponse> {
-  // Disabled temporarily due to missing backend route
+  // Canonical runtime registry not yet available.
+  // This interface intentionally returns placeholder data.
+  // Once the owning BHEX runtime service is available,
+  // only this implementation should change.
+  // Hooks and dashboard components must remain unchanged.
   return {
     timestamp: new Date().toISOString(),
     total_repositories: 0,
@@ -168,7 +172,11 @@ export async function fetchRepositoryRegistry(): Promise<RepositoryRegistryRespo
 }
 
 export async function fetchBuildRegistry(): Promise<BuildRegistryResponse> {
-  // Disabled temporarily due to missing backend route
+  // Canonical runtime registry not yet available.
+  // This interface intentionally returns placeholder data.
+  // Once the owning BHEX runtime service is available,
+  // only this implementation should change.
+  // Hooks and dashboard components must remain unchanged.
   return {
     timestamp: new Date().toISOString(),
     total_builds: 0,
@@ -177,7 +185,11 @@ export async function fetchBuildRegistry(): Promise<BuildRegistryResponse> {
 }
 
 export async function fetchMigrationQueue(): Promise<MigrationQueueResponse> {
-  // Disabled temporarily due to missing backend route
+  // Canonical runtime registry not yet available.
+  // This interface intentionally returns placeholder data.
+  // Once the owning BHEX runtime service is available,
+  // only this implementation should change.
+  // Hooks and dashboard components must remain unchanged.
   return {
     timestamp: new Date().toISOString(),
     total_migrations: 0,
@@ -186,7 +198,11 @@ export async function fetchMigrationQueue(): Promise<MigrationQueueResponse> {
 }
 
 export async function fetchReviewQueue(): Promise<ReviewQueueResponse> {
-  // Disabled temporarily due to missing backend route
+  // Canonical runtime registry not yet available.
+  // This interface intentionally returns placeholder data.
+  // Once the owning BHEX runtime service is available,
+  // only this implementation should change.
+  // Hooks and dashboard components must remain unchanged.
   return {
     timestamp: new Date().toISOString(),
     total_reviews: 0,
@@ -195,7 +211,11 @@ export async function fetchReviewQueue(): Promise<ReviewQueueResponse> {
 }
 
 export async function fetchCapabilityRegistry(): Promise<CapabilityRegistryResponse> {
-  // Disabled temporarily due to missing backend route
+  // Canonical runtime registry not yet available.
+  // This interface intentionally returns placeholder data.
+  // Once the owning BHEX runtime service is available,
+  // only this implementation should change.
+  // Hooks and dashboard components must remain unchanged.
   return {
     timestamp: new Date().toISOString(),
     total_capabilities: 0,

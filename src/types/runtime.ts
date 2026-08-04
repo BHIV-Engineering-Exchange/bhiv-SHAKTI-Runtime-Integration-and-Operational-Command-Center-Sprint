@@ -275,7 +275,10 @@ export interface TelemetryDashboardResponse {
   thresholds?: Record<string, any>;
 }
 
-// ─── GET /registry/repositories (BHEX Operational Surface) ────────────────────
+// ─── BHEX Repository Registry (Canonical Contract) ───────────────────────────
+// - Current state: Interface placeholder returning empty/fallback data.
+// - Future state: Will eventually be backed by the official BHEX runtime.
+// - Note: Properties and interface name remain strictly unchanged.
 
 export interface RepositoryRegistryItem {
   repository: string;
@@ -298,7 +301,10 @@ export interface RepositoryRegistryResponse {
   repositories: RepositoryRegistryItem[];
 }
 
-// ─── GET /registry/builds (BHEX Operational Surface) ──────────────────────────
+// ─── BHEX Build Registry (Canonical Contract) ────────────────────────────────
+// - Current state: Interface placeholder returning empty/fallback data.
+// - Future state: Will eventually be backed by the official BHEX runtime.
+// - Note: Properties and interface name remain strictly unchanged.
 
 export interface BuildRegistryItem {
   build_id: string;
@@ -317,7 +323,10 @@ export interface BuildRegistryResponse {
   builds: BuildRegistryItem[];
 }
 
-// ─── GET /queue/migration (Operational Migration Queue) ─────────────────────
+// ─── BHEX Migration Queue (Canonical Contract) ──────────────────────────────
+// - Current state: Interface placeholder returning empty/fallback data.
+// - Future state: Will eventually be backed by the official BHEX runtime.
+// - Note: Properties and interface name remain strictly unchanged.
 
 export interface MigrationQueueItem {
   migration_token: string;
@@ -336,7 +345,10 @@ export interface MigrationQueueResponse {
   migrations: MigrationQueueItem[];
 }
 
-// ─── GET /queue/review (Operational Review Queue) ────────────────────────────
+// ─── BHEX Review Queue (Canonical Contract) ─────────────────────────────────
+// - Current state: Interface placeholder returning empty/fallback data.
+// - Future state: Will eventually be backed by the official BHEX runtime.
+// - Note: Properties and interface name remain strictly unchanged.
 
 export interface ReviewQueueItem {
   submission: string;
@@ -354,7 +366,10 @@ export interface ReviewQueueResponse {
   reviews: ReviewQueueItem[];
 }
 
-// ─── GET /registry/capabilities (BHEX Capability Registry) ───────────────────
+// ─── BHEX Capability Registry (Canonical Contract) ──────────────────────────
+// - Current state: Interface placeholder returning empty/fallback data.
+// - Future state: Will eventually be backed by the official BHEX runtime.
+// - Note: Properties and interface name remain strictly unchanged.
 
 export interface CapabilityRegistryItem {
   capability_name: string;

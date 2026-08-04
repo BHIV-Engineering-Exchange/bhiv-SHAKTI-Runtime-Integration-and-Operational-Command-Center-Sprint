@@ -92,7 +92,10 @@ export const useTelemetryDashboard = () =>
     placeholderData: keepPreviousData,
   });
 
-// GET /registry/repositories → BHEX Repository Registry
+// BHEX Repository Registry
+// - Current implementation: Placeholder interface returning fallback/empty data.
+// - Future implementation: Canonical BHEX Registry service.
+// - Layouts: require zero changes.
 export const useRepositoryRegistry = () =>
   useQuery({
     queryKey: ["registry-repositories"],
@@ -102,7 +105,10 @@ export const useRepositoryRegistry = () =>
     retry: 1,
   });
 
-// GET /registry/builds → BHEX Build Registry
+// BHEX Build Registry
+// - Current implementation: Placeholder interface returning fallback/empty data.
+// - Future implementation: Canonical BHEX Registry service.
+// - Layouts: require zero changes.
 export const useBuildRegistry = () =>
   useQuery({
     queryKey: ["registry-builds"],
@@ -112,7 +118,10 @@ export const useBuildRegistry = () =>
     retry: 1,
   });
 
-// GET /queue/migration → BHEX Migration Queue
+// BHEX Migration Queue
+// - Current implementation: Placeholder interface returning fallback/empty data.
+// - Future implementation: Canonical BHEX Registry service.
+// - Layouts: require zero changes.
 export const useMigrationQueue = () =>
   useQuery({
     queryKey: ["queue-migration"],
@@ -122,7 +131,10 @@ export const useMigrationQueue = () =>
     retry: 1,
   });
 
-// GET /queue/review → BHEX Review Queue
+// BHEX Review Queue
+// - Current implementation: Placeholder interface returning fallback/empty data.
+// - Future implementation: Canonical BHEX Registry service.
+// - Layouts: require zero changes.
 export const useReviewQueue = () =>
   useQuery({
     queryKey: ["queue-review"],
@@ -132,7 +144,10 @@ export const useReviewQueue = () =>
     retry: 1,
   });
 
-// GET /registry/capabilities → BHEX Capability Registry
+// BHEX Capability Registry
+// - Current implementation: Placeholder interface returning fallback/empty data.
+// - Future implementation: Canonical BHEX Registry service.
+// - Layouts: require zero changes.
 export const useCapabilityRegistry = () =>
   useQuery({
     queryKey: ["registry-capabilities"],
