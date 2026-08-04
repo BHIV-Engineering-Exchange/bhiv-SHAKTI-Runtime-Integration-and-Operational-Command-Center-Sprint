@@ -33,6 +33,8 @@ Vitest is configured with `jsdom` to mock a browser DOM environment.
 - **[ErrorBoundary.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/ErrorBoundary.test.tsx)**: Asserts uncaught component crash capturing, fallback UI rendering, and the state reset flow.
 - **[DashboardCard.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/DashboardCard.test.tsx)**: Tests `DashboardCard` render states (Loading, Success, Empty, Error, Offline), caching behaviors, and metadata status computation.
 - **[layouts.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/layouts.test.tsx)**: Mocks TanStack hooks to verify rendering logic and empty states for the `ExecutiveLayout`, `RuntimeHealthLayout`, and `WorkflowLayout` components.
+- **[DecisionIntelligenceLayout.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/DecisionIntelligenceLayout.test.tsx)**: Verifies the mock hook orchestration and details of the decision intelligence logs list.
+- **[integration.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/integration.test.tsx)**: Evaluates root level React context mappings, branding details, and routing states.
 
 ### Execution Instructions
 
@@ -84,5 +86,7 @@ npx playwright test --ui
   - [ErrorBoundary.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/ErrorBoundary.test.tsx)
   - [DashboardCard.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/DashboardCard.test.tsx)
   - [layouts.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/layouts.test.tsx)
+  - [DecisionIntelligenceLayout.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/DecisionIntelligenceLayout.test.tsx)
+  - [integration.test.tsx](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/integration.test.tsx)
 - **E2E Test Files**:
   - [dashboard.spec.ts](file:///c:/Pratik_Bhuwad/shakti-command-center/src/test/e2e/dashboard.spec.ts)

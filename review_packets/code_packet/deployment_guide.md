@@ -1,59 +1,41 @@
 # Deployment Guide
 
-Detailed deployment instructions for the SHAKTI Command Center frontend dashboard application.
+The SHAKTI Command Center dashboard is a standard Vite React Application. It compiles to static HTML/CSS/JS files and can be hosted on any static file server or CDN (S3, NGINX, Vercel, Netlify).
 
-## 1. Requirements
-- **Node.js**: Version `v18.0.0` or higher (tested on `v20.x`)
-- **Package Manager**: `npm`
-- **Supported Browsers**: Chrome, Firefox, Safari, Edge (recent versions)
+## Prerequisites
+- Node.js ≥ 20.x
+- NPM
 
-## 2. Installation
-To download and install package dependencies, navigate to the `shakti-command-center/` directory and execute:
+## Environment Configuration
+Define backend URLs before initiating production compile steps:
+
 ```bash
-npm install
+export VITE_CONTROL_PLANE_URL=https://api.production.internal/v1
+export VITE_BUCKET_SERVICE_URL=https://bhiv-bucket-i1l6.onrender.com
+export VITE_PRANA_SERVICE_URL=http://163.128.209.18:8103
+export VITE_NIYANTRAN_URL=http://localhost:5001
+export VITE_NIYANTRAN_EXECUTION_KEY=59d175200c3e26b42ba1532cd40090532b3e59c93be652311acbcdd6155dbb13159d8125a48364672d6c1d3d868fc2cf
+export VITE_NIYANTRAN_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+export VITE_INSIGHTFLOW_URL=https://bhiv-svacs.onrender.com
+export VITE_TANTRA_BASE_URL=https://tantra-gated-bridge-infrastructure.onrender.com
+export VITE_TANTRA_BRIDGE_SIGNATURE=Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.dummy_token_issued_by_sarathi
+export VITE_RAJYA_BASE_URL=https://text-risk-scoring-service.onrender.com
+export VITE_SANSKAR_BASE_URL=http://localhost:8000
+export VITE_KARMA_URL=http://163.128.209.18:8102
+export VITE_KESHAV_URL=https://keshav-cia7.onrender.com
+export VITE_SETU_URL=https://db05-2409-40c2-103d-46f0-9d7b-3c78-2cde-82d4.ngrok-free.app
 ```
 
-## 3. Environment Variables
-To customize API routing paths, configure a `.env` file in the project root:
-```env
-VITE_API_URL=http://localhost:8009
-VITE_POLLING_DISABLED=false
-```
-*Note*: If `VITE_API_URL` is omitted, the frontend defaults to query relative paths or fallbacks to localhost ports.
-
-## 4. Run Backend
-The backend mock servers must be running to receive live API signals.
-*Platform Dependency*: The mock backend FastAPI server is maintained by the platform team and can be spun up using:
-```bash
-uvicorn api.main:app --port 8009 --reload
-```
-Ensure the API is active by checking the health endpoint: `http://localhost:8009/health`
-
-## 5. Run Frontend
-Launch the hot-reload React dev server:
-```bash
-npm run dev
-```
-
-## 6. Build
-To compile production-ready static assets:
+## Production Build
+To bundle the dashboard:
 ```bash
 npm run build
 ```
-This writes the compilation output to the `dist/` directory in the project root.
+This performs a compile check (`tsc -b`) and generates production output inside `/dist`.
 
-## 7. Preview
-To review the production build compilation locally:
+## Preview Build Locally
+To check the production bundle locally:
 ```bash
 npm run preview
 ```
-
-## 8. Expected URLs
-- **Local Dev Server**: `http://localhost:5173/`
-- **Build Preview Server**: `http://localhost:4173/`
-- **Backend API Server**: `http://localhost:8009/`
-
-## 9. Troubleshooting
-*   **Vite Dev Port Conflict**: If port `5173` is in use, Vite will automatically select the next port (e.g. `5174`). Check the shell output to confirm the active address.
-*   **Failed API Fetches (Red Cards)**: Ensure the backend FastAPI server is active on port `8009`. If running on a different port, align `VITE_API_URL` in the `.env` file.
-*   **CORS Blockages**: Verify that the backend FastAPI middleware config permits requests from `http://localhost:5173`.
+This spins up a local server hosting the `/dist` files on `http://localhost:4173`.

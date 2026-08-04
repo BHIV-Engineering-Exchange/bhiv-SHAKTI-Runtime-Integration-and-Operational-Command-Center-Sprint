@@ -4,6 +4,14 @@ All notable changes to the SHAKTI Operational Command Center are documented in t
 
 ---
 
+## [Unreleased] — 2026-08-04
+
+### Changed
+- **Grid Layout**: Switched Executive Layout column span from `grid-cols-2 md:grid-cols-5` to `grid-cols-2 md:grid-cols-6` on desktop viewports, arranging all 12 backend status cards into 2 equal rows.
+- **Service Telemetry**: Cleaned up environment variables (`import.meta.env`) across all API clients to default to empty strings rather than hardcoded URLs, ensuring `.env` is the single source of truth.
+- **Setu Client**: Added `ngrok-skip-browser-warning: true` bypass header to prevent preflight blocks.
+- **Service Mapping**: Corrected status mappers to parse runtime OK, degraded, and offline statuses cleanly on the frontend.
+
 ## [Unreleased] — 2026-07-14
 
 ### Phase 1: Foundation & Architecture
