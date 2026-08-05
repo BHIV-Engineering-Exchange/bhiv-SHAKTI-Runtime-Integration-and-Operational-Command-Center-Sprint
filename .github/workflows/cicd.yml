@@ -60,8 +60,18 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push shakti-dashboard image
+        env:
+          EXECUTION_KEY: ${{ secrets.VITE_NIYANTRAN_EXECUTION_KEY }}
+          AUTH_TOKEN: ${{ secrets.VITE_NIYANTRAN_AUTH_TOKEN }}
+          BRIDGE_SIGNATURE: ${{ secrets.VITE_TANTRA_BRIDGE_SIGNATURE }}
         run: |
-          docker buildx build --push --tag bhiv/shakti-dashboard:${{ steps.vars.outputs.sha_short }} --tag bhiv/shakti-dashboard:latest --build-arg VITE_NIYANTRAN_EXECUTION_KEY="${{ secrets.VITE_NIYANTRAN_EXECUTION_KEY }}" --build-arg VITE_NIYANTRAN_AUTH_TOKEN="${{ secrets.VITE_NIYANTRAN_AUTH_TOKEN }}" --build-arg VITE_TANTRA_BRIDGE_SIGNATURE="${{ secrets.VITE_TANTRA_BRIDGE_SIGNATURE }}" -f Dockerfile .
+          docker buildx build --push \
+            --tag bhiv/shakti-dashboard:${{ steps.vars.outputs.sha_short }} \
+            --tag bhiv/shakti-dashboard:latest \
+            --build-arg VITE_NIYANTRAN_EXECUTION_KEY="$EXECUTION_KEY" \
+            --build-arg VITE_NIYANTRAN_AUTH_TOKEN="$AUTH_TOKEN" \
+            --build-arg VITE_TANTRA_BRIDGE_SIGNATURE="$BRIDGE_SIGNATURE" \
+            -f Dockerfile .
 
 
   deploy:
