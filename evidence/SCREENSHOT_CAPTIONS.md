@@ -7,11 +7,17 @@ This document lists the official captions for the screenshots demonstrating comp
 ### `01_dashboard_startup.png`
 * **Caption:** Demonstrates the application's initial cold-start phase with layout skeleton placeholders displaying in all zones. This verifies that layout components mount and load gracefully before the async API requests complete.
 
-### `02_executive_overview-1.png`
-* **Caption:** Demonstrates the first section of the dashboard grid layout running in a standard desktop viewport. This satisfies the core design requirement of fitting primary executive metrics on a single screen to eliminate excessive scrolling.
+### `02_Dashboard_overview-1.png`
+* **Caption:** Demonstrates the first section of the dashboard grid layout running in a standard desktop viewport. This satisfies the core design requirement of fitting primary executive metrics on a single screen.
 
-### `02_executive_overview-2.png`
-* **Caption:** Demonstrates the second section of the dashboard grid layout running in a standard desktop viewport, showing the remaining widgets.
+### `02_Dashboard_overview-2.png`
+* **Caption:** Demonstrates the second section of the dashboard grid layout running in a standard desktop viewport, showing the middle panels.
+
+### `02_Dashboard_overview-3.png`
+* **Caption:** Demonstrates the third section of the dashboard grid layout running in a standard desktop viewport, showing details of compute and operations.
+
+### `02_Dashboard_overview--4.png`
+* **Caption:** Demonstrates the fourth section of the dashboard grid layout running in a standard desktop viewport, showing the remaining widgets and lower layouts.
 
 ### `03_executive_kpis.png`
 * **Caption:** Displays the top-row Executive Summary row containing prominently styled KPI cards. This satisfies the hierarchy requirement by emphasizing 30px key metric values alongside secondary unit labels and color-coded trend indicators.
@@ -35,7 +41,7 @@ This document lists the official captions for the screenshots demonstrating comp
 * **Caption:** Focuses on the Operator Console showing active operator cards and the activity log timeline feed. This satisfies the requirement of maintaining an activity timeline to eliminate visual empty space.
 
 ### `10_runtime_health.png`
-* **Caption:** Captures the Runtime Health card showing the core health score progress bar, telemetry summary, and active components. This verifies the integration of the system-level status endpoint.
+* **Caption:** Captures the Runtime Health card showing the health score progress bar, telemetry summary, and component list. It verifies that offline backend services are correctly reported as **Offline** with a `"Connection failed"` detail rather than showing as operational, ensuring accurate integration with all backend status endpoints.
 
 ### `11_replay_view.png`
 * **Caption:** Shows the Simulation & Replay table with active sessions, inline operation indicators, and progress bars. This demonstrates high information density by replacing repetitive simulation cards with a compact, tabular view.

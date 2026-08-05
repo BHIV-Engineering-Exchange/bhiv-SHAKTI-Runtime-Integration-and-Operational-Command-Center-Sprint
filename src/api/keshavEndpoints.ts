@@ -17,12 +17,8 @@ export const keshavClient = axios.create({
 });
 
 export async function getHealth(): Promise<KeshavHealthResponse> {
-  try {
-    const { data } = await keshavClient.get<KeshavHealthResponse>("/health");
-    return data;
-  } catch (error) {
-    return { status: "healthy" };
-  }
+  const { data } = await keshavClient.get<KeshavHealthResponse>("/health");
+  return data;
 }
 
 export async function getMetricsJson(): Promise<KeshavMetricsResponse> {

@@ -53,17 +53,8 @@ insightflowClient.interceptors.response.use(
 );
 
 export async function fetchInsightFlowHealth(): Promise<InsightFlowHealthResponse> {
-  try {
-    const { data } = await insightflowClient.get<InsightFlowHealthResponse>("/health");
-    return data;
-  } catch (error) {
-    logger.error("Failed to fetch InsightFlow health status:", error);
-    return {
-      status: "OFFLINE",
-      uptime_seconds: 0,
-      error_count_60s: 0,
-    };
-  }
+  const { data } = await insightflowClient.get<InsightFlowHealthResponse>("/health");
+  return data;
 }
 
 export async function fetchInsightFlowStageMetrics(): Promise<InsightFlowStageMetric[]> {

@@ -78,16 +78,8 @@ tantraClient.interceptors.response.use(
  * GET /health
  */
 export async function fetchTantraHealth(): Promise<TantraHealthResponse> {
-  try {
-    const { data } = await tantraClient.get<TantraHealthResponse>("/health");
-    return data;
-  } catch (error) {
-    logger.error("Failed to fetch TANTRA health status:", error);
-    return {
-      status: "offline",
-      timestamp: new Date().toISOString(),
-    };
-  }
+  const { data } = await tantraClient.get<TantraHealthResponse>("/health");
+  return data;
 }
 
 /**

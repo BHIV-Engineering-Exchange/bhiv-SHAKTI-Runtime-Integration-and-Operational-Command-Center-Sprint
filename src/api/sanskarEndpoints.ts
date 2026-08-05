@@ -102,13 +102,8 @@ export interface SanskarTraceResponse {
 }
 
 export async function getHealth(): Promise<SanskarHealthResponse> {
-  try {
-    const { data } = await sanskarClient.get<SanskarHealthResponse>("/health");
-    return data;
-  } catch (error) {
-    logger.error("Failed to fetch SANSKAR health status:", error);
-    return { status: "degraded", service: "sanskar", contract_version: "v1" };
-  }
+  const { data } = await sanskarClient.get<SanskarHealthResponse>("/health");
+  return data;
 }
 
 export async function getRanking(): Promise<SanskarRankingResponse> {

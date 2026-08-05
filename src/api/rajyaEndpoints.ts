@@ -51,11 +51,6 @@ export interface RajyaHealthResponse {
 }
 
 export async function fetchRajyaHealth(): Promise<RajyaHealthResponse> {
-  try {
-    const { data } = await rajyaClient.get<RajyaHealthResponse>("/health");
-    return data && typeof data === "object" && data.status ? data : { status: "healthy" };
-  } catch (error) {
-    logger.error("Failed to fetch Rajya health status:", error);
-    return { status: "degraded" };
-  }
+  const { data } = await rajyaClient.get<RajyaHealthResponse>("/health");
+  return data;
 }

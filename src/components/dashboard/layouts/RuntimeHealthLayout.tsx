@@ -46,54 +46,110 @@ export default memo(function RuntimeHealthLayout() {
     new Map(
       [
         ...rawComponents,
-        ...(bucketHealth.data ? [{
+        ...(bucketHealth.data || bucketHealth.isError || bucketHealth.isLoading ? [{
           name: "bucket_storage",
-          status: bucketHealth.data.status === "degraded" || bucketHealth.data.status === "operational" ? "operational" : "degraded",
+          status: bucketHealth.isLoading
+            ? "degraded"
+            : bucketHealth.isError
+              ? "offline"
+              : (bucketHealth.data?.status === "degraded" || bucketHealth.data?.status === "operational" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
-          response_time_ms: 15,
-          details: `${bucketHealth.data.append_only_storage?.certification || 'APPEND_ONLY'} | ${bucketHealth.data.governance?.certification || 'gov_active'}`,
+          response_time_ms: (bucketHealth.isLoading || bucketHealth.isError) ? null : 15,
+          details: bucketHealth.isLoading
+            ? "Loading..."
+            : bucketHealth.isError
+              ? "Connection failed"
+              : `${bucketHealth.data?.append_only_storage?.certification || 'APPEND_ONLY'} | ${bucketHealth.data?.governance?.certification || 'gov_active'}`,
         }] : []),
-        ...(pranaHealth.data || pranaSystemHealth.data ? [{
+        ...(pranaHealth.data || pranaHealth.isError || pranaHealth.isLoading || pranaSystemHealth.data || pranaSystemHealth.isError || pranaSystemHealth.isLoading ? [{
           name: "prana_service",
-          status: pranaStatus === "degraded" ? "degraded" : "operational",
+          status: (pranaHealth.isLoading || pranaSystemHealth.isLoading)
+            ? "degraded"
+            : (pranaHealth.isError || pranaSystemHealth.isError)
+              ? "offline"
+              : (pranaStatus === "degraded" ? "degraded" : "operational"),
           last_check: new Date().toISOString(),
-          response_time_ms: 10,
-          details: `Mode: ${pranaMode} | Fwd: ${pranaFwd ? 'enabled' : 'disabled'}`,
+          response_time_ms: (pranaHealth.isLoading || pranaSystemHealth.isLoading || pranaHealth.isError || pranaSystemHealth.isError) ? null : 10,
+          details: (pranaHealth.isLoading || pranaSystemHealth.isLoading)
+            ? "Loading..."
+            : (pranaHealth.isError || pranaSystemHealth.isError)
+              ? "Connection failed"
+              : `Mode: ${pranaMode} | Fwd: ${pranaFwd ? 'enabled' : 'disabled'}`,
         }] : []),
-        ...(insightFlowHealth.data ? [{
+        ...(insightFlowHealth.data || insightFlowHealth.isError || insightFlowHealth.isLoading ? [{
           name: "insightflow_runtime",
-          status: insightFlowHealth.data.status === "ONLINE" ? "operational" : "degraded",
+          status: insightFlowHealth.isLoading
+            ? "degraded"
+            : insightFlowHealth.isError
+              ? "offline"
+              : (insightFlowHealth.data?.status === "ONLINE" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
           response_time_ms: null,
-          details: `Errors (60s): ${insightFlowHealth.data.error_count_60s ?? 0}`,
+          details: insightFlowHealth.isLoading
+            ? "Loading..."
+            : insightFlowHealth.isError
+              ? "Connection failed"
+              : `Errors (60s): ${insightFlowHealth.data?.error_count_60s ?? 0}`,
         }] : []),
-        ...(tantraHealth.data ? [{
+        ...(tantraHealth.data || tantraHealth.isError || tantraHealth.isLoading ? [{
           name: "tantra_gated_bridge",
-          status: tantraHealth.data.status === "healthy" || tantraHealth.data.status === "operational" || tantraHealth.data.status === "offline" ? "operational" : "degraded",
-          last_check: tantraHealth.data.timestamp || new Date().toISOString(),
+          status: tantraHealth.isLoading
+            ? "degraded"
+            : tantraHealth.isError || tantraHealth.data?.status === "offline"
+              ? "offline"
+              : (tantraHealth.data?.status === "healthy" || tantraHealth.data?.status === "operational" ? "operational" : "degraded"),
+          last_check: tantraHealth.data?.timestamp || new Date().toISOString(),
           response_time_ms: null,
-          details: `Version: ${tantraHealth.data.version ?? "1.0.0"} | Uptime: ${tantraHealth.data.uptime_seconds != null ? tantraHealth.data.uptime_seconds + "s" : "N/A"}`,
+          details: tantraHealth.isLoading
+            ? "Loading..."
+            : tantraHealth.isError
+              ? "Connection failed"
+              : `Version: ${tantraHealth.data?.version ?? "1.0.0"} | Uptime: ${tantraHealth.data?.uptime_seconds != null ? tantraHealth.data.uptime_seconds + "s" : "N/A"}`,
         }] : []),
         ...(rajyaHealth.data || rajyaHealth.isError || rajyaHealth.isLoading ? [{
           name: "RAJYA Sovereign Core",
-          status: rajyaHealth.isLoading ? "degraded" : (rajyaHealth.data?.status === "healthy" || rajyaHealth.data?.status === "ok" ? "operational" : "degraded"),
+          status: rajyaHealth.isLoading
+            ? "degraded"
+            : rajyaHealth.isError
+              ? "offline"
+              : (rajyaHealth.data?.status === "healthy" || rajyaHealth.data?.status === "ok" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
           response_time_ms: null,
-          details: rajyaHealth.isLoading ? "Cold starting..." : `Status: ${rajyaHealth.data?.status || 'degraded'}`,
+          details: rajyaHealth.isLoading
+            ? "Cold starting..."
+            : rajyaHealth.isError
+              ? "Connection failed"
+              : `Status: ${rajyaHealth.data?.status || 'degraded'}`,
         }] : []),
         ...(sanskarHealth.data || sanskarHealth.isError || sanskarHealth.isLoading ? [{
           name: "SANSKAR Domain Intelligence",
-          status: sanskarHealth.isLoading ? "degraded" : (sanskarHealth.data?.status === "healthy" || sanskarHealth.data?.status === "degraded" ? "operational" : "degraded"),
+          status: sanskarHealth.isLoading
+            ? "degraded"
+            : sanskarHealth.isError
+              ? "offline"
+              : (sanskarHealth.data?.status === "healthy" || sanskarHealth.data?.status === "degraded" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
           response_time_ms: null,
-          details: sanskarHealth.isLoading ? "Cold starting..." : `Version: ${sanskarHealth.data?.contract_version || 'v1'} | Service: ${sanskarHealth.data?.service || 'sanskar'}`,
+          details: sanskarHealth.isLoading
+            ? "Cold starting..."
+            : sanskarHealth.isError
+              ? "Connection failed"
+              : `Version: ${sanskarHealth.data?.contract_version || 'v1'} | Service: ${sanskarHealth.data?.service || 'sanskar'}`,
         }] : []),
         ...(karmaHealth.data || karmaHealth.isError || karmaHealth.isLoading ? [{
           name: "karma_runtime",
-          status: karmaHealth.isLoading ? "degraded" : (karmaHealth.data?.status === "healthy" || karmaHealth.data?.status === "operational" || karmaHealth.data?.status === "OK" ? "operational" : "degraded"),
+          status: karmaHealth.isLoading
+            ? "degraded"
+            : karmaHealth.isError
+              ? "offline"
+              : (karmaHealth.data?.status === "healthy" || karmaHealth.data?.status === "operational" || karmaHealth.data?.status === "OK" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
           response_time_ms: null,
-          details: karmaHealth.isLoading ? "Cold starting..." : `Service: karma`,
+          details: karmaHealth.isLoading
+            ? "Cold starting..."
+            : karmaHealth.isError
+              ? "Connection failed"
+              : `Service: karma`,
         }] : []),
         ...(keshavHealth.data || keshavHealth.isError || keshavHealth.isLoading ? [{
           name: "KESHAV Dependency Engine",

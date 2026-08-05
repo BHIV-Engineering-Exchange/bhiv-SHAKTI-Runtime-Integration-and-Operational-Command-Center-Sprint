@@ -20,7 +20,7 @@
 
 | Field | Value |
 |---|---|
-| **Filename** | `02_executive_overview-1.png` and `02_executive_overview-2.png` |
+| **Filename** | `02_Dashboard_overview-1.png`, `02_Dashboard_overview-2.png`, `02_Dashboard_overview-3.png`, and `02_Dashboard_overview--4.png` |
 | **Navigate to** | `http://localhost:5173` — wait for all zones to populate with live data |
 | **How to trigger** | Ensure backend is running. Set viewport to standard desktop size. Capture the page section by section. |
 | **Caption** | Executive overview screenshots showing all dashboard zones populated with live operational data. |
@@ -118,8 +118,8 @@
 |---|---|
 | **Filename** | `10_runtime_health.png` |
 | **Navigate to** | `http://localhost:5173` — focus on Row 5, left column |
-| **How to trigger** | Capture the Runtime Health card showing the health progress bar, KPI strip, and active component list. |
-| **Caption** | Runtime Health — health score progress bar, summary KPIs, and component statuses. |
+| **How to trigger** | Stop one or more backend services (like SANSKAR, KESHAV, or RAJYA). Capture the Runtime Health card showing the offline components correctly marked as **Offline** (red dot) with **Connection failed** details, alongside the health progress bar, KPI strip, and active component list. |
+| **Caption** | Runtime Health — health score progress bar, summary KPIs, and component statuses reflecting true backend network states. |
 | **Mandatory** | ✅ Yes |
 
 ---
@@ -333,7 +333,7 @@
 | # | Filename | Category | Mandatory |
 |---|---|---|---|
 | 1 | `01_dashboard_startup.png` | Startup | ✅ |
-| 2 | `02_executive_overview-1.png` / `02_executive_overview-2.png` | Executive Overview | ✅ |
+| 2 | `02_Dashboard_overview-1.png` / `02_Dashboard_overview-2.png` / `02_Dashboard_overview-3.png` / `02_Dashboard_overview--4.png` | Executive Overview | ✅ |
 | 3 | `03_executive_kpis.png` | KPI Cards | ✅ |
 | 4 | `04_operations_compute.png` | Operations | ✅ |
 | 5 | `05_integrations_alerts.png` | Integrations | ✅ |
