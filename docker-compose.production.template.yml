@@ -1,0 +1,18 @@
+services:
+  Shakti-dashboard:
+    image: bhiv/shakti-dashboard:IMG_TAG
+    restart: unless-stopped
+    container_name: shakti-dashboard
+    ports:
+      - "5176:5173"
+    networks:
+      - shakti-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  shakti-network:
+    driver: bridge
