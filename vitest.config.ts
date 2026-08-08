@@ -11,8 +11,32 @@ export default defineConfig({
     exclude: ["**/node_modules/**", "**/dist/**", "src/test/e2e/**", "**/vendor/**"],
     server: {
       deps: {
-        inline: true
+        inline: [
+          "lucide-react",
+          "react",
+          "react-dom",
+          "@bhiv/ui",
+          "@bhiv/utils",
+          "@bhiv/dashboard-sdk",
+          "@bhiv/dashboard-layout"
+        ]
       }
+    },
+    deps: {
+      optimizer: {
+        web: {
+          include: ["react", "react-dom", "lucide-react"]
+        }
+      }
+    },
+    alias: {
+      "react": path.resolve(__dirname, "./node_modules/react"),
+      "react-dom": path.resolve(__dirname, "./node_modules/react-dom"),
+      "@": path.resolve(__dirname, "./src"),
+      "@bhiv/utils": path.resolve(__dirname, "./vendor/sdk/packages/utils/src/index.ts"),
+      "@bhiv/ui": path.resolve(__dirname, "./vendor/sdk/packages/ui/src/index.ts"),
+      "@bhiv/dashboard-sdk": path.resolve(__dirname, "./vendor/sdk/packages/dashboard-sdk/src/index.ts"),
+      "@bhiv/dashboard-layout": path.resolve(__dirname, "./vendor/sdk/packages/dashboard-layout/src/index.ts"),
     }
   },
   resolve: {
