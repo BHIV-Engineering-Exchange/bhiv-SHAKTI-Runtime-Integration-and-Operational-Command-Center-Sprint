@@ -1,10 +1,14 @@
 import { useState, useEffect } from "react";
 import { Bell, Activity } from "lucide-react";
 import { useDashboardConfig } from "@/components/dashboard/DashboardProvider";
+import { useTheme, useFilters, type ThemeMode } from "@bhiv/dashboard-sdk";
 
 export default function Header() {
   const { branding, features } = useDashboardConfig();
   const [time, setTime] = useState(new Date());
+
+  const { mode, setMode } = useTheme();
+  const { engine, state } = useFilters();
 
   useEffect(() => {
     const id = setInterval(() => setTime(new Date()), 1000);
@@ -22,6 +26,28 @@ export default function Header() {
         </div>
         <span className="text-slate-600 text-sm hidden sm:block">|</span>
         <span className="text-[13px] text-slate-400 hidden sm:block">{branding.subtitle}</span>
+      </div>
+
+      {/* Stage 4: Theme & Filter Synchronization Controls */}
+      <div className="flex items-center gap-3 mx-4 flex-1 justify-center max-w-lg">
+        <input
+          type="text"
+          placeholder="Filter command center..."
+          value={state.searchQuery}
+          onChange={(e) => engine.setSearchQuery(e.target.value)}
+          className="bg-slate-800 border border-slate-700 text-xs text-white placeholder-slate-500 rounded-md px-3 py-1 focus:outline-none focus:border-indigo-500 w-full max-w-xs"
+        />
+        <select
+          value={mode}
+          onChange={(e) => setMode(e.target.value as ThemeMode)}
+          className="bg-slate-800 border border-slate-700 text-xs text-slate-300 rounded-md px-2.5 py-1 focus:outline-none focus:border-indigo-500 shrink-0"
+        >
+          <option value="dark">Dark Theme</option>
+          <option value="light">Light Theme</option>
+          <option value="high-contrast">High Contrast</option>
+          <option value="cyberpunk">Cyberpunk</option>
+          <option value="emerald">Emerald</option>
+        </select>
       </div>
 
       <div className="flex items-center gap-4">
