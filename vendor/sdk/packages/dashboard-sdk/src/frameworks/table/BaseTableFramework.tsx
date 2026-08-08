@@ -1,4 +1,3 @@
-import React from "react";
 import { DataTable } from "@bhiv/ui";
 import type { DataTableColumn } from "@bhiv/ui";
 
