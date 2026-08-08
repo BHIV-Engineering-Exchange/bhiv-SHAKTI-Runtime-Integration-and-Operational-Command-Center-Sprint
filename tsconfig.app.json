@@ -10,7 +10,11 @@
     "baseUrl": ".",
     "ignoreDeprecations": "6.0",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@bhiv/utils": ["vendor/sdk/packages/utils/src/index.ts"],
+      "@bhiv/ui": ["vendor/sdk/packages/ui/src/index.ts"],
+      "@bhiv/dashboard-sdk": ["vendor/sdk/packages/dashboard-sdk/src/index.ts"],
+      "@bhiv/dashboard-layout": ["vendor/sdk/packages/dashboard-layout/src/index.ts"]
     },
 
     /* Bundler mode */

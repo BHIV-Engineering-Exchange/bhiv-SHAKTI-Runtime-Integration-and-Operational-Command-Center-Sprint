@@ -1,5 +1,6 @@
 import { memo } from "react";
-import { statusColor, statusDot } from "@/utils/format";
+import { StatusIndicatorRow } from "@bhiv/ui";
+import type { StatusTone } from "@bhiv/ui";
 import type { OperationalStatus } from "@/types/api";
 
 export interface HealthIndicatorProps {
@@ -22,19 +23,25 @@ export const HealthIndicator = memo(function HealthIndicator({
   detail,
   noBorder = false,
 }: HealthIndicatorProps) {
+  // Map SHAKTI OperationalStatus to SDK StatusTone
+  const sdkTone: StatusTone = 
+    status === "online" ? "success" : 
+    status === "offline" ? "danger" : 
+    "caution"; // Maps both degraded and warning to caution
+
+  // Build the metrics array from responseTime and detail props
+  const metrics = [
+    { value: responseTime != null ? `${responseTime}ms` : "—", width: "w-14" as const },
+    { value: detail || "—", width: "w-16" as const, title: detail }
+  ];
+
   return (
-    <div className={`flex items-center gap-2 py-1.5 ${noBorder ? "" : "border-b border-slate-700/30 last:border-0"}`}>
-      <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${statusDot(status)}`} />
-      <span className="text-xs text-slate-300 flex-1 truncate" title={name}>{name}</span>
-      <span className="text-xs text-slate-500 w-14 text-right">
-        {responseTime != null ? `${responseTime}ms` : "—"}
-      </span>
-      <span className="text-xs text-slate-500 w-16 text-right truncate" title={detail}>
-        {detail ? detail : "—"}
-      </span>
-      <span className={`text-xs font-medium w-20 text-right capitalize ${statusColor(status)}`}>
-        {status}
-      </span>
-    </div>
+    <StatusIndicatorRow
+      label={name}
+      tone={sdkTone}
+      statusText={status}
+      metrics={metrics}
+      noBorder={noBorder}
+    />
   );
 });
