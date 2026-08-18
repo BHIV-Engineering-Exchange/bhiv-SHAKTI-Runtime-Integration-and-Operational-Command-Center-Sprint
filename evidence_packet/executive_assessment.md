@@ -25,17 +25,22 @@ Audit the SHAKTI Command Center codebase and document the production readiness o
     *   *Calculation*: 27/27 Vitest specs passed, local Vite compile built cleanly, zero syntax errors.
 *   **Local Container Scheme: 100%**
     *   *Calculation*: Local development Compose scheme, production template, and multi-stage Dockerfiles are syntactically complete.
-*   **Production VM Readiness: Pending VM Verification**
-    *   *Calculation*: The active container status, actual VM logs, SSL configuration, and production API connectivity cannot be verified locally and must be captured from the VM by Alay.
+*   **Production VM Readiness: Verified (2026-08-13)**
+    *   *Calculation*: Active container status (`Up 20 hours (healthy)`), runtime serving logs, HTTPS configuration, and production dashboard accessibility have been verified via VM evidence collected on 2026-08-13. See [production_vm_shakti_containers_status_review_2026-08-13.md](file:///c:/Pratik_Bhuwad/shakti-command-center/evidence_packet/runtime_logs/production_vm_shakti_containers_status_review_2026-08-13.md).
 
 ---
 
 ### 5. Risk Flags & Blockers
-*   **Niyantran Cloud Service Outage**: The Niyantran backend server (`https://niyantran.blackholeinfiverse.com`) is currently unresponsive and returning `504 Gateway Time-out` errors. This blocks the Employee Execution and Delivery Intelligence zones from loading live data.
-*   **Unverified VM States**: Production VM runtime logs, container statuses, and GitHub Action run IDs are unavailable locally.
+*   **Niyantran Cloud Service Outage**: **RESOLVED** (2026-08-13). The previous `504 Gateway Time-out` on `https://niyantran.blackholeinfiverse.com` has been resolved. Retest on 2026-08-13 confirmed: `/api/aims` → `200 OK` (2516 ms), `/api/aims/with-progress` → `200 OK` (376 ms), `/api/dashboard/stats` → `200 OK` (48 ms). Evidence: [niyantran_retest_2026-08-13.md](file:///c:/Pratik_Bhuwad/shakti-command-center/evidence_packet/runtime_logs/niyantran_retest_2026-08-13.md).
+*   **Remaining Backend Failures**: BHIV Bucket (503), Karma `/intelligence/lineage` (500), InsightFlow (TIMEOUT), Rajya (TIMEOUT), Keshav `/health` (TIMEOUT), Setu (404), Sanskar (localhost/blocked), Control Plane (localhost/blocked). These require Alay / backend team resolution.
+*   **Missing Independent QA Sign-Off**: Vinayak's testing verdict is still pending.
+*   **VM States**: Production VM container status and runtime logs have been collected on 2026-08-13. GitHub Action run screenshot is available. VM `RELEASE_HISTORY.md` is pending from Alay.
 
 ---
 
 ### 6. Recommended Action & Executive Verdict
-**Verdict**: The codebase is **fully verified and ready for deployment**, but the deployment cannot be certified until Alay resolves the Niyantran 504 server-side timeout and provides VM health logs.
-**Immediate Step**: Notify Alay of the Niyantran service outage and obtain VM container status outputs once the backend is restored.
+**Verdict**: The codebase is **fully verified and deployed to production**. The SHAKTI dashboard container is running and healthy on the production VM. Niyantran 504 is resolved. However, final certification cannot be granted until the remaining 8 backend integration failures are resolved by Alay / backend team and Vinayak completes independent QA.
+**Immediate Steps**:
+1.  Alay: Restore BHIV Bucket, fix Karma lineage, wake InsightFlow/Rajya/Keshav, reconfigure Setu tunnel, provide production endpoints for Sanskar and Control Plane, provide VM `RELEASE_HISTORY.md`.
+2.  Vinayak: Execute independent QA across all dashboard zones.
+3.  TMS/GC: Complete sign-offs once all blockers are resolved.

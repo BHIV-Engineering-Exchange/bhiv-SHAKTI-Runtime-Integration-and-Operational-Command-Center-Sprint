@@ -1,0 +1,167 @@
+{
+  "date": "2026-08-13",
+  "environment": "production",
+  "method": "read-only HTTP verification",
+  "services": [
+    {
+      "service": "BHIV Prana",
+      "base_url": "http://163.128.209.18:8103",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 117,
+      "result": "PASS",
+      "notes": "Healthy"
+    },
+    {
+      "service": "BHIV Prana",
+      "base_url": "http://163.128.209.18:8103",
+      "endpoint": "/prana/propagation-log",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 66,
+      "result": "PASS",
+      "notes": "Retrieved propagation logs"
+    },
+    {
+      "service": "InsightFlow",
+      "base_url": "https://bhiv-svacs.onrender.com",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": "TIMEOUT",
+      "latency_ms": 15014,
+      "result": "FAIL",
+      "notes": "Timeout (Render cold start or offline)"
+    },
+    {
+      "service": "InsightFlow",
+      "base_url": "https://bhiv-svacs.onrender.com",
+      "endpoint": "/stage-metrics",
+      "method": "GET",
+      "status": "TIMEOUT",
+      "latency_ms": 15006,
+      "result": "FAIL",
+      "notes": "Timeout"
+    },
+    {
+      "service": "Tantra",
+      "base_url": "https://tantra-gated-bridge-infrastructure.onrender.com",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 12362,
+      "result": "PASS",
+      "notes": "Healthy (Render cold start recovery)"
+    },
+    {
+      "service": "Rajya",
+      "base_url": "https://text-risk-scoring-service.onrender.com",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": "TIMEOUT",
+      "latency_ms": 15012,
+      "result": "FAIL",
+      "notes": "Timeout (Render cold start or offline)"
+    },
+    {
+      "service": "Keshav",
+      "base_url": "https://keshav-cia7.onrender.com",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": "TIMEOUT",
+      "latency_ms": 15013,
+      "result": "FAIL",
+      "notes": "Initial health request timed out"
+    },
+    {
+      "service": "Keshav",
+      "base_url": "https://keshav-cia7.onrender.com",
+      "endpoint": "/metrics/json",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 7623,
+      "result": "PASS",
+      "notes": "Resolved metrics dashboard data"
+    },
+    {
+      "service": "Karma",
+      "base_url": "http://163.128.209.18:8102",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": 200,
+      "latency_ms": 60,
+      "result": "PASS",
+      "notes": "Basic service reachability operational"
+    },
+    {
+      "service": "Karma",
+      "base_url": "http://163.128.209.18:8102",
+      "endpoint": "/intelligence/lineage",
+      "method": "GET",
+      "status": 500,
+      "latency_ms": 5327,
+      "result": "FAIL",
+      "notes": "Internal Server Error"
+    },
+    {
+      "service": "BHIV Bucket",
+      "base_url": "https://bhiv-bucket-i1l6.onrender.com",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": 503,
+      "latency_ms": 287,
+      "result": "FAIL",
+      "notes": "Service Unavailable"
+    },
+    {
+      "service": "BHIV Bucket",
+      "base_url": "https://bhiv-bucket-i1l6.onrender.com",
+      "endpoint": "/bucket/storage-stats",
+      "method": "GET",
+      "status": 503,
+      "latency_ms": 735,
+      "result": "FAIL",
+      "notes": "Service Unavailable"
+    },
+    {
+      "service": "Setu",
+      "base_url": "https://f12f-2409-40c2-1036-1957-5840-48d5-a6b3-98ab.ngrok-free.app",
+      "endpoint": "/api/v1/health",
+      "method": "GET",
+      "status": 404,
+      "latency_ms": 49,
+      "result": "FAIL",
+      "notes": "Ngrok tunnel returned 404"
+    },
+    {
+      "service": "Setu",
+      "base_url": "https://f12f-2409-40c2-1036-1957-5840-48d5-a6b3-98ab.ngrok-free.app",
+      "endpoint": "/api/v1/ready",
+      "method": "GET",
+      "status": 404,
+      "latency_ms": 18,
+      "result": "FAIL",
+      "notes": "Ngrok tunnel returned 404"
+    },
+    {
+      "service": "Sanskar",
+      "base_url": "http://localhost:8000",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": "ERROR",
+      "latency_ms": 1,
+      "result": "BLOCKED",
+      "notes": "Localhost offline (Connection refused)"
+    },
+    {
+      "service": "Control Plane",
+      "base_url": "http://127.0.0.1:8009",
+      "endpoint": "/health",
+      "method": "GET",
+      "status": "ERROR",
+      "latency_ms": 1,
+      "result": "BLOCKED",
+      "notes": "Localhost offline (Connection refused)"
+    }
+  ]
+}
