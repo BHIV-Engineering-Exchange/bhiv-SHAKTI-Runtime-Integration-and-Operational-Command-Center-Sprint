@@ -34,14 +34,16 @@ export const niyantranClient = axios.create({
 // Request interceptor to attach authentication & execution keys
 niyantranClient.interceptors.request.use(
   (config) => {
-    const authToken =
-      import.meta.env.VITE_NIYANTRAN_AUTH_TOKEN ||
-      (typeof localStorage !== "undefined"
-        ? localStorage.getItem("x-auth-token")
-        : null);
+    const localToken =
+      typeof localStorage !== "undefined"
+        ? localStorage.getItem("x-auth-token") || localStorage.getItem("token")
+        : null;
+
+    const authToken = localToken || import.meta.env.VITE_NIYANTRAN_AUTH_TOKEN;
 
     if (authToken) {
       config.headers["x-auth-token"] = authToken;
+      config.headers["Authorization"] = `Bearer ${authToken}`;
     }
 
     if (DEFAULT_EXECUTION_KEY) {
