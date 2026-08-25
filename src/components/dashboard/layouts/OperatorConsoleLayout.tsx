@@ -66,14 +66,14 @@ export default memo(function OperatorConsoleLayout() {
       assignment: s.current_operation ?? undefined,
     })), [runtime.data?.sessions]);
 
-  const isLoading = alerts.isLoading && runtime.isLoading && audit.isLoading;
-  const isError = !isLoading && (alerts.isError && runtime.isError && audit.isError);
-  const hasData = alerts.data !== undefined || runtime.data !== undefined || audit.data !== undefined;
+  const isLoading = alerts.isLoading && runtime.isLoading && audit.isLoading && niyantranTasks.isLoading;
+  const isError = !isLoading && (alerts.isError && runtime.isError && audit.isError && niyantranTasks.isError);
+  const hasData = alerts.data !== undefined || runtime.data !== undefined || audit.data !== undefined || (niyantranTasks.data !== undefined && niyantranTasks.data.length > 0);
 
   const timestamp = audit.data ? new Date().toISOString() : (alerts.data?.timestamp || runtime.data?.timestamp);
-  const isFetching = alerts.isFetching || runtime.isFetching || audit.isFetching;
-  const isStale = alerts.isStale || runtime.isStale || audit.isStale;
-  const traceId = (alerts.data as any)?.trace_id || (runtime.data as any)?.trace_id;
+  const isFetching = alerts.isFetching || runtime.isFetching || audit.isFetching || niyantranTasks.isFetching;
+  const isStale = alerts.isStale || runtime.isStale || audit.isStale || niyantranTasks.isStale;
+  const traceId = (alerts.data as any)?.trace_id || (runtime.data as any)?.trace_id || (niyantranTasks.data as any)?.trace_id;
 
   return (
     <DashboardCard
