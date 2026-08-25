@@ -25,21 +25,35 @@ const NIYANTRAN_BASE_URL =
 const DEFAULT_EXECUTION_KEY =
   import.meta.env.VITE_NIYANTRAN_EXECUTION_KEY || "niyantran-dev-exec-key";
 
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(";").shift() || null;
+  return null;
+}
+
 export const niyantranClient = axios.create({
   baseURL: NIYANTRAN_BASE_URL,
   timeout: 15000,
+  withCredentials: true,
   headers: { "Content-Type": "application/json" },
 });
 
 // Request interceptor to attach authentication & execution keys
 niyantranClient.interceptors.request.use(
   (config) => {
+    const cookieToken =
+      getCookie("WorkflowToken") || getCookie("x-auth-token") || getCookie("token");
+
     const localToken =
       typeof localStorage !== "undefined"
-        ? localStorage.getItem("x-auth-token") || localStorage.getItem("token")
+        ? localStorage.getItem("WorkflowToken") ||
+          localStorage.getItem("x-auth-token") ||
+          localStorage.getItem("token")
         : null;
 
-    const authToken = localToken || import.meta.env.VITE_NIYANTRAN_AUTH_TOKEN;
+    const authToken = cookieToken || localToken || import.meta.env.VITE_NIYANTRAN_AUTH_TOKEN;
 
     if (authToken) {
       config.headers["x-auth-token"] = authToken;

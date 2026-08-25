@@ -22,14 +22,15 @@ export const tantraClient = axios.create({
   },
 });
 
-// Interceptor to attach bridge signature if present in environment or local storage
+// Interceptor to attach bridge signature if present in local storage or environment
 tantraClient.interceptors.request.use(
   (config) => {
-    const signature =
-      import.meta.env.VITE_TANTRA_BRIDGE_SIGNATURE ||
-      (typeof localStorage !== "undefined"
-        ? localStorage.getItem("x-bridge-signature")
-        : null);
+    const localSig =
+      typeof localStorage !== "undefined"
+        ? localStorage.getItem("x-bridge-signature") || localStorage.getItem("token")
+        : null;
+
+    const signature = localSig || import.meta.env.VITE_TANTRA_BRIDGE_SIGNATURE;
 
     if (signature) {
       // Attach both as standard Authorization header and custom signature header to cover all specs
