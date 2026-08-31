@@ -14,7 +14,7 @@ COPY . .
 
 
 # Set non-sensitive environment variables directly in the Dockerfile
-ENV VITE_CONTROL_PLANE_URL="http://127.0.0.1:8009"
+ENV VITE_CONTROL_PLANE_URL="http://163.128.209.18:8120"
 ENV VITE_BUCKET_SERVICE_URL="http://163.128.209.18:8012/docs"
 ENV VITE_PRANA_SERVICE_URL="http://163.128.209.18:8103"
 ENV VITE_NIYANTRAN_URL="https://niyantran.blackholeinfiverse.com"
