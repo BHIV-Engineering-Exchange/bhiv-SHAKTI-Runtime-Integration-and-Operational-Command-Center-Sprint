@@ -20,10 +20,10 @@ ENV VITE_PRANA_SERVICE_URL="http://163.128.209.18:8103"
 ENV VITE_NIYANTRAN_URL="https://niyantran.blackholeinfiverse.com"
 ENV VITE_INSIGHTFLOW_URL="https://bhiv-svacs.onrender.com"
 ENV VITE_TANTRA_BASE_URL="https://tantra-gated-bridge-infrastructure.onrender.com"
-ENV VITE_RAJYA_BASE_URL="https://text-risk-scoring-service.onrender.com"
+ENV VITE_RAJYA_BASE_URL="http://163.128.209.18:8015"
 ENV VITE_SANSKAR_BASE_URL="http://localhost:8000"
 ENV VITE_KARMA_URL="http://163.128.209.18:8102"
-ENV VITE_KESHAV_URL="https://keshav-cia7.onrender.com"
+ENV VITE_KESHAV_URL="http://163.128.209.18:5003"
 ENV VITE_SETU_URL="http://163.128.209.18:8014"
 
 # Declare build arguments for sensitive variables passed via GitHub secrets
