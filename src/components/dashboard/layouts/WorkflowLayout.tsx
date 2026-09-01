@@ -24,13 +24,19 @@ const getStatusBadgeClass = (status: string) => {
 
 export default memo(function WorkflowLayout() {
   const setuProjects = useSetuProjects();
-  const projects = setuProjects.data ?? [];
+  const rawProjects = setuProjects.data;
+  const projects = useMemo<any[]>(() => {
+    if (Array.isArray(rawProjects)) return rawProjects;
+    if (Array.isArray((rawProjects as any)?.projects)) return (rawProjects as any).projects;
+    if (Array.isArray((rawProjects as any)?.data)) return (rawProjects as any).data;
+    return [];
+  }, [rawProjects]);
 
   const milestoneQueries = useQueries({
-    queries: projects.map((p) => ({
-      queryKey: ["setu", "project-milestones", p.id],
-      queryFn: () => getProjectMilestones(p.id),
-      enabled: !!p.id,
+    queries: projects.map((p: any) => ({
+      queryKey: ["setu", "project-milestones", p?.id],
+      queryFn: () => (p?.id ? getProjectMilestones(p.id) : Promise.resolve([])),
+      enabled: !!p?.id,
     })),
   });
 
@@ -44,20 +50,29 @@ export default memo(function WorkflowLayout() {
       createdTime: string;
     }> = [];
 
-    projects.forEach((proj, idx) => {
+    projects.forEach((proj: any, idx: number) => {
       const q = milestoneQueries[idx];
-      if (q && q.data) {
-        q.data.forEach((m) => {
+      const rawMilestones = q?.data;
+      const milestones: any[] = Array.isArray(rawMilestones)
+        ? rawMilestones
+        : Array.isArray((rawMilestones as any)?.milestones)
+          ? (rawMilestones as any).milestones
+          : Array.isArray((rawMilestones as any)?.data)
+            ? (rawMilestones as any).data
+            : [];
+
+      milestones.forEach((m) => {
+        if (m) {
           list.push({
-            projectId: proj.id,
-            projectName: proj.name,
-            milestoneId: m.id,
-            milestoneName: m.name,
-            status: m.status,
-            createdTime: proj.created_at,
+            projectId: proj?.id || "",
+            projectName: proj?.name || "Project",
+            milestoneId: m.id || m.milestone_id || "",
+            milestoneName: m.name || m.title || "Milestone",
+            status: m.status || "PENDING",
+            createdTime: proj?.created_at || new Date().toISOString(),
           });
-        });
-      }
+        }
+      });
     });
     return list;
   }, [projects, milestoneQueries]);

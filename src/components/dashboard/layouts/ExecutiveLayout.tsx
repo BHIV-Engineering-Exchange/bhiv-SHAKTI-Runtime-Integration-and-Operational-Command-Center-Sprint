@@ -53,19 +53,32 @@ export default memo(function ExecutiveLayout() {
   const engCapacity = useEngineeringCapacity();
   const setuProjects = useSetuProjects();
   
-  const projects = setuProjects.data ?? [];
+  const rawProjects = setuProjects.data;
+  const projects = useMemo<any[]>(() => {
+    if (Array.isArray(rawProjects)) return rawProjects;
+    if (Array.isArray((rawProjects as any)?.projects)) return (rawProjects as any).projects;
+    if (Array.isArray((rawProjects as any)?.data)) return (rawProjects as any).data;
+    return [];
+  }, [rawProjects]);
+
   const milestoneQueries = useQueries({
-    queries: projects.map((p) => ({
-      queryKey: ["setu", "project-milestones", p.id],
-      queryFn: () => getProjectMilestones(p.id),
-      enabled: !!p.id,
+    queries: projects.map((p: any) => ({
+      queryKey: ["setu", "project-milestones", p?.id],
+      queryFn: () => (p?.id ? getProjectMilestones(p.id) : Promise.resolve([])),
+      enabled: !!p?.id,
     })),
   });
 
   const totalMilestones = useMemo(() => {
     let count = 0;
     milestoneQueries.forEach((q) => {
-      if (q.data) count += q.data.length;
+      if (Array.isArray(q.data)) {
+        count += q.data.length;
+      } else if (Array.isArray((q.data as any)?.milestones)) {
+        count += (q.data as any).milestones.length;
+      } else if (Array.isArray((q.data as any)?.data)) {
+        count += (q.data as any).data.length;
+      }
     });
     return count;
   }, [milestoneQueries]);

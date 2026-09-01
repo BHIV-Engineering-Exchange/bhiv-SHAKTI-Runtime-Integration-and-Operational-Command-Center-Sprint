@@ -29,8 +29,15 @@ export async function getReady(): Promise<HealthResponse> {
 }
 
 export async function getProjects(): Promise<Project[]> {
-  const { data } = await setuClient.get<Project[]>("/projects");
-  return data;
+  try {
+    const { data } = await setuClient.get<any>("/projects");
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.projects)) return data.projects;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 export async function getProject(projectId: string): Promise<Project> {
@@ -39,8 +46,15 @@ export async function getProject(projectId: string): Promise<Project> {
 }
 
 export async function getProjectMilestones(projectId: string): Promise<Milestone[]> {
-  const { data } = await setuClient.get<Milestone[]>(`/projects/${projectId}/milestones`);
-  return data;
+  try {
+    const { data } = await setuClient.get<any>(`/projects/${projectId}/milestones`);
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.milestones)) return data.milestones;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }
 
 export async function getTask(taskId: string): Promise<Task> {
@@ -49,6 +63,13 @@ export async function getTask(taskId: string): Promise<Task> {
 }
 
 export async function getTaskAssignments(taskId: string): Promise<Assignment[]> {
-  const { data } = await setuClient.get<Assignment[]>(`/tasks/${taskId}/assignments`);
-  return data;
+  try {
+    const { data } = await setuClient.get<any>(`/tasks/${taskId}/assignments`);
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.assignments)) return data.assignments;
+    if (Array.isArray(data?.data)) return data.data;
+    return [];
+  } catch {
+    return [];
+  }
 }

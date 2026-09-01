@@ -157,8 +157,12 @@ export default memo(function ObservabilityLayout() {
         list.push({ label: "Error Rate", value: ((data.summary.error_rate ?? 0) * 100).toFixed(2), unit: "%" });
       }
       if (scaleStatus.data) {
-        list.push({ label: "Concurrent Writes", value: `${scaleStatus.data.concurrent_writes.current}/${scaleStatus.data.concurrent_writes.limit}` });
-        list.push({ label: "Storage Used", value: `${scaleStatus.data.storage.usage_percent.toFixed(1)}%` });
+        if (scaleStatus.data.concurrent_writes?.current != null && scaleStatus.data.concurrent_writes?.limit != null) {
+          list.push({ label: "Concurrent Writes", value: `${scaleStatus.data.concurrent_writes.current}/${scaleStatus.data.concurrent_writes.limit}` });
+        }
+        if (scaleStatus.data.storage?.usage_percent != null) {
+          list.push({ label: "Storage Used", value: `${scaleStatus.data.storage.usage_percent.toFixed(1)}%` });
+        }
       }
       if (stageMetrics.data && stageMetrics.data.length > 0) {
         const activeStages = stageMetrics.data.filter(s => s.status === "live").length;
@@ -231,12 +235,12 @@ export default memo(function ObservabilityLayout() {
               </span>
             );
           }
-          if (scaleStatus.data) {
+          if (scaleStatus.data && scaleStatus.data.storage) {
             items.push(
               <span key="storage" className="flex items-center gap-1">
                 <span className="text-slate-500">Storage:</span>
                 <span className="text-cyan-400 font-semibold">
-                  {scaleStatus.data.storage.used_gb}G/{scaleStatus.data.storage.total_gb}G
+                  {scaleStatus.data.storage.used_gb ?? 0}G/{scaleStatus.data.storage.total_gb ?? 0}G
                 </span>
               </span>
             );
