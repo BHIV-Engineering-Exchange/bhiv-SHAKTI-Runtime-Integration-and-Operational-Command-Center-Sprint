@@ -1,0 +1,52 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/control-plane/:path*",
+      "destination": "http://163.128.209.18:8120/:path*"
+    },
+    {
+      "source": "/api/bucket/:path*",
+      "destination": "http://163.128.209.18:8012/:path*"
+    },
+    {
+      "source": "/api/prana/:path*",
+      "destination": "http://163.128.209.18:8103/:path*"
+    },
+    {
+      "source": "/api/rajya/:path*",
+      "destination": "http://163.128.209.18:8015/:path*"
+    },
+    {
+      "source": "/api/karma/:path*",
+      "destination": "http://163.128.209.18:8102/:path*"
+    },
+    {
+      "source": "/api/keshav/:path*",
+      "destination": "http://163.128.209.18:5003/:path*"
+    },
+    {
+      "source": "/api/setu/:path*",
+      "destination": "http://163.128.209.18:8014/:path*"
+    },
+    {
+      "source": "/api/sanskar/:path*",
+      "destination": "http://163.128.209.18:8000/:path*"
+    },
+    {
+      "source": "/api/niyantran/:path*",
+      "destination": "https://niyantran.blackholeinfiverse.com/:path*"
+    },
+    {
+      "source": "/api/insightflow/:path*",
+      "destination": "https://bhiv-svacs.onrender.com/:path*"
+    },
+    {
+      "source": "/api/tantra/:path*",
+      "destination": "https://tantra-gated-bridge-infrastructure.onrender.com/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

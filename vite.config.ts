@@ -15,7 +15,12 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Local Services Proxies
+      // Control Plane Proxy
+      "/api/control-plane": {
+        target: "http://163.128.209.18:8120",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/control-plane/, ""),
+      },
       "/api/control-plane-8003": {
         target: "http://127.0.0.1:8003",
         changeOrigin: true,
@@ -27,13 +32,13 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/control-plane-8009/, ""),
       },
       "/api/sanskar": {
-        target: "http://localhost:8000",
+        target: "http://163.128.209.18:8000",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/sanskar/, ""),
       },
-      // Remote Services Proxies (to bypass browser CORS restrictions locally)
+      // Remote Services Proxies (to bypass browser CORS & Mixed Content restrictions)
       "/api/bucket": {
-        target: "https://bhiv-bucket-i1l6.onrender.com",
+        target: "http://163.128.209.18:8012",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/bucket/, ""),
       },
@@ -58,7 +63,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/tantra/, ""),
       },
       "/api/rajya": {
-        target: "https://text-risk-scoring-service.onrender.com",
+        target: "http://163.128.209.18:8015",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/rajya/, ""),
       },
@@ -68,9 +73,14 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/karma/, ""),
       },
       "/api/keshav": {
-        target: "https://keshav-cia7.onrender.com",
+        target: "http://163.128.209.18:5003",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/keshav/, ""),
+      },
+      "/api/setu": {
+        target: "http://163.128.209.18:8014",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/setu/, ""),
       },
     },
   },
