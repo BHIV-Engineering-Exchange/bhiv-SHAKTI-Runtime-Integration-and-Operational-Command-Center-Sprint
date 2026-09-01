@@ -14,17 +14,17 @@ COPY . .
 
 
 # Set non-sensitive environment variables directly in the Dockerfile
-ENV VITE_CONTROL_PLANE_URL="http://163.128.209.18:8120"
-ENV VITE_BUCKET_SERVICE_URL="http://163.128.209.18:8012/docs"
-ENV VITE_PRANA_SERVICE_URL="http://163.128.209.18:8103"
+ENV VITE_CONTROL_PLANE_URL="/api/control-plane"
+ENV VITE_BUCKET_SERVICE_URL="/api/bucket"
+ENV VITE_PRANA_SERVICE_URL="/api/prana"
 ENV VITE_NIYANTRAN_URL="https://niyantran.blackholeinfiverse.com"
-ENV VITE_INSIGHTFLOW_URL="https://bhiv-svacs.onrender.com"
-ENV VITE_TANTRA_BASE_URL="https://tantra-gated-bridge-infrastructure.onrender.com"
-ENV VITE_RAJYA_BASE_URL="http://163.128.209.18:8015"
-ENV VITE_SANSKAR_BASE_URL="http://localhost:8000"
-ENV VITE_KARMA_URL="http://163.128.209.18:8102"
-ENV VITE_KESHAV_URL="http://163.128.209.18:5003"
-ENV VITE_SETU_URL="http://163.128.209.18:8014"
+ENV VITE_INSIGHTFLOW_URL="/api/insightflow"
+ENV VITE_TANTRA_BASE_URL="/api/tantra"
+ENV VITE_RAJYA_BASE_URL="/api/rajya"
+ENV VITE_SANSKAR_BASE_URL="/api/sanskar"
+ENV VITE_KARMA_URL="/api/karma"
+ENV VITE_KESHAV_URL="/api/keshav"
+ENV VITE_SETU_URL="/api/setu"
 
 # Declare build arguments for sensitive variables passed via GitHub secrets
 ARG VITE_NIYANTRAN_EXECUTION_KEY
