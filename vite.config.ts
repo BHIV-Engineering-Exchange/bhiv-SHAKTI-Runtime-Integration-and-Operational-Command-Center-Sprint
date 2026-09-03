@@ -53,12 +53,12 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/niyantran/, ""),
       },
       "/api/insightflow": {
-        target: "https://bhiv-svacs.onrender.com",
+        target: "http://163.128.209.18:8122",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/insightflow/, ""),
       },
       "/api/tantra": {
-        target: "https://tantra-gated-bridge-infrastructure.onrender.com",
+        target: "http://163.128.209.18:3009",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/tantra/, ""),
       },

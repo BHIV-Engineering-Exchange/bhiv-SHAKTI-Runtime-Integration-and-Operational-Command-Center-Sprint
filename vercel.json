@@ -38,11 +38,11 @@
     },
     {
       "source": "/api/insightflow/:path*",
-      "destination": "https://bhiv-svacs.onrender.com/:path*"
+      "destination": "http://163.128.209.18:8122/:path*"
     },
     {
       "source": "/api/tantra/:path*",
-      "destination": "https://tantra-gated-bridge-infrastructure.onrender.com/:path*"
+      "destination": "http://163.128.209.18:3009/:path*"
     },
     {
       "source": "/(.*)",
