@@ -28,5 +28,6 @@ SHAKTI is a static single-page React frontend application. Therefore, it does no
 | **Sanskar** | `/health` | — | `getHealth()` | Verifies content filtering service status. |
 | **Karma** | `/health` | — | `fetchKarmaHealth()` | Verifies telemetry flow and lineage ledger. |
 | **Keshav** | `/health` | — | `getHealth()` | Verifies trace compliance scores. |
-| **Setu** | `/health` | `/ready` | `getHealth()`, `getReady()` | Verifies project milestone backend readiness status. |
+| **Setu** | `/health` | — | `getHealth()` | Verifies project milestone backend health status (status: `"healthy"`). |
 | **BHEX Registries** | — | — | — | Implementation pending; stubs return empty arrays locally. |
+

@@ -10,7 +10,7 @@ import { useRajyaHealth } from "@/hooks/useRajyaQueries";
 import { useSanskarHealth } from "@/hooks/useSanskarQueries";
 import { useKarmaHealth } from "@/hooks/useKarmaQueries";
 import { useKeshavHealth } from "@/hooks/useKeshavQueries";
-import { useSetuHealth, useSetuReady } from "@/hooks/useSetuQueries";
+import { useSetuHealth } from "@/hooks/useSetuQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
 import type { ComponentStatus } from "@/types/runtime";
 
@@ -34,7 +34,6 @@ export default memo(function RuntimeHealthLayout() {
   const karmaHealth = useKarmaHealth();
   const keshavHealth = useKeshavHealth();
   const setuHealth = useSetuHealth();
-  const setuReady = useSetuReady();
 
   const rawComponents = data?.components ?? [];
 
@@ -82,7 +81,7 @@ export default memo(function RuntimeHealthLayout() {
             ? "degraded"
             : insightFlowHealth.isError
               ? "offline"
-              : (insightFlowHealth.data?.status === "ONLINE" ? "operational" : "degraded"),
+              : (insightFlowHealth.data?.status === "ONLINE" || insightFlowHealth.data?.status === "healthy" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: insightFlowHealth.isLoading
@@ -157,7 +156,7 @@ export default memo(function RuntimeHealthLayout() {
             ? "degraded" 
             : keshavHealth.isError 
               ? "offline" 
-              : (keshavHealth.data?.status === "healthy" || keshavHealth.data?.status === "ok" ? "operational" : "degraded"),
+              : (keshavHealth.data?.status === "healthy" || keshavHealth.data?.status?.toLowerCase() === "ok" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: keshavHealth.isLoading 
@@ -166,20 +165,20 @@ export default memo(function RuntimeHealthLayout() {
               ? "Connection failed" 
               : `Uptime: ${keshavHealth.data?.uptime_seconds != null ? keshavHealth.data.uptime_seconds + 's' : 'N/A'}`,
         }] : []),
-        ...(setuHealth.data || setuHealth.isError || setuHealth.isLoading || setuReady.data || setuReady.isError || setuReady.isLoading ? [{
+        ...(setuHealth.data || setuHealth.isError || setuHealth.isLoading ? [{
           name: "SETU PMC",
-          status: (setuHealth.isLoading || setuReady.isLoading)
+          status: setuHealth.isLoading
             ? "degraded"
-            : (setuHealth.isError || setuReady.isError)
+            : setuHealth.isError
               ? "offline"
-              : (setuHealth.data?.status === "ok" && setuReady.data?.status === "ready" ? "operational" : "degraded"),
+              : (setuHealth.data?.status === "healthy" || setuHealth.data?.status === "ok" || setuHealth.data?.status === "operational" ? "operational" : "degraded"),
           last_check: new Date().toISOString(),
           response_time_ms: null,
-          details: (setuHealth.isLoading || setuReady.isLoading)
+          details: setuHealth.isLoading
             ? "Loading..."
-            : (setuHealth.isError || setuReady.isError)
+            : setuHealth.isError
               ? "Connection failed"
-              : `Status: ${setuHealth.data?.status || "N/A"}/${setuReady.data?.status || "N/A"} v${setuHealth.data?.version || "1.0.0"}`,
+              : `Status: ${setuHealth.data?.status || "N/A"} v${setuHealth.data?.version || "1.0.0"}`,
         }] : []),
       ].map(c => [c.name, c])
     ).values()
@@ -187,12 +186,12 @@ export default memo(function RuntimeHealthLayout() {
 
   const score = components.length > 0 ? toScore(components) : 0;
 
-  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading && tantraHealth.isLoading && karmaHealth.isLoading && keshavHealth.isLoading && setuHealth.isLoading && setuReady.isLoading;
-  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError && karmaHealth.isError && keshavHealth.isError && setuHealth.isError && setuReady.isError);
+  const isLoading = statusLoading && metrics.isLoading && bucketHealth.isLoading && pranaHealth.isLoading && pranaSystemHealth.isLoading && insightFlowHealth.isLoading && tantraHealth.isLoading && karmaHealth.isLoading && keshavHealth.isLoading && setuHealth.isLoading;
+  const isError = !isLoading && (statusError && metrics.isError && bucketHealth.isError && pranaHealth.isError && pranaSystemHealth.isError && insightFlowHealth.isError && tantraHealth.isError && karmaHealth.isError && keshavHealth.isError && setuHealth.isError);
 
   const timestamp = data?.timestamp || metrics.data?.timestamp || (bucketHealth.data ? new Date().toISOString() : undefined) || (insightFlowHealth.data ? new Date().toISOString() : undefined) || (tantraHealth.data ? new Date().toISOString() : undefined) || (keshavHealth.data ? new Date().toISOString() : undefined) || (setuHealth.data ? new Date().toISOString() : undefined);
-  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching || rajyaHealth.isFetching || sanskarHealth.isFetching || karmaHealth.isFetching || keshavHealth.isFetching || setuHealth.isFetching || setuReady.isFetching;
-  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale || rajyaHealth.isStale || sanskarHealth.isStale || karmaHealth.isStale || keshavHealth.isStale || setuHealth.isStale || setuReady.isStale;
+  const isFetching = statusFetching || metrics.isFetching || bucketHealth.isFetching || pranaHealth.isFetching || pranaSystemHealth.isFetching || insightFlowHealth.isFetching || tantraHealth.isFetching || rajyaHealth.isFetching || sanskarHealth.isFetching || karmaHealth.isFetching || keshavHealth.isFetching || setuHealth.isFetching;
+  const isStale = statusStale || metrics.isStale || bucketHealth.isStale || pranaHealth.isStale || pranaSystemHealth.isStale || insightFlowHealth.isStale || tantraHealth.isStale || rajyaHealth.isStale || sanskarHealth.isStale || karmaHealth.isStale || keshavHealth.isStale || setuHealth.isStale;
   const traceId = (data as any)?.trace_id || (metrics.data as any)?.trace_id || (insightFlowHealth.data as any)?.trace_id || (tantraHealth.data as any)?.trace_id || (keshavHealth.data as any)?.trace_id || (setuHealth.data as any)?.trace_id;
 
   // Derive telemetry bar values from real /metrics data
@@ -215,7 +214,7 @@ export default memo(function RuntimeHealthLayout() {
       isLoading={isLoading}
       isError={isError}
       hasData={data !== undefined}
-      onRetry={() => { statusRefetch(); metrics.refetch(); rajyaHealth.refetch(); sanskarHealth.refetch(); karmaHealth.refetch(); keshavHealth.refetch(); setuHealth.refetch(); setuReady.refetch(); }}
+      onRetry={() => { statusRefetch(); metrics.refetch(); rajyaHealth.refetch(); sanskarHealth.refetch(); karmaHealth.refetch(); keshavHealth.refetch(); setuHealth.refetch(); }}
       errorMessage="Failed to load system health"
       skeletonCount={4}
       skeletonHeight="h-8"

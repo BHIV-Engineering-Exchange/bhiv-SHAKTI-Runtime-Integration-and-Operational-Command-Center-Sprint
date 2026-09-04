@@ -1,6 +1,10 @@
 export interface HealthResponse {
   status: string;
-  version: string;
+  version?: string;
+  success?: boolean;
+  message?: string;
+  dependencies?: Record<string, string>;
+  integrations?: Record<string, string>;
 }
 
 export interface Project {

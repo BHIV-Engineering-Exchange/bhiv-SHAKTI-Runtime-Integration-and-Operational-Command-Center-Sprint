@@ -10,7 +10,7 @@ import type {
 const SETU_BASE_URL = import.meta.env.VITE_SETU_URL || "";
 
 export const setuClient = axios.create({
-  baseURL: `${SETU_BASE_URL.replace(/\/$/, "")}/api/v1`,
+  baseURL: SETU_BASE_URL,
   timeout: 10000,
   headers: {
     "Content-Type": "application/json",
@@ -20,11 +20,6 @@ export const setuClient = axios.create({
 
 export async function getHealth(): Promise<HealthResponse> {
   const { data } = await setuClient.get<HealthResponse>("/health");
-  return data;
-}
-
-export async function getReady(): Promise<HealthResponse> {
-  const { data } = await setuClient.get<HealthResponse>("/ready");
   return data;
 }
 

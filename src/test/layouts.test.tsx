@@ -130,7 +130,6 @@ vi.mock("@/hooks/useKeshavQueries", () => ({
 }));
 
 const mockUseSetuHealth = vi.fn();
-const mockUseSetuReady = vi.fn();
 const mockUseSetuProjects = vi.fn();
 const mockUseSetuProject = vi.fn();
 const mockUseSetuProjectMilestones = vi.fn();
@@ -138,7 +137,6 @@ const mockUseSetuTask = vi.fn();
 const mockUseSetuTaskAssignments = vi.fn();
 vi.mock("@/hooks/useSetuQueries", () => ({
   useSetuHealth: () => mockUseSetuHealth(),
-  useSetuReady: () => mockUseSetuReady(),
   useSetuProjects: () => mockUseSetuProjects(),
   useSetuProject: () => mockUseSetuProject(),
   useSetuProjectMilestones: () => mockUseSetuProjectMilestones(),
@@ -155,8 +153,7 @@ vi.mock("@tanstack/react-query", () => ({
 
 vi.mock("@/api/setuEndpoints", () => ({
   getProjectMilestones: vi.fn().mockResolvedValue([]),
-  getHealth: vi.fn().mockResolvedValue({ status: "ok", version: "1.0.0" }),
-  getReady: vi.fn().mockResolvedValue({ status: "ready", version: "1.0.0" }),
+  getHealth: vi.fn().mockResolvedValue({ status: "healthy", version: "1.0.0", success: true }),
   getProjects: vi.fn().mockResolvedValue([]),
   getProject: vi.fn().mockResolvedValue({}),
   getTask: vi.fn().mockResolvedValue({}),
@@ -211,7 +208,6 @@ describe("Layout Components Integration", () => {
     mockUseKeshavHealth.mockReturnValue(defaultQueryResult);
     mockUseKeshavMetrics.mockReturnValue(defaultQueryResult);
     mockUseSetuHealth.mockReturnValue(defaultQueryResult);
-    mockUseSetuReady.mockReturnValue(defaultQueryResult);
     mockUseSetuProjects.mockReturnValue(defaultQueryResult);
     mockUseSetuProject.mockReturnValue(defaultQueryResult);
     mockUseSetuProjectMilestones.mockReturnValue(defaultQueryResult);

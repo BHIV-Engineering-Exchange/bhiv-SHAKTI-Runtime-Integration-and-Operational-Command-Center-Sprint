@@ -77,28 +77,29 @@ dist/assets/ObservabilityLayout-DVprvg08.js              360.94 kB │ gzip: 104
 
 ## 2. Automated Unit/Integration Test Verification
 
-*   **Command**: `npm run test`
+*   **Command**: `npm run test` (or `npx vitest run`)
 *   **Status**: **SUCCESS**
 *   **Test files run**: 6 passed (6 total)
-*   **Tests executed**: 27 passed (27 total)
-*   **Duration**: 3.40s
+*   **Tests executed**: 38 passed (38 total)
+*   **Duration**: 1.66s
 
-### Standard Output Log:
+### Standard Output Log (2026-09-04):
 ```text
- RUN  v3.2.7 C:/Pratik_Bhuwad/shakti-command-center
+ RUN  v3.2.7 C:/Pratik_Bhuwad/SHAKTI/shakti-command-center
 
- ✓ src/test/integration.test.tsx (6 tests) 8ms
- ✓ src/test/ErrorBoundary.test.tsx (3 tests) 64ms
- ✓ src/test/DashboardCard.test.tsx (6 tests) 83ms
- ✓ src/test/sdk-smoke.test.tsx (2 tests) 8ms
- ✓ src/test/layouts.test.tsx (6 tests) 133ms
- ✓ src/test/DecisionIntelligenceLayout.test.tsx (4 tests) 138ms
+ ✓ src/test/integration.test.tsx (6 tests) 6ms
+ ✓ src/test/DashboardCard.test.tsx (6 tests) 93ms
+ ✓ src/test/ErrorBoundary.test.tsx (3 tests) 66ms
+ ✓ src/test/health-mapping.test.tsx (13 tests) 171ms
+ ✓ src/test/DecisionIntelligenceLayout.test.tsx (4 tests) 163ms
+ ✓ src/test/layouts.test.tsx (6 tests) 151ms
 
  Test Files  6 passed (6)
-      Tests  27 passed (27)
-   Start at  17:10:33
-   Duration  3.40s (transform 2.87s, setup 871ms, collect 10.12s, tests 434ms, environment 3.99s, prepare 777ms)
+      Tests  38 passed (38)
+   Start at  14:48:50
+   Duration  1.66s (transform 533ms, setup 708ms, collect 1.93s, tests 650ms, environment 3.88s, prepare 838ms)
 ```
+
 
 ---
 

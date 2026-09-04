@@ -22,25 +22,29 @@ Audit the SHAKTI Command Center codebase and document the production readiness o
 ### 4. Readiness Assessment
 
 *   **Repository & Compile Readiness: 100%**
-    *   *Calculation*: 27/27 Vitest specs passed, local Vite compile built cleanly, zero syntax errors.
+    *   *Calculation*: 38/38 Vitest specs passed across 6 test suites, local Vite compile built cleanly, zero type errors (`tsc -b` clean).
 *   **Local Container Scheme: 100%**
     *   *Calculation*: Local development Compose scheme, production template, and multi-stage Dockerfiles are syntactically complete.
-*   **Production VM Readiness: Verified (2026-08-13)**
-    *   *Calculation*: Active container status (`Up 20 hours (healthy)`), runtime serving logs, HTTPS configuration, and production dashboard accessibility have been verified via VM evidence collected on 2026-08-13. See [production_vm_shakti_containers_status_review_2026-08-13.md](file:///c:/Pratik_Bhuwad/shakti-command-center/evidence_packet/runtime_logs/production_vm_shakti_containers_status_review_2026-08-13.md).
+*   **Production VM Readiness: Verified (2026-09-04 Update)**
+    *   *Calculation*: Active container status (`Up (healthy)`), runtime serving logs, HTTPS configuration, and production dashboard accessibility verified. Backend services migrated to VM (`163.128.209.18:*`). See [production_post_fix_integration_verification_2026-09-04.md](file:///c:/Pratik_Bhuwad/shakti-command-center/evidence_packet/runtime_logs/production_post_fix_integration_verification_2026-09-04.md).
 
 ---
 
-### 5. Risk Flags & Blockers
-*   **Niyantran Cloud Service Outage**: **RESOLVED** (2026-08-13). The previous `504 Gateway Time-out` on `https://niyantran.blackholeinfiverse.com` has been resolved. Retest on 2026-08-13 confirmed: `/api/aims` → `200 OK` (2516 ms), `/api/aims/with-progress` → `200 OK` (376 ms), `/api/dashboard/stats` → `200 OK` (48 ms). Evidence: [niyantran_retest_2026-08-13.md](file:///c:/Pratik_Bhuwad/shakti-command-center/evidence_packet/runtime_logs/niyantran_retest_2026-08-13.md).
-*   **Remaining Backend Failures**: BHIV Bucket (503), Karma `/intelligence/lineage` (500), InsightFlow (TIMEOUT), Rajya (TIMEOUT), Keshav `/health` (TIMEOUT), Setu (404), Sanskar (localhost/blocked), Control Plane (localhost/blocked). These require Alay / backend team resolution.
-*   **Missing Independent QA Sign-Off**: Vinayak's testing verdict is still pending.
-*   **VM States**: Production VM container status and runtime logs have been collected on 2026-08-13. GitHub Action run screenshot is available. VM `RELEASE_HISTORY.md` is pending from Alay.
+### 5. Risk Flags & Blockers Status (as of 2026-09-04)
+*   **Niyantran Cloud Service Outage**: **RESOLVED**. `/api/dashboard/stats` returns `200 OK` (2,626 tasks).
+*   **SETU Integration Mismatch**: **RESOLVED**. `/api/v1` prefix removed, `/ready` dependency removed, `"healthy"` status mapped to operational.
+*   **InsightFlow & Keshav Health Mapping**: **RESOLVED**. Frontend accepts `"healthy"` and `"OK"`.
+*   **VM Backend Deployments**: **RESOLVED**. Control Plane, Prana, InsightFlow, Tantra, Rajya, Karma, Keshav, and SETU health endpoints all return `200 OK`.
+*   **Bucket Health Semantics**: **PARTIAL / NON-BLOCKING**. Bucket returns `status: "degraded"` due to disconnected Redis/Socket.IO, but 9/9 published storage/audit routes return `200 OK`.
+*   **Sanskar Status**: **NOT DEPLOYED / OUT OF SCOPE**. Sanskar is awaiting backend deployment on the VM and is not counted as an active frontend blocker.
+*   **Missing Independent QA Sign-Off**: Vinayak's testing verdict is pending.
 
 ---
 
 ### 6. Recommended Action & Executive Verdict
-**Verdict**: The codebase is **fully verified and deployed to production**. The SHAKTI dashboard container is running and healthy on the production VM. Niyantran 504 is resolved. However, final certification cannot be granted until the remaining 8 backend integration failures are resolved by Alay / backend team and Vinayak completes independent QA.
+**Verdict**: The frontend codebase is **fully verified, compiling cleanly (38/38 tests passing), and deployed**. 10 of 11 backend service health checks are active on the VM (Sanskar is out of scope pending backend deployment). Zero frontend or CORS blockers exist. Final certification sign-off requires independent QA verification and final telemetry log closure.
 **Immediate Steps**:
-1.  Alay: Restore BHIV Bucket, fix Karma lineage, wake InsightFlow/Rajya/Keshav, reconfigure Setu tunnel, provide production endpoints for Sanskar and Control Plane, provide VM `RELEASE_HISTORY.md`.
-2.  Vinayak: Execute independent QA across all dashboard zones.
-3.  TMS/GC: Complete sign-offs once all blockers are resolved.
+1.  Vinayak: Execute independent QA verification across all dashboard zones.
+2.  Backend Team: Mount optional SETU `/projects` route if required, and review Bucket Redis state.
+3.  TMS/GC: Complete final compliance sign-offs.
+

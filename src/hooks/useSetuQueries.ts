@@ -1,7 +1,6 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import {
   getHealth,
-  getReady,
   getProjects,
   getProject,
   getProjectMilestones,
@@ -13,15 +12,6 @@ export const useSetuHealth = () =>
   useQuery({
     queryKey: ["setu-health"],
     queryFn: getHealth,
-    refetchInterval: 10_000,
-    placeholderData: keepPreviousData,
-    retry: 1,
-  });
-
-export const useSetuReady = () =>
-  useQuery({
-    queryKey: ["setu-ready"],
-    queryFn: getReady,
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
     retry: 1,
