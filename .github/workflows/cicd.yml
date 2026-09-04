@@ -113,7 +113,7 @@ jobs:
             cd ~/SHAKTI
             
             # Clean directory first, keeping docs folder (Release History) and the tarball we just copied
-            find . -mindepth 1 ! -name docs ! -path './docs/*' ! -name deployment.tar.gz -exec rm -rf {} +
+            find . -mindepth 1 \! -name docs \! -path './docs/*' \! -name deployment.tar.gz -exec rm -rf {} +
             
             # Extract deployment archive and clean up tarball
             tar -xzf deployment.tar.gz
