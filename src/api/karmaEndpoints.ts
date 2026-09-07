@@ -59,13 +59,50 @@ export interface KarmaAncestryResponse {
   [key: string]: any;
 }
 
+export interface KarmaConfidenceParams {
+  behavior_score?: number;
+  aggregated_feedback?: number;
+  schema_version?: string;
+  purushartha_alignment?: Record<string, number>;
+}
+
+export interface KarmaConfidenceContributingFactor {
+  factor: string;
+  value: number;
+  weight: number;
+}
+
 export interface KarmaConfidenceResponse {
+  schema_version?: string;
+  trajectory_id?: string;
   confidence_score: number;
   explanation?: string;
+  contributing_factors?: KarmaConfidenceContributingFactor[];
+  deterministic_hash?: string;
   [key: string]: any;
 }
 
+export interface KarmaReasoningParams {
+  behavior_score?: number;
+  aggregated_feedback?: number;
+  schema_version?: string;
+  purushartha_alignment?: Record<string, number>;
+  recommended_signals?: string[];
+}
+
+export interface KarmaReasoningEvidence {
+  field: string;
+  value: any;
+  interpretation: string;
+}
+
 export interface KarmaReasoningResponse {
+  schema_version?: string;
+  trajectory_id?: string;
+  reasoning_type?: string;
+  conclusion?: string;
+  evidence?: KarmaReasoningEvidence[];
+  deterministic_hash?: string;
   reasoning?: string;
   [key: string]: any;
 }
@@ -136,13 +173,62 @@ export async function fetchKarmaAncestry(eventId: string): Promise<KarmaAncestry
   };
 }
 
-export async function fetchKarmaConfidence(trajectoryId: string): Promise<KarmaConfidenceResponse> {
-  const { data } = await karmaClient.get<KarmaConfidenceResponse>(`/intelligence/confidence/${trajectoryId}`);
+export const DEFAULT_PURUSHARTHA_ALIGNMENT = {
+  dharma: 0.85,
+  artha: 0.75,
+  kama: 0.65,
+  moksha: 0.95,
+};
+
+export const DEFAULT_RECOMMENDED_SIGNALS = ["STABILITY", "ETHICAL_ALIGNMENT"];
+
+export async function fetchKarmaConfidence(
+  trajectoryId: string,
+  params?: KarmaConfidenceParams
+): Promise<KarmaConfidenceResponse> {
+  const behaviorScore = params?.behavior_score ?? 0.85;
+  const aggregatedFeedback = params?.aggregated_feedback ?? 0.9;
+  const schemaVersion = params?.schema_version ?? "1.0.0";
+  const purusharthaAlignment = params?.purushartha_alignment ?? DEFAULT_PURUSHARTHA_ALIGNMENT;
+
+  const { data } = await karmaClient.request<KarmaConfidenceResponse>({
+    method: "GET",
+    url: `/intelligence/confidence/${trajectoryId}`,
+    params: {
+      behavior_score: behaviorScore,
+      aggregated_feedback: aggregatedFeedback,
+      schema_version: schemaVersion,
+    },
+    data: purusharthaAlignment,
+    headers: { "Content-Type": "application/json" },
+  });
   return data;
 }
 
-export async function fetchKarmaReasoning(trajectoryId: string): Promise<KarmaReasoningResponse> {
-  const { data } = await karmaClient.get<KarmaReasoningResponse>(`/intelligence/reasoning/${trajectoryId}`);
+export async function fetchKarmaReasoning(
+  trajectoryId: string,
+  params?: KarmaReasoningParams
+): Promise<KarmaReasoningResponse> {
+  const behaviorScore = params?.behavior_score ?? 0.85;
+  const aggregatedFeedback = params?.aggregated_feedback ?? 0.9;
+  const schemaVersion = params?.schema_version ?? "1.0.0";
+  const purusharthaAlignment = params?.purushartha_alignment ?? DEFAULT_PURUSHARTHA_ALIGNMENT;
+  const recommendedSignals = params?.recommended_signals ?? DEFAULT_RECOMMENDED_SIGNALS;
+
+  const { data } = await karmaClient.request<KarmaReasoningResponse>({
+    method: "GET",
+    url: `/intelligence/reasoning/${trajectoryId}`,
+    params: {
+      behavior_score: behaviorScore,
+      aggregated_feedback: aggregatedFeedback,
+      schema_version: schemaVersion,
+    },
+    data: {
+      purushartha_alignment: purusharthaAlignment,
+      recommended_signals: recommendedSignals,
+    },
+    headers: { "Content-Type": "application/json" },
+  });
   return data;
 }
 

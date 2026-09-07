@@ -30,7 +30,7 @@
     },
     {
       "source": "/api/sanskar/:path*",
-      "destination": "http://163.128.209.18:8000/:path*"
+      "destination": "http://163.128.209.18:8018/:path*"
     },
     {
       "source": "/api/niyantran/:path*",

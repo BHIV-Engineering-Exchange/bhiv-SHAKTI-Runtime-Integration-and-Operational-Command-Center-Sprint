@@ -177,11 +177,11 @@ export default memo(function DecisionIntelligenceLayout() {
                   </span>
                 </div>
               )}
-              {karmaReasoning.data?.reasoning && (
+              {(karmaReasoning.data?.conclusion || karmaReasoning.data?.reasoning) && (
                 <div className="flex flex-col gap-0.5">
                   <span className="text-slate-500">Explainable Reasoning:</span>
                   <span className="text-slate-300 leading-relaxed bg-slate-950 p-1.5 rounded border border-slate-900 font-sans">
-                    {karmaReasoning.data.reasoning}
+                    {karmaReasoning.data.conclusion || karmaReasoning.data.reasoning}
                   </span>
                 </div>
               )}

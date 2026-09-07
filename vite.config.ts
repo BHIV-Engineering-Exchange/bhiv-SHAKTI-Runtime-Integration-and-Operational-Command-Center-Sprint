@@ -32,7 +32,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/control-plane-8009/, ""),
       },
       "/api/sanskar": {
-        target: "http://163.128.209.18:8000",
+        target: "http://163.128.209.18:8018",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/sanskar/, ""),
       },
@@ -71,6 +71,37 @@ export default defineConfig({
         target: "http://163.128.209.18:8102",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/karma/, ""),
+        configure: (proxy) => {
+          proxy.on("proxyReq", (proxyReq, req) => {
+            if (req.method === "GET") {
+              const url = req.url || "";
+              if (url.includes("/intelligence/confidence") && !proxyReq.getHeader("content-length")) {
+                const bodyData = JSON.stringify({
+                  dharma: 0.85,
+                  artha: 0.75,
+                  kama: 0.65,
+                  moksha: 0.95,
+                });
+                proxyReq.setHeader("Content-Type", "application/json");
+                proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+                proxyReq.write(bodyData);
+              } else if (url.includes("/intelligence/reasoning") && !proxyReq.getHeader("content-length")) {
+                const bodyData = JSON.stringify({
+                  purushartha_alignment: {
+                    dharma: 0.85,
+                    artha: 0.75,
+                    kama: 0.65,
+                    moksha: 0.95,
+                  },
+                  recommended_signals: ["STABILITY", "ETHICAL_ALIGNMENT"],
+                });
+                proxyReq.setHeader("Content-Type", "application/json");
+                proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+                proxyReq.write(bodyData);
+              }
+            }
+          });
+        },
       },
       "/api/keshav": {
         target: "http://163.128.209.18:5003",

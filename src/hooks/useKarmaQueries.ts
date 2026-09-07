@@ -10,6 +10,8 @@ import {
   fetchKarmaTrends,
   fetchKarmaDharmaSevaFlow,
   fetchKarmaPaapPunyaRatio,
+  type KarmaConfidenceParams,
+  type KarmaReasoningParams,
 } from "@/api/karmaEndpoints";
 
 export const useKarmaHealth = () =>
@@ -47,18 +49,24 @@ export const useKarmaAncestry = (eventId?: string) =>
     retry: 1,
   });
 
-export const useKarmaConfidence = (trajectoryId?: string) =>
+export const useKarmaConfidence = (
+  trajectoryId?: string,
+  params?: KarmaConfidenceParams
+) =>
   useQuery({
-    queryKey: ["karma-confidence", trajectoryId],
-    queryFn: () => fetchKarmaConfidence(trajectoryId!),
+    queryKey: ["karma-confidence", trajectoryId, params],
+    queryFn: () => fetchKarmaConfidence(trajectoryId!, params),
     enabled: !!trajectoryId,
     retry: 1,
   });
 
-export const useKarmaReasoning = (trajectoryId?: string) =>
+export const useKarmaReasoning = (
+  trajectoryId?: string,
+  params?: KarmaReasoningParams
+) =>
   useQuery({
-    queryKey: ["karma-reasoning", trajectoryId],
-    queryFn: () => fetchKarmaReasoning(trajectoryId!),
+    queryKey: ["karma-reasoning", trajectoryId, params],
+    queryFn: () => fetchKarmaReasoning(trajectoryId!, params),
     enabled: !!trajectoryId,
     retry: 1,
   });

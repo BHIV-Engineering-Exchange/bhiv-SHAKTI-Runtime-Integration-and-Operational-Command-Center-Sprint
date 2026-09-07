@@ -2,6 +2,7 @@ import { describe, test, expect, vi } from "vitest";
 import { fetchSystemStatus, fetchMetrics } from "@/api/endpoints";
 import { fetchBucketArtifacts, fetchBucketStorageStats, bucketClient } from "@/api/bucketEndpoints";
 import { fetchPranaHealth, fetchPranaPropagationLog, pranaClient } from "@/api/pranaEndpoints";
+import { fetchKarmaConfidence, fetchKarmaReasoning, karmaClient } from "@/api/karmaEndpoints";
 import { apiClient } from "@/api/client";
 
 vi.mock("@/api/client", () => ({
@@ -139,5 +140,70 @@ describe("Control Plane, Bucket & PRANA Integration Normalization", () => {
     expect(res.logs).toHaveLength(1);
     expect(res.logs[0].trace_id).toBe("trace_p1");
     expect(res.logs[0].destination).toBe("bucket_storage");
+  });
+
+  test("fetchKarmaConfidence passes required query params and purushartha_alignment body", async () => {
+    const requestSpy = vi.spyOn(karmaClient, "request").mockResolvedValueOnce({
+      data: {
+        schema_version: "1.0.0",
+        trajectory_id: "traj_01",
+        confidence_score: 0.88,
+        explanation: "High confidence",
+      },
+    } as any);
+
+    const res = await fetchKarmaConfidence("traj_01");
+
+    expect(requestSpy).toHaveBeenCalledWith({
+      method: "GET",
+      url: "/intelligence/confidence/traj_01",
+      params: {
+        behavior_score: 0.85,
+        aggregated_feedback: 0.9,
+        schema_version: "1.0.0",
+      },
+      data: {
+        dharma: 0.85,
+        artha: 0.75,
+        kama: 0.65,
+        moksha: 0.95,
+      },
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(res.confidence_score).toBe(0.88);
+  });
+
+  test("fetchKarmaReasoning passes required query params and purushartha + recommended signals body", async () => {
+    const requestSpy = vi.spyOn(karmaClient, "request").mockResolvedValueOnce({
+      data: {
+        schema_version: "1.0.0",
+        trajectory_id: "traj_01",
+        reasoning_type: "deterministic",
+        conclusion: "Normal operation",
+      },
+    } as any);
+
+    const res = await fetchKarmaReasoning("traj_01");
+
+    expect(requestSpy).toHaveBeenCalledWith({
+      method: "GET",
+      url: "/intelligence/reasoning/traj_01",
+      params: {
+        behavior_score: 0.85,
+        aggregated_feedback: 0.9,
+        schema_version: "1.0.0",
+      },
+      data: {
+        purushartha_alignment: {
+          dharma: 0.85,
+          artha: 0.75,
+          kama: 0.65,
+          moksha: 0.95,
+        },
+        recommended_signals: ["STABILITY", "ETHICAL_ALIGNMENT"],
+      },
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(res.conclusion).toBe("Normal operation");
   });
 });
