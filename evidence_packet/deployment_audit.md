@@ -58,6 +58,9 @@ The pipeline is defined in [.github/workflows/cicd.yml](file:///c:/Pratik_Bhuwad
 
 ## 3. Production Deployment Status Verdict
 
-> [!IMPORTANT]
-> **DEPLOYMENT UNVERIFIED (REQUIRES VM PROOF)**
-> While the Docker configurations, production templates, deployment workflows, and rollback scripts are fully complete and syntactically validated in the repository, the actual VM execution logs, active container states, and SSL configurations cannot be validated locally. Verification of successful VM execution requires access to logs directly from the hosting VM handled by Alay.
+> [!CAUTION]
+> **PRODUCTION ROUTING ARCHITECTURE BLOCKED**
+> Live testing against `http://163.128.209.18:5176` on 2026-09-07 confirms:
+> 1. The container is running and healthy on port 5176 serving the static single-page application.
+> 2. Because the container uses `serve -s dist -l 5173`, it does not implement reverse-proxy routing for `/api/*` endpoints. All API calls return `index.html` (HTTP 200 text/html).
+> 3. An Nginx or Caddy reverse proxy layer is required on the VM to proxy `/api/*` requests to their respective backend microservices on ports 8120, 8012, 8103, 5003, 8102, 8018, 8015, 3009, 8014, and 8122.

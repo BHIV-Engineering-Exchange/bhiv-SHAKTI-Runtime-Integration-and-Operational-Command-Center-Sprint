@@ -76,11 +76,28 @@ export function toSeverity(s: string): Severity {
 }
 
 export function toStatus(s: string): OperationalStatus {
-  if (s === "normal" || s === "operational") return "online";
-  if (s === "warning") return "warning";
-  if (s === "critical" || s === "offline") return "offline";
-  if (s === "degraded") return "degraded";
-  return "online";
+  const lower = (s || "").trim().toLowerCase();
+  if (lower === "normal" || lower === "operational" || lower === "healthy" || lower === "online" || lower === "ok") {
+    return "online";
+  }
+  if (lower === "warning") {
+    return "warning";
+  }
+  if (lower === "degraded") {
+    return "degraded";
+  }
+  if (
+    lower === "critical" ||
+    lower === "offline" ||
+    lower === "unhealthy" ||
+    lower === "down" ||
+    lower === "failed" ||
+    lower === "error" ||
+    lower === "crash_looping"
+  ) {
+    return "offline";
+  }
+  return "offline";
 }
 
 export function toTrend(t: string): TrendDirection {

@@ -1,0 +1,45 @@
+{
+  "contract_meta": {
+    "date": "2026-09-07",
+    "auditor": "Pratik Bhuwad",
+    "task": "Phase 2 API Contract Validation"
+  },
+  "endpoint_classifications": {
+    "verified_operational": [
+      "/system/status",
+      "/metrics",
+      "/health (Bucket)",
+      "/bucket/artifacts",
+      "/metrics/scale-status",
+      "/metrics/query-performance",
+      "/health (Prana)",
+      "/prana/propagation-log",
+      "/prana/system/health",
+      "/health (Keshav)",
+      "/metrics/json (Keshav)",
+      "/health (Karma)",
+      "/api/v1/analytics/metrics/live",
+      "/api/v1/analytics/karma_trends",
+      "/intelligence/confidence/{id}",
+      "/intelligence/reasoning/{id}",
+      "/health (Sanskar :8018)",
+      "/health (Rajya)",
+      "/health (Tantra)",
+      "/health (SETU)",
+      "/health (InsightFlow)"
+    ],
+    "runtime_data_unavailable": [
+      "/ranking (Sanskar :8018) - 404 No ranking available"
+    ],
+    "backend_route_missing": [
+      "/telemetry (Tantra :3009)",
+      "/projects (SETU :8014)",
+      "/stage-metrics (InsightFlow :8122)",
+      "/bucket/status (InsightFlow :8122)"
+    ],
+    "auth_and_cors_blocked": [
+      "/api/aims (Niyantran - CORS blocked in browser, 401 Unauthorized in direct probe)"
+    ]
+  },
+  "compliance_statement": "All 10 active microservices have established baseline health contracts verified. Auxiliary telemetry endpoints for Tantra, SETU, and InsightFlow degrade safely via fallback defaults in the Command Center UI."
+}

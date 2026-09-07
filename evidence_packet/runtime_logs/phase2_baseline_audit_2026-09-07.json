@@ -1,0 +1,96 @@
+{
+  "audit_meta": {
+    "task": "Phase 2: Advanced Integration & Security Hardening — SHAKTI Operational Command Center Convergence",
+    "assignee": "Pratik Bhuwad",
+    "department": "AI ML",
+    "audit_date": "2026-09-07",
+    "target_date": "2026-09-08"
+  },
+  "git_state": {
+    "branch": "main",
+    "head_commit": "b91aa450",
+    "remote_status": "up_to_date_with_origin_main",
+    "uncommitted_changes": [
+      "src/utils/format.ts",
+      "src/test/health-mapping.test.tsx"
+    ]
+  },
+  "test_baseline": {
+    "total_test_files": 6,
+    "total_tests": 44,
+    "passed": 44,
+    "failed": 0,
+    "skipped": 0,
+    "typescript_errors": 0,
+    "build_status": "SUCCESS"
+  },
+  "service_health_baseline": {
+    "control_plane": {
+      "port": 8120,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/system/status"
+    },
+    "keshav": {
+      "port": 5003,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health",
+      "backend_response": { "status": "OK", "service": "KESHAV" },
+      "routing_issue": "Production container (:5176) serves index.html instead of reverse-proxying"
+    },
+    "bucket": {
+      "port": 8012,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health"
+    },
+    "prana": {
+      "port": 8103,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health"
+    },
+    "sanskar": {
+      "port": 8018,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health",
+      "ranking_state": "404_NO_RANKING_AVAILABLE"
+    },
+    "karma": {
+      "port": 8102,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health",
+      "contract_state": "CONFIDENCE_AND_REASONING_CONTRACT_RESOLVED"
+    },
+    "tantra": {
+      "port": 3009,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health",
+      "telemetry_state": "404_TELEMETRY_ROUTES_NOT_FOUND"
+    },
+    "rajya": {
+      "port": 8015,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health"
+    },
+    "setu": {
+      "port": 8014,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health",
+      "projects_state": "404_PROJECTS_NOT_FOUND"
+    },
+    "niyantran": {
+      "url": "https://niyantran.blackholeinfiverse.com",
+      "health_status": "BLOCKED_BY_CORS_PREFLIGHT",
+      "direct_browser_access": "BLOCKED"
+    },
+    "insightflow": {
+      "port": 8122,
+      "health_status": "VERIFIED_OPERATIONAL",
+      "endpoint": "/health",
+      "pipeline_telemetry": "404_ROUTES_NOT_FOUND"
+    }
+  },
+  "deployment_state": {
+    "production_url": "http://163.128.209.18:5176",
+    "container_server": "serve -s dist -l 5173",
+    "production_routing_status": "BLOCKED (Missing Nginx/Caddy reverse proxy layer for /api/*)"
+  }
+}

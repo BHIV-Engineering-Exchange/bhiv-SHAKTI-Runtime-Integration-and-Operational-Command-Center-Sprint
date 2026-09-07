@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import React from "react";
+import { toStatus } from "@/utils/format";
 
 // ── Mock definitions ────────────────────────────────────────────────
 const defaultQueryResult = {
@@ -357,6 +358,37 @@ describe("Health Mapping — SETU, InsightFlow, Keshav", () => {
       render(<RuntimeHealthLayout />);
 
       expect(screen.getByText("KESHAV Dependency Engine")).toBeInTheDocument();
+    });
+  });
+
+  describe("toStatus Mapping Integrity", () => {
+    test("maps unhealthy, down, failed, error, and crash_looping to offline (red)", () => {
+      expect(toStatus("unhealthy")).toBe("offline");
+      expect(toStatus("UNHEALTHY")).toBe("offline");
+      expect(toStatus("down")).toBe("offline");
+      expect(toStatus("failed")).toBe("offline");
+      expect(toStatus("error")).toBe("offline");
+      expect(toStatus("crash_looping")).toBe("offline");
+      expect(toStatus("critical")).toBe("offline");
+      expect(toStatus("offline")).toBe("offline");
+    });
+
+    test("maps healthy states to online (green)", () => {
+      expect(toStatus("operational")).toBe("online");
+      expect(toStatus("healthy")).toBe("online");
+      expect(toStatus("normal")).toBe("online");
+      expect(toStatus("online")).toBe("online");
+      expect(toStatus("ok")).toBe("online");
+      expect(toStatus("OK")).toBe("online");
+    });
+
+    test("maps degraded and warning correctly", () => {
+      expect(toStatus("degraded")).toBe("degraded");
+      expect(toStatus("warning")).toBe("warning");
+    });
+
+    test("defaults unrecognized states safely to offline", () => {
+      expect(toStatus("unknown_bad_state")).toBe("offline");
     });
   });
 });

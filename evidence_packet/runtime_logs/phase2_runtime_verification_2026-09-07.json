@@ -1,0 +1,33 @@
+{
+  "verification_meta": {
+    "date": "2026-09-07",
+    "auditor": "Pratik Bhuwad",
+    "task": "Phase 2: Live Runtime Verification",
+    "production_host": "163.128.209.18"
+  },
+  "backend_direct_checks": [
+    { "service": "Control Plane", "port": 8120, "endpoint": "/system/status", "status": 200, "latency_ms": 3872, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "Bucket Storage", "port": 8012, "endpoint": "/health", "status": 200, "latency_ms": 60, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "Prana Engine", "port": 8103, "endpoint": "/health", "status": 200, "latency_ms": 92, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "Keshav Engine", "port": 5003, "endpoint": "/health", "status": 200, "latency_ms": 68, "backend_response": { "status": "OK", "service": "KESHAV" }, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "Karma Analytics", "port": 8102, "endpoint": "/health", "status": 200, "latency_ms": 61, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "Sanskar Domain", "port": 8018, "endpoint": "/health", "status": 200, "latency_ms": 60, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "Sanskar Ranking", "port": 8018, "endpoint": "/ranking", "status": 404, "latency_ms": 59, "classification": "ROUTE_REGISTERED_NO_DATA" },
+    { "service": "Rajya Enforcement", "port": 8015, "endpoint": "/health", "status": 200, "latency_ms": 65, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "Tantra Bridge", "port": 3009, "endpoint": "/health", "status": 200, "latency_ms": 54, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "SETU Interface", "port": 8014, "endpoint": "/health", "status": 200, "latency_ms": 56, "classification": "VERIFIED_OPERATIONAL" },
+    { "service": "InsightFlow", "port": 8122, "endpoint": "/health", "status": 200, "latency_ms": 56, "classification": "VERIFIED_OPERATIONAL" }
+  ],
+  "production_routing_checks": [
+    { "path": "/api/control-plane/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/bucket/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/prana/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/insightflow/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/tantra/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/rajya/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/karma/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/keshav/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true },
+    { "path": "/api/setu/health", "status": 200, "content_type": "text/html; charset=utf-8", "is_html_spa": true }
+  ],
+  "certification_verdict": "Production Command Center runtime certification is blocked by the deployed frontend API routing architecture, while the Keshav backend itself is verified healthy."
+}

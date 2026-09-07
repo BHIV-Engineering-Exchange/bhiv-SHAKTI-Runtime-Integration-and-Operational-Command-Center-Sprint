@@ -21,30 +21,29 @@ Audit the SHAKTI Command Center codebase and document the production readiness o
 
 ### 4. Readiness Assessment
 
-*   **Repository & Compile Readiness: 100%**
-    *   *Calculation*: 38/38 Vitest specs passed across 6 test suites, local Vite compile built cleanly, zero type errors (`tsc -b` clean).
+*   **Repository & Compile Readiness: 100% (2026-09-07 Phase 2 Update)**
+    *   *Calculation*: 44/44 Vitest specs passed across 6 test suites, local Vite compile built cleanly (1.89s), zero type errors (`tsc -b` clean).
 *   **Local Container Scheme: 100%**
     *   *Calculation*: Local development Compose scheme, production template, and multi-stage Dockerfiles are syntactically complete.
-*   **Production VM Readiness: Verified (2026-09-04 Update)**
-    *   *Calculation*: Active container status (`Up (healthy)`), runtime serving logs, HTTPS configuration, and production dashboard accessibility verified. Backend services migrated to VM (`163.128.209.18:*`). See [production_post_fix_integration_verification_2026-09-04.md](file:///c:/Pratik_Bhuwad/shakti-command-center/evidence_packet/runtime_logs/production_post_fix_integration_verification_2026-09-04.md).
+*   **Production VM Readiness: Blocked by Routing Architecture (2026-09-07 Audit)**
+    *   *Calculation*: Production Command Center VM container on `http://163.128.209.18:5176` serves static frontend via `serve -s dist -l 5173`. Because `serve` has no backend reverse proxy configured, requests to `/api/*` return `index.html` (SPA fallback) instead of backend JSON. Backend microservices themselves on their native ports (Control Plane :8000, Prana :5001, Keshav :5003, Karma :8002, Tantra :3009, Rajya :8001, InsightFlow :8122, SETU :8014, Sanskar :8018) are verified operational and healthy.
 
 ---
 
-### 5. Risk Flags & Blockers Status (as of 2026-09-04)
-*   **Niyantran Cloud Service Outage**: **RESOLVED**. `/api/dashboard/stats` returns `200 OK` (2,626 tasks).
-*   **SETU Integration Mismatch**: **RESOLVED**. `/api/v1` prefix removed, `/ready` dependency removed, `"healthy"` status mapped to operational.
-*   **InsightFlow & Keshav Health Mapping**: **RESOLVED**. Frontend accepts `"healthy"` and `"OK"`.
-*   **VM Backend Deployments**: **RESOLVED**. Control Plane, Prana, InsightFlow, Tantra, Rajya, Karma, Keshav, and SETU health endpoints all return `200 OK`.
+### 5. Risk Flags & Blockers Status (as of 2026-09-07 Phase 2)
+*   **Production API Routing**: **BLOCKED (DevOps)**. Deployed container on port :5176 serves static files without proxying `/api/*` to backend microservices, causing all `/api/*` calls to receive HTML. Requires Nginx/Caddy reverse proxy deployment.
+*   **Keshav Health Verification**: **VERIFIED HEALTHY (Backend)**. Direct backend probe on `http://163.128.209.18:5003/health` returns `200 OK` (`{"status":"OK","service":"KESHAV"}`). Frontend mapping is case-insensitive in source code.
+*   **False Green Status Bug**: **RESOLVED**. `toStatus()` in `src/utils/format.ts` hardened so that `unhealthy`, `down`, `failed`, `error`, `crash_looping` map to `offline` (Red).
+*   **Karma Intelligence Schemas**: **RESOLVED**. Query parameters and typed payloads added to `/intelligence/confidence` and `/intelligence/reasoning`.
+*   **Sanskar Service**: **DEPLOYED & HEALTHY**. Deployed on port `:8018`. Health check returns `200 OK`. Ranking route returns 404 due to empty DB state.
 *   **Bucket Health Semantics**: **PARTIAL / NON-BLOCKING**. Bucket returns `status: "degraded"` due to disconnected Redis/Socket.IO, but 9/9 published storage/audit routes return `200 OK`.
-*   **Sanskar Status**: **NOT DEPLOYED / OUT OF SCOPE**. Sanskar is awaiting backend deployment on the VM and is not counted as an active frontend blocker.
-*   **Missing Independent QA Sign-Off**: Vinayak's testing verdict is pending.
 
 ---
 
 ### 6. Recommended Action & Executive Verdict
-**Verdict**: The frontend codebase is **fully verified, compiling cleanly (38/38 tests passing), and deployed**. 10 of 11 backend service health checks are active on the VM (Sanskar is out of scope pending backend deployment). Zero frontend or CORS blockers exist. Final certification sign-off requires independent QA verification and final telemetry log closure.
+**Verdict**: The frontend codebase is **fully verified, compiling cleanly (44/44 tests passing), hardened against schema failures, and certified in source code**. However, **Production Command Center runtime certification is blocked by the deployed frontend API routing architecture, while the Keshav backend and other VM microservices are verified healthy**.
 **Immediate Steps**:
-1.  Vinayak: Execute independent QA verification across all dashboard zones.
-2.  Backend Team: Mount optional SETU `/projects` route if required, and review Bucket Redis state.
-3.  TMS/GC: Complete final compliance sign-offs.
+1.  DevOps: Deploy an Nginx / Caddy reverse proxy on port 5176 to proxy `/api/*` routes to backend microservices.
+2.  DevOps: Rebuild and redeploy the latest frontend bundle (`dist/`) containing the hardened `toStatus()` and Karma schema fixes.
+3.  QA / Engineering: Final sign-off once the reverse proxy enables end-to-end API communication in production.
 

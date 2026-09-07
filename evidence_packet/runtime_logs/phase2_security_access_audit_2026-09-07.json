@@ -1,0 +1,29 @@
+{
+  "security_audit_meta": {
+    "date": "2026-09-07",
+    "auditor": "Pratik Bhuwad",
+    "task": "Phase 2 Security and Access Safety Audit"
+  },
+  "credentials_inventory": [
+    { "name": "VITE_CONTROL_PLANE_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/control-plane" },
+    { "name": "VITE_BUCKET_SERVICE_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/bucket" },
+    { "name": "VITE_PRANA_SERVICE_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/prana" },
+    { "name": "VITE_INSIGHTFLOW_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/insightflow" },
+    { "name": "VITE_TANTRA_BASE_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/tantra" },
+    { "name": "VITE_RAJYA_BASE_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/rajya" },
+    { "name": "VITE_SANSKAR_BASE_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/sanskar" },
+    { "name": "VITE_KARMA_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/karma" },
+    { "name": "VITE_KESHAV_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/keshav" },
+    { "name": "VITE_SETU_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "/api/setu" },
+    { "name": "VITE_NIYANTRAN_URL", "classification": "SAFE_PUBLIC_CONFIGURATION", "masked_value": "https://niyantran...[PUBLIC]" },
+    { "name": "VITE_NIYANTRAN_EXECUTION_KEY", "classification": "POTENTIALLY_EXPOSED_STATIC_DEV_KEY", "masked_value": "59d175...[MASKED]" },
+    { "name": "VITE_NIYANTRAN_AUTH_TOKEN", "classification": "POTENTIALLY_EXPOSED_STATIC_JWT", "masked_value": "eyJhbGciOi...[MASKED]" },
+    { "name": "VITE_TANTRA_BRIDGE_SIGNATURE", "classification": "DEVELOPMENT_MOCK_TOKEN", "masked_value": "Bearer eyJhb...[MASKED]" }
+  ],
+  "security_findings": {
+    "secret_leakage_in_console": false,
+    "secret_leakage_in_reports": false,
+    "cookie_auth_prioritized": true,
+    "mitigation_recommendation": "Remove static VITE_NIYANTRAN_AUTH_TOKEN and VITE_NIYANTRAN_EXECUTION_KEY from client build in production; inject via secure server-side reverse proxy."
+  }
+}

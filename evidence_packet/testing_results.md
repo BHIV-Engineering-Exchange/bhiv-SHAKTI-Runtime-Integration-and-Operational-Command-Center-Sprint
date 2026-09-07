@@ -80,24 +80,24 @@ dist/assets/ObservabilityLayout-DVprvg08.js              360.94 kB │ gzip: 104
 *   **Command**: `npm run test` (or `npx vitest run`)
 *   **Status**: **SUCCESS**
 *   **Test files run**: 6 passed (6 total)
-*   **Tests executed**: 38 passed (38 total)
-*   **Duration**: 1.66s
+*   **Tests executed**: 44 passed (44 total)
+*   **Duration**: 1.73s
 
-### Standard Output Log (2026-09-04):
+### Standard Output Log (2026-09-07):
 ```text
  RUN  v3.2.7 C:/Pratik_Bhuwad/SHAKTI/shakti-command-center
 
- ✓ src/test/integration.test.tsx (6 tests) 6ms
- ✓ src/test/DashboardCard.test.tsx (6 tests) 93ms
- ✓ src/test/ErrorBoundary.test.tsx (3 tests) 66ms
- ✓ src/test/health-mapping.test.tsx (13 tests) 171ms
- ✓ src/test/DecisionIntelligenceLayout.test.tsx (4 tests) 163ms
- ✓ src/test/layouts.test.tsx (6 tests) 151ms
+ ✓ src/test/integration.test.tsx (8 tests) 10ms
+ ✓ src/test/DashboardCard.test.tsx (6 tests) 98ms
+ ✓ src/test/ErrorBoundary.test.tsx (3 tests) 69ms
+ ✓ src/test/health-mapping.test.tsx (17 tests) 185ms
+ ✓ src/test/layouts.test.tsx (6 tests) 152ms
+ ✓ src/test/DecisionIntelligenceLayout.test.tsx (4 tests) 167ms
 
  Test Files  6 passed (6)
-      Tests  38 passed (38)
-   Start at  14:48:50
-   Duration  1.66s (transform 533ms, setup 708ms, collect 1.93s, tests 650ms, environment 3.88s, prepare 838ms)
+      Tests  44 passed (44)
+   Start at  13:16:08
+   Duration  1.73s (transform 614ms, setup 793ms, collect 1.97s, tests 681ms, environment 4.06s, prepare 822ms)
 ```
 
 
