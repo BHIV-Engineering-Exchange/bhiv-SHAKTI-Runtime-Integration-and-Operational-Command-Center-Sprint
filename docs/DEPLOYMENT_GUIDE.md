@@ -41,19 +41,29 @@ Because the dashboard heavily utilizes `React.lazy` and `Suspense`, the `/dist/a
 - ...and other lazy-loaded layouts.
 This is intentional and required for performance.
 
-## 4. Hosting
-Upload the contents of the `/dist` folder to your web server.
-**Important for Single Page Apps (SPA):** Ensure your web server is configured to rewrite all 404 requests to `index.html`. 
+## 4. Production Hosting & NGINX Reverse Proxy
 
-### NGINX Example
+In production, the SHAKTI Command Center runs inside a Docker container serving static files on port `5176` (`5176:5173`). An Nginx reverse proxy on the VM host manages public traffic, forwarding root requests to the container and reverse-proxying `/api/*` requests to their respective backend microservices.
+
+### Production NGINX Location Fragment
+The authoritative Nginx configuration fragment is maintained in:
+`deploy/nginx/shakti-command-center.locations.conf`
+
+See [deploy/nginx/README.md](../deploy/nginx/README.md) for complete deployment steps, routing tables, and DevOps verification smoke tests.
+
+### Server Block Integration Example
 ```nginx
 server {
     listen 80;
     server_name dashboard.internal;
-    root /var/www/shakti-dashboard;
 
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
+    # Performance and limits
+    client_max_body_size 50M;
+    proxy_read_timeout 300s;
+    proxy_connect_timeout 60s;
+
+    # Include SHAKTI Command Center location routes
+    include /etc/nginx/snippets/shakti-command-center.locations.conf;
 }
 ```
+
