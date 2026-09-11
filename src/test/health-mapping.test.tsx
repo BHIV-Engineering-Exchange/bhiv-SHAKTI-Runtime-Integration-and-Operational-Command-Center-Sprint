@@ -2,6 +2,7 @@ import { describe, test, expect, vi, beforeEach } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import React from "react";
 import { toStatus } from "@/utils/format";
+import { normalizeComponentStatus } from "@/utils/healthStatus";
 
 // ── Mock definitions ────────────────────────────────────────────────
 const defaultQueryResult = {
@@ -389,6 +390,166 @@ describe("Health Mapping — SETU, InsightFlow, Keshav", () => {
 
     test("defaults unrecognized states safely to offline", () => {
       expect(toStatus("unknown_bad_state")).toBe("offline");
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────
+  // normalizeComponentStatus Pure Utility Tests
+  // ───────────────────────────────────────────────────────────────
+  describe("normalizeComponentStatus Pure Utility", () => {
+    test("Operational values map to operational", () => {
+      expect(normalizeComponentStatus("healthy", false, false)).toBe("operational");
+      expect(normalizeComponentStatus("HEALTHY", false, false)).toBe("operational");
+      expect(normalizeComponentStatus("operational", false, false)).toBe("operational");
+      expect(normalizeComponentStatus("OK", false, false)).toBe("operational");
+      expect(normalizeComponentStatus("ok", false, false)).toBe("operational");
+      expect(normalizeComponentStatus("online", false, false)).toBe("operational");
+      expect(normalizeComponentStatus("ONLINE", false, false)).toBe("operational");
+    });
+
+    test("Degraded values map to degraded", () => {
+      expect(normalizeComponentStatus("degraded", false, false)).toBe("degraded");
+      expect(normalizeComponentStatus("DEGRADED", false, false)).toBe("degraded");
+      expect(normalizeComponentStatus("warning", false, false)).toBe("degraded");
+      expect(normalizeComponentStatus("WARNING", false, false)).toBe("degraded");
+    });
+
+    test("Offline/failure values map to offline", () => {
+      expect(normalizeComponentStatus("offline", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("OFFLINE", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("unhealthy", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("UNHEALTHY", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("failed", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("FAILED", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("error", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("ERROR", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("crash_looping", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("CRASH_LOOPING", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("down", false, false)).toBe("offline");
+      expect(normalizeComponentStatus("DOWN", false, false)).toBe("offline");
+    });
+
+    test("Unknown, empty, or null values safely map to degraded", () => {
+      expect(normalizeComponentStatus("banana", false, false)).toBe("degraded");
+      expect(normalizeComponentStatus("", false, false)).toBe("degraded");
+      expect(normalizeComponentStatus(undefined, false, false)).toBe("degraded");
+      expect(normalizeComponentStatus(null, false, false)).toBe("degraded");
+      expect(normalizeComponentStatus("   ", false, false)).toBe("degraded");
+    });
+
+    test("Query states take precedence (isLoading -> degraded, isError -> offline)", () => {
+      expect(normalizeComponentStatus("healthy", true, false)).toBe("degraded");
+      expect(normalizeComponentStatus("healthy", false, true)).toBe("offline");
+      expect(normalizeComponentStatus("degraded", false, true)).toBe("offline");
+    });
+  });
+
+  // ───────────────────────────────────────────────────────────────
+  // Component Regression Tests
+  // ───────────────────────────────────────────────────────────────
+  describe("Runtime Health Component Regressions", () => {
+    test("1. Bucket degraded renders Degraded, not Operational", () => {
+      mockUseBucketHealth.mockReturnValue(
+        healthResult({
+          status: "degraded",
+          append_only_storage: { certification: "APPEND_ONLY" },
+          governance: { certification: "GOV_ACTIVE" },
+        })
+      );
+
+      render(<RuntimeHealthLayout />);
+
+      const row = screen.getByText("bucket_storage").closest("tr")!;
+      expect(within(row).getByText("degraded")).toBeInTheDocument();
+      expect(within(row).queryByText("operational")).not.toBeInTheDocument();
+    });
+
+    test("2. SANSKAR degraded renders Degraded, not Operational", () => {
+      mockUseSanskarHealth.mockReturnValue(
+        healthResult({ status: "degraded", service: "sanskar" })
+      );
+
+      render(<RuntimeHealthLayout />);
+
+      const row = screen.getByText("SANSKAR Domain Intelligence").closest("tr")!;
+      expect(within(row).getByText("degraded")).toBeInTheDocument();
+      expect(within(row).queryByText("operational")).not.toBeInTheDocument();
+    });
+
+    test("3. PRANA unhealthy renders Offline, not Operational", () => {
+      mockUsePranaHealth.mockReturnValue(
+        healthResult({ status: "unhealthy" })
+      );
+
+      render(<RuntimeHealthLayout />);
+
+      const row = screen.getByText("prana_service").closest("tr")!;
+      expect(within(row).getByText("offline")).toBeInTheDocument();
+      expect(within(row).queryByText("operational")).not.toBeInTheDocument();
+    });
+
+    test("4. PRANA missing status does not render Operational", () => {
+      mockUsePranaHealth.mockReturnValue(
+        healthResult({ status: undefined })
+      );
+
+      render(<RuntimeHealthLayout />);
+
+      const row = screen.getByText("prana_service").closest("tr")!;
+      expect(within(row).getByText("degraded")).toBeInTheDocument();
+      expect(within(row).queryByText("operational")).not.toBeInTheDocument();
+    });
+
+    test("5. Bucket degraded causes expected health-score reduction (90% Score)", () => {
+      // 9 operational components, 1 degraded component (Bucket)
+      mockUseBucketHealth.mockReturnValue(
+        healthResult({ status: "degraded" })
+      );
+      mockUsePranaHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+      mockUseInsightFlowHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+      mockUseTantraHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+      mockUseRajyaHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+      mockUseSanskarHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+      mockUseKarmaHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+      mockUseKeshavHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+      mockUseSetuHealth.mockReturnValue(
+        healthResult({ status: "healthy" })
+      );
+
+      mockUseSystemStatus.mockReturnValue(
+        healthResult({
+          timestamp: "2026-09-04T09:00:00Z",
+          overall_status: "ok",
+          components: [
+            {
+              name: "control_plane_core",
+              status: "operational",
+              last_check: "2026-09-04T09:00:00Z",
+              response_time_ms: 5,
+              details: "PID: 100",
+            },
+          ],
+        })
+      );
+
+      render(<RuntimeHealthLayout />);
+
+      // Total 10 components: 9 operational, 1 degraded -> exactly 90% Score
+      expect(screen.getByText("90% Score")).toBeInTheDocument();
     });
   });
 });

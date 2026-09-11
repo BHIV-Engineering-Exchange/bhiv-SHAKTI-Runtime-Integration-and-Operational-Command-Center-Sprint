@@ -12,6 +12,7 @@ import { useKarmaHealth } from "@/hooks/useKarmaQueries";
 import { useKeshavHealth } from "@/hooks/useKeshavQueries";
 import { useSetuHealth } from "@/hooks/useSetuQueries";
 import { toStatus, statusColor, statusDot, formatTime } from "@/utils/format";
+import { normalizeComponentStatus } from "@/utils/healthStatus";
 import type { ComponentStatus } from "@/types/runtime";
 
 function toScore(components: ComponentStatus[]): number {
@@ -40,6 +41,8 @@ export default memo(function RuntimeHealthLayout() {
   const pranaStatus = pranaSystemHealth.data?.status || pranaHealth.data?.status;
   const pranaMode = pranaSystemHealth.data?.mode || "live";
   const pranaFwd = pranaSystemHealth.data?.forwarding_enabled ?? pranaHealth.data?.forwarding_enabled ?? true;
+  const pranaLoading = pranaHealth.isLoading || pranaSystemHealth.isLoading;
+  const pranaError = pranaHealth.isError || pranaSystemHealth.isError;
 
   const components = Array.from(
     new Map(
@@ -47,11 +50,7 @@ export default memo(function RuntimeHealthLayout() {
         ...rawComponents,
         ...(bucketHealth.data || bucketHealth.isError || bucketHealth.isLoading ? [{
           name: "bucket_storage",
-          status: bucketHealth.isLoading
-            ? "degraded"
-            : bucketHealth.isError
-              ? "offline"
-              : (bucketHealth.data?.status === "degraded" || bucketHealth.data?.status === "operational" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(bucketHealth.data?.status, bucketHealth.isLoading, bucketHealth.isError),
           last_check: new Date().toISOString(),
           response_time_ms: (bucketHealth.isLoading || bucketHealth.isError) ? null : 15,
           details: bucketHealth.isLoading
@@ -62,26 +61,18 @@ export default memo(function RuntimeHealthLayout() {
         }] : []),
         ...(pranaHealth.data || pranaHealth.isError || pranaHealth.isLoading || pranaSystemHealth.data || pranaSystemHealth.isError || pranaSystemHealth.isLoading ? [{
           name: "prana_service",
-          status: (pranaHealth.isLoading || pranaSystemHealth.isLoading)
-            ? "degraded"
-            : (pranaHealth.isError || pranaSystemHealth.isError)
-              ? "offline"
-              : (pranaStatus === "degraded" ? "degraded" : "operational"),
+          status: normalizeComponentStatus(pranaStatus, pranaLoading, pranaError),
           last_check: new Date().toISOString(),
-          response_time_ms: (pranaHealth.isLoading || pranaSystemHealth.isLoading || pranaHealth.isError || pranaSystemHealth.isError) ? null : 10,
-          details: (pranaHealth.isLoading || pranaSystemHealth.isLoading)
+          response_time_ms: (pranaLoading || pranaError) ? null : 10,
+          details: pranaLoading
             ? "Loading..."
-            : (pranaHealth.isError || pranaSystemHealth.isError)
+            : pranaError
               ? "Connection failed"
               : `Mode: ${pranaMode} | Fwd: ${pranaFwd ? 'enabled' : 'disabled'}`,
         }] : []),
         ...(insightFlowHealth.data || insightFlowHealth.isError || insightFlowHealth.isLoading ? [{
           name: "insightflow_runtime",
-          status: insightFlowHealth.isLoading
-            ? "degraded"
-            : insightFlowHealth.isError
-              ? "offline"
-              : (insightFlowHealth.data?.status === "ONLINE" || insightFlowHealth.data?.status === "healthy" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(insightFlowHealth.data?.status, insightFlowHealth.isLoading, insightFlowHealth.isError),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: insightFlowHealth.isLoading
@@ -92,11 +83,7 @@ export default memo(function RuntimeHealthLayout() {
         }] : []),
         ...(tantraHealth.data || tantraHealth.isError || tantraHealth.isLoading ? [{
           name: "tantra_gated_bridge",
-          status: tantraHealth.isLoading
-            ? "degraded"
-            : tantraHealth.isError || tantraHealth.data?.status === "offline"
-              ? "offline"
-              : (tantraHealth.data?.status === "healthy" || tantraHealth.data?.status === "operational" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(tantraHealth.data?.status, tantraHealth.isLoading, tantraHealth.isError),
           last_check: tantraHealth.data?.timestamp || new Date().toISOString(),
           response_time_ms: null,
           details: tantraHealth.isLoading
@@ -107,11 +94,7 @@ export default memo(function RuntimeHealthLayout() {
         }] : []),
         ...(rajyaHealth.data || rajyaHealth.isError || rajyaHealth.isLoading ? [{
           name: "RAJYA Sovereign Core",
-          status: rajyaHealth.isLoading
-            ? "degraded"
-            : rajyaHealth.isError
-              ? "offline"
-              : (rajyaHealth.data?.status === "healthy" || rajyaHealth.data?.status === "ok" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(rajyaHealth.data?.status, rajyaHealth.isLoading, rajyaHealth.isError),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: rajyaHealth.isLoading
@@ -122,11 +105,7 @@ export default memo(function RuntimeHealthLayout() {
         }] : []),
         ...(sanskarHealth.data || sanskarHealth.isError || sanskarHealth.isLoading ? [{
           name: "SANSKAR Domain Intelligence",
-          status: sanskarHealth.isLoading
-            ? "degraded"
-            : sanskarHealth.isError
-              ? "offline"
-              : (sanskarHealth.data?.status === "healthy" || sanskarHealth.data?.status === "degraded" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(sanskarHealth.data?.status, sanskarHealth.isLoading, sanskarHealth.isError),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: sanskarHealth.isLoading
@@ -137,11 +116,7 @@ export default memo(function RuntimeHealthLayout() {
         }] : []),
         ...(karmaHealth.data || karmaHealth.isError || karmaHealth.isLoading ? [{
           name: "karma_runtime",
-          status: karmaHealth.isLoading
-            ? "degraded"
-            : karmaHealth.isError
-              ? "offline"
-              : (karmaHealth.data?.status === "healthy" || karmaHealth.data?.status === "operational" || karmaHealth.data?.status === "OK" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(karmaHealth.data?.status, karmaHealth.isLoading, karmaHealth.isError),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: karmaHealth.isLoading
@@ -152,11 +127,7 @@ export default memo(function RuntimeHealthLayout() {
         }] : []),
         ...(keshavHealth.data || keshavHealth.isError || keshavHealth.isLoading ? [{
           name: "KESHAV Dependency Engine",
-          status: keshavHealth.isLoading 
-            ? "degraded" 
-            : keshavHealth.isError 
-              ? "offline" 
-              : (keshavHealth.data?.status === "healthy" || keshavHealth.data?.status?.toLowerCase() === "ok" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(keshavHealth.data?.status, keshavHealth.isLoading, keshavHealth.isError),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: keshavHealth.isLoading 
@@ -167,11 +138,7 @@ export default memo(function RuntimeHealthLayout() {
         }] : []),
         ...(setuHealth.data || setuHealth.isError || setuHealth.isLoading ? [{
           name: "SETU PMC",
-          status: setuHealth.isLoading
-            ? "degraded"
-            : setuHealth.isError
-              ? "offline"
-              : (setuHealth.data?.status === "healthy" || setuHealth.data?.status === "ok" || setuHealth.data?.status === "operational" ? "operational" : "degraded"),
+          status: normalizeComponentStatus(setuHealth.data?.status, setuHealth.isLoading, setuHealth.isError),
           last_check: new Date().toISOString(),
           response_time_ms: null,
           details: setuHealth.isLoading
