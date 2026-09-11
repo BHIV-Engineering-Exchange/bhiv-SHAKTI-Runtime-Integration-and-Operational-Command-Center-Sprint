@@ -175,7 +175,7 @@ export default memo(function ObservabilityLayout() {
         list.push({ label: "TANTRA Events", value: tantraTelemetry.data.summary.total_events.toLocaleString() });
         list.push({ label: "TANTRA Error Rate", value: `${(tantraTelemetry.data.summary.error_rate * 100).toFixed(2)}%` });
       }
-      if (keshavMetrics.data) {
+      if (keshavMetrics.data && !keshavMetrics.isError) {
         if (keshavMetrics.data.request_count != null) {
           list.push({ label: "KESHAV Requests", value: keshavMetrics.data.request_count.toLocaleString() });
         }
@@ -191,7 +191,7 @@ export default memo(function ObservabilityLayout() {
       }
     }
     return list;
-  }, [activeTab, pranaLogs, data, queryPerf.data, scaleStatus.data, stageMetrics.data, tantraTelemetry.data, karmaLiveMetrics.data, karmaTrends.data, karmaDharmaSevaFlow.data, karmaPaapPunyaRatio.data, keshavMetrics.data]);
+  }, [activeTab, pranaLogs, data, queryPerf.data, scaleStatus.data, stageMetrics.data, tantraTelemetry.data, karmaLiveMetrics.data, karmaTrends.data, karmaDharmaSevaFlow.data, karmaPaapPunyaRatio.data, keshavMetrics.data, keshavMetrics.isError]);
 
   const isLoading = telemetry.isLoading && scaleStatus.isLoading && queryPerf.isLoading && pranaLog.isLoading && stageMetrics.isLoading && tantraTelemetry.isLoading && keshavMetrics.isLoading;
   const isError = !isLoading && (telemetry.isError && scaleStatus.isError && queryPerf.isError && pranaLog.isError && stageMetrics.isError && tantraTelemetry.isError && keshavMetrics.isError && (activeTab !== "karma" || (karmaTrends.isError && karmaLiveMetrics.isError)));
@@ -255,12 +255,14 @@ export default memo(function ObservabilityLayout() {
               </span>
             );
           }
-          if (keshavMetrics.data) {
+          if (keshavMetrics.data && !keshavMetrics.isError) {
             items.push(
               <span key="keshav" className="flex items-center gap-1">
                 <span className="text-slate-500">KESHAV:</span>
                 <span className="text-indigo-400 font-semibold">
-                  {((keshavMetrics.data.request_success_rate ?? 1.0) * 100).toFixed(1)}%
+                  {keshavMetrics.data.request_success_rate != null
+                    ? `${(keshavMetrics.data.request_success_rate * 100).toFixed(1)}%`
+                    : "N/A"}
                 </span>
               </span>
             );

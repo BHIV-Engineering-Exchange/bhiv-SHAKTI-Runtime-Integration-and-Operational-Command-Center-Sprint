@@ -22,19 +22,6 @@ export async function getHealth(): Promise<KeshavHealthResponse> {
 }
 
 export async function getMetricsJson(): Promise<KeshavMetricsResponse> {
-  try {
-    const { data } = await keshavClient.get<KeshavMetricsResponse>("/metrics/json");
-    return data;
-  } catch (error) {
-    return {
-      request_count: 1450,
-      request_errors: 2,
-      request_success_rate: 0.9986,
-      avg_latency_seconds: 0.045,
-      p95_latency_seconds: 0.12,
-      p99_latency_seconds: 0.25,
-      severity_distribution: { info: 1400, warning: 48, critical: 2 },
-      unique_traces_processed: 312
-    };
-  }
+  const { data } = await keshavClient.get<KeshavMetricsResponse>("/metrics/json");
+  return data;
 }

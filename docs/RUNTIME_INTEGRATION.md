@@ -20,7 +20,7 @@ All endpoint clients are configured under `src/api/` and utilize environment var
 | `rajyaClient` | `rajyaEndpoints.ts` | `VITE_RAJYA_BASE_URL` | 30,000ms | Render cold starts tolerance |
 | `tantraClient` | `tantraEndpoints.ts` | `VITE_TANTRA_BASE_URL` | 30,000ms | Render cold starts tolerance |
 | `sanskarClient` | `sanskarEndpoints.ts` | `VITE_SANSKAR_BASE_URL` | 15,000ms | Deterministic tracing |
-| `keshavClient` | `keshavEndpoints.ts` | `VITE_KESHAV_URL` | 10,000ms | Fail-safe try/catch mock fallback |
+| `keshavClient` | `keshavEndpoints.ts` | `VITE_KESHAV_URL` | 10,000ms | Fail-closed direct error propagation |
 
 ---
 
