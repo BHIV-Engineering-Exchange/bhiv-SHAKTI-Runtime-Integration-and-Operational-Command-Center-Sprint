@@ -24,7 +24,7 @@ ENV VITE_RAJYA_BASE_URL="/api/rajya"
 ENV VITE_SANSKAR_BASE_URL="/api/sanskar"
 ENV VITE_KARMA_URL="/api/karma"
 ENV VITE_KESHAV_URL="/api/keshav"
-ENV VITE_SETU_URL="/api/setu"
+ENV VITE_SETU_URL="https://setu.blackholeinfiverse.com"
 
 # Declare build arguments for sensitive variables passed via GitHub secrets
 ARG VITE_NIYANTRAN_EXECUTION_KEY
