@@ -28,12 +28,10 @@ ENV VITE_SETU_URL="https://setu.blackholeinfiverse.com"
 
 # Declare build arguments for sensitive variables passed via GitHub secrets
 ARG VITE_NIYANTRAN_EXECUTION_KEY
-ARG VITE_NIYANTRAN_AUTH_TOKEN
 ARG VITE_TANTRA_BRIDGE_SIGNATURE
 
 # Map sensitive build args to environment variables for Vite build process
 ENV VITE_NIYANTRAN_EXECUTION_KEY=$VITE_NIYANTRAN_EXECUTION_KEY
-ENV VITE_NIYANTRAN_AUTH_TOKEN=$VITE_NIYANTRAN_AUTH_TOKEN
 ENV VITE_TANTRA_BRIDGE_SIGNATURE=$VITE_TANTRA_BRIDGE_SIGNATURE
 
 # Build the production bundle

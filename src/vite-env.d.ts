@@ -8,7 +8,6 @@ interface ImportMetaEnv {
   readonly VITE_PRANA_URL?: string;
   readonly VITE_NIYANTRAN_URL?: string;
   readonly VITE_NIYANTRAN_EXECUTION_KEY?: string;
-  readonly VITE_NIYANTRAN_AUTH_TOKEN?: string;
   readonly VITE_INSIGHTFLOW_URL?: string;
   readonly VITE_TANTRA_BASE_URL?: string;
   readonly VITE_TANTRA_BRIDGE_SIGNATURE?: string;
