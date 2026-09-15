@@ -192,14 +192,14 @@ export async function fetchKarmaConfidence(
   const purusharthaAlignment = params?.purushartha_alignment ?? DEFAULT_PURUSHARTHA_ALIGNMENT;
 
   const { data } = await karmaClient.request<KarmaConfidenceResponse>({
-    method: "GET",
+    method: "POST",
     url: `/intelligence/confidence/${trajectoryId}`,
-    params: {
+    data: {
       behavior_score: behaviorScore,
       aggregated_feedback: aggregatedFeedback,
+      purushartha_alignment: purusharthaAlignment,
       schema_version: schemaVersion,
     },
-    data: purusharthaAlignment,
     headers: { "Content-Type": "application/json" },
   });
   return data;
@@ -216,16 +216,14 @@ export async function fetchKarmaReasoning(
   const recommendedSignals = params?.recommended_signals ?? DEFAULT_RECOMMENDED_SIGNALS;
 
   const { data } = await karmaClient.request<KarmaReasoningResponse>({
-    method: "GET",
+    method: "POST",
     url: `/intelligence/reasoning/${trajectoryId}`,
-    params: {
+    data: {
       behavior_score: behaviorScore,
       aggregated_feedback: aggregatedFeedback,
-      schema_version: schemaVersion,
-    },
-    data: {
       purushartha_alignment: purusharthaAlignment,
       recommended_signals: recommendedSignals,
+      schema_version: schemaVersion,
     },
     headers: { "Content-Type": "application/json" },
   });

@@ -142,7 +142,7 @@ describe("Control Plane, Bucket & PRANA Integration Normalization", () => {
     expect(res.logs[0].destination).toBe("bucket_storage");
   });
 
-  test("fetchKarmaConfidence passes required query params and purushartha_alignment body", async () => {
+  test("fetchKarmaConfidence passes required payload in body with POST and no query params", async () => {
     const requestSpy = vi.spyOn(karmaClient, "request").mockResolvedValueOnce({
       data: {
         schema_version: "1.0.0",
@@ -155,25 +155,68 @@ describe("Control Plane, Bucket & PRANA Integration Normalization", () => {
     const res = await fetchKarmaConfidence("traj_01");
 
     expect(requestSpy).toHaveBeenCalledWith({
-      method: "GET",
+      method: "POST",
       url: "/intelligence/confidence/traj_01",
-      params: {
+      data: {
         behavior_score: 0.85,
         aggregated_feedback: 0.9,
+        purushartha_alignment: {
+          dharma: 0.85,
+          artha: 0.75,
+          kama: 0.65,
+          moksha: 0.95,
+        },
         schema_version: "1.0.0",
-      },
-      data: {
-        dharma: 0.85,
-        artha: 0.75,
-        kama: 0.65,
-        moksha: 0.95,
       },
       headers: { "Content-Type": "application/json" },
     });
     expect(res.confidence_score).toBe(0.88);
   });
 
-  test("fetchKarmaReasoning passes required query params and purushartha + recommended signals body", async () => {
+  test("fetchKarmaConfidence supports custom argument overrides in POST body", async () => {
+    const requestSpy = vi.spyOn(karmaClient, "request").mockResolvedValueOnce({
+      data: {
+        schema_version: "2.0.0",
+        trajectory_id: "traj_custom",
+        confidence_score: 0.94,
+        explanation: "Custom confidence",
+      },
+    } as any);
+
+    const customParams = {
+      behavior_score: 0.92,
+      aggregated_feedback: 0.88,
+      schema_version: "2.0.0",
+      purushartha_alignment: {
+        dharma: 0.9,
+        artha: 0.8,
+        kama: 0.7,
+        moksha: 0.99,
+      },
+    };
+
+    const res = await fetchKarmaConfidence("traj_custom", customParams);
+
+    expect(requestSpy).toHaveBeenCalledWith({
+      method: "POST",
+      url: "/intelligence/confidence/traj_custom",
+      data: {
+        behavior_score: 0.92,
+        aggregated_feedback: 0.88,
+        purushartha_alignment: {
+          dharma: 0.9,
+          artha: 0.8,
+          kama: 0.7,
+          moksha: 0.99,
+        },
+        schema_version: "2.0.0",
+      },
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(res.confidence_score).toBe(0.94);
+  });
+
+  test("fetchKarmaReasoning passes required payload in body with POST and no query params", async () => {
     const requestSpy = vi.spyOn(karmaClient, "request").mockResolvedValueOnce({
       data: {
         schema_version: "1.0.0",
@@ -186,14 +229,11 @@ describe("Control Plane, Bucket & PRANA Integration Normalization", () => {
     const res = await fetchKarmaReasoning("traj_01");
 
     expect(requestSpy).toHaveBeenCalledWith({
-      method: "GET",
+      method: "POST",
       url: "/intelligence/reasoning/traj_01",
-      params: {
+      data: {
         behavior_score: 0.85,
         aggregated_feedback: 0.9,
-        schema_version: "1.0.0",
-      },
-      data: {
         purushartha_alignment: {
           dharma: 0.85,
           artha: 0.75,
@@ -201,9 +241,55 @@ describe("Control Plane, Bucket & PRANA Integration Normalization", () => {
           moksha: 0.95,
         },
         recommended_signals: ["STABILITY", "ETHICAL_ALIGNMENT"],
+        schema_version: "1.0.0",
       },
       headers: { "Content-Type": "application/json" },
     });
     expect(res.conclusion).toBe("Normal operation");
+  });
+
+  test("fetchKarmaReasoning supports custom argument overrides in POST body", async () => {
+    const requestSpy = vi.spyOn(karmaClient, "request").mockResolvedValueOnce({
+      data: {
+        schema_version: "2.0.0",
+        trajectory_id: "traj_custom",
+        reasoning_type: "probabilistic",
+        conclusion: "Intervention required",
+      },
+    } as any);
+
+    const customParams = {
+      behavior_score: 0.45,
+      aggregated_feedback: 0.5,
+      schema_version: "2.0.0",
+      purushartha_alignment: {
+        dharma: 0.4,
+        artha: 0.3,
+        kama: 0.5,
+        moksha: 0.6,
+      },
+      recommended_signals: ["NUDGE", "ESCALATE"],
+    };
+
+    const res = await fetchKarmaReasoning("traj_custom", customParams);
+
+    expect(requestSpy).toHaveBeenCalledWith({
+      method: "POST",
+      url: "/intelligence/reasoning/traj_custom",
+      data: {
+        behavior_score: 0.45,
+        aggregated_feedback: 0.5,
+        purushartha_alignment: {
+          dharma: 0.4,
+          artha: 0.3,
+          kama: 0.5,
+          moksha: 0.6,
+        },
+        recommended_signals: ["NUDGE", "ESCALATE"],
+        schema_version: "2.0.0",
+      },
+      headers: { "Content-Type": "application/json" },
+    });
+    expect(res.conclusion).toBe("Intervention required");
   });
 });
