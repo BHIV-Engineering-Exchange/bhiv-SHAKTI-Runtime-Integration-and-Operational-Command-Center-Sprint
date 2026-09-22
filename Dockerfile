@@ -25,14 +25,7 @@ ENV VITE_SANSKAR_BASE_URL="/api/sanskar"
 ENV VITE_KARMA_URL="/api/karma"
 ENV VITE_KESHAV_URL="/api/keshav"
 ENV VITE_SETU_URL="https://setu.blackholeinfiverse.com"
-
-# Declare build arguments for sensitive variables passed via GitHub secrets
-ARG VITE_NIYANTRAN_EXECUTION_KEY
-ARG VITE_TANTRA_BRIDGE_SIGNATURE
-
-# Map sensitive build args to environment variables for Vite build process
-ENV VITE_NIYANTRAN_EXECUTION_KEY=$VITE_NIYANTRAN_EXECUTION_KEY
-ENV VITE_TANTRA_BRIDGE_SIGNATURE=$VITE_TANTRA_BRIDGE_SIGNATURE
+ENV VITE_PRAVAH_URL="/api/pravah"
 
 # Build the production bundle
 RUN npm run build

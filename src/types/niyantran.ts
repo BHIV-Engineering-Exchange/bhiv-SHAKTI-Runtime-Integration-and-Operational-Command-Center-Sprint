@@ -119,25 +119,38 @@ export interface NiyantranMergeAnalysis {
 }
 
 export interface NiyantranExecutionSession {
-  _id: string;
-  executionId: string;
-  traceId: string;
-  tenantId: string;
-  contractHash: string;
+  _id?: string;
+  execution_id: string;
+  trace_id?: string;
+  tenant_id?: string;
+  contract_hash?: string;
   status: string;
-  receivedAt: string;
+  received_at?: string;
+  updated_at?: string;
+  // Backward compatibility accessors
+  executionId?: string;
+  traceId?: string;
+  tenantId?: string;
+  contractHash?: string;
+  receivedAt?: string;
   updatedAt?: string;
 }
 
 export interface NiyantranExecutionEvent {
-  _id: string;
-  eventId: string;
-  executionId: string;
-  eventType: string;
-  eventIndex: number;
-  eventTimestamp: string;
-  hash: string;
+  _id?: string;
+  event_id: string;
+  execution_id: string;
+  event_type: string;
+  event_index?: number;
+  event_timestamp: string;
+  hash?: string;
   payload?: Record<string, unknown>;
+  // Backward compatibility accessors
+  eventId?: string;
+  executionId?: string;
+  eventType?: string;
+  eventIndex?: number;
+  eventTimestamp?: string;
 }
 
 export interface NiyantranTantraExecutionHistory {
@@ -153,6 +166,84 @@ export interface NiyantranTantraExecutionHistory {
     end_hash: string;
   };
   rejections?: Array<Record<string, unknown>>;
+}
+
+/**
+ * Safely maps raw backend responses to NiyantranTantraExecutionHistory.
+ * Preserves backend values, handles both snake_case and camelCase, and never fabricates missing IDs.
+ */
+export function mapNiyantranExecutionHistory(data: any): NiyantranTantraExecutionHistory {
+  if (!data || typeof data !== "object") {
+    return {
+      status: "unknown",
+      execution_id: "",
+      events: [],
+      rejections: [],
+    };
+  }
+
+  const rawSession = data.session;
+  const session: NiyantranExecutionSession | undefined = rawSession && typeof rawSession === "object"
+    ? {
+        _id: rawSession._id,
+        execution_id: rawSession.execution_id || rawSession.executionId || data.execution_id || data.executionId || "",
+        trace_id: rawSession.trace_id || rawSession.traceId || data.trace_id || data.traceId,
+        tenant_id: rawSession.tenant_id || rawSession.tenantId || data.tenant_id || data.tenantId,
+        contract_hash: rawSession.contract_hash || rawSession.contractHash || data.contract_hash || data.contractHash,
+        status: rawSession.status || data.status || "unknown",
+        received_at: rawSession.received_at || rawSession.receivedAt,
+        updated_at: rawSession.updated_at || rawSession.updatedAt,
+        // Populate legacy aliases
+        executionId: rawSession.execution_id || rawSession.executionId || data.execution_id || data.executionId || "",
+        traceId: rawSession.trace_id || rawSession.traceId || data.trace_id || data.traceId,
+        tenantId: rawSession.tenant_id || rawSession.tenantId || data.tenant_id || data.tenantId,
+        contractHash: rawSession.contract_hash || rawSession.contractHash || data.contract_hash || data.contractHash,
+        receivedAt: rawSession.received_at || rawSession.receivedAt,
+        updatedAt: rawSession.updated_at || rawSession.updatedAt,
+      }
+    : undefined;
+
+  const rawEvents = Array.isArray(data.events) ? data.events : [];
+  const events: NiyantranExecutionEvent[] = rawEvents.map((ev: any, index: number) => {
+    const eventId = ev.event_id || ev.eventId || `evt-${index}`;
+    const execId = ev.execution_id || ev.executionId || data.execution_id || data.executionId || "";
+    const eventType = ev.event_type || ev.eventType || "UNKNOWN";
+    const eventIdx = ev.event_index ?? ev.eventIndex ?? index;
+    const eventTime = ev.event_timestamp || ev.eventTimestamp || ev.timestamp || "";
+    return {
+      _id: ev._id,
+      event_id: eventId,
+      execution_id: execId,
+      event_type: eventType,
+      event_index: eventIdx,
+      event_timestamp: eventTime,
+      hash: ev.hash || "",
+      payload: ev.payload || {},
+      // Legacy aliases
+      eventId,
+      executionId: execId,
+      eventType,
+      eventIndex: eventIdx,
+      eventTimestamp: eventTime,
+    };
+  });
+
+  return {
+    status: data.status || "unknown",
+    execution_id: data.execution_id || data.executionId || "",
+    trace_id: data.trace_id || data.traceId,
+    tenant_id: data.tenant_id || data.tenantId,
+    contract_hash: data.contract_hash || data.contractHash,
+    session,
+    events,
+    lineage: data.lineage && typeof data.lineage === "object"
+      ? {
+          start_hash: data.lineage.start_hash || data.lineage.startHash || "",
+          end_hash: data.lineage.end_hash || data.lineage.endHash || "",
+        }
+      : undefined,
+    rejections: Array.isArray(data.rejections) ? data.rejections : [],
+  };
 }
 
 export interface NiyantranAim {

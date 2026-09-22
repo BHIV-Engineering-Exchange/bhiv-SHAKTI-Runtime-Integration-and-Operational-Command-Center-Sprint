@@ -14,16 +14,15 @@ import type {
   NiyantranTask,
   NiyantranLiveLocationUser,
 } from "@/types/niyantran";
+import { mapNiyantranExecutionHistory } from "@/types/niyantran";
 import type {
   EmployeeExecutionResponse,
   EngineeringCapacityResponse,
 } from "@/types/runtime";
+import { extractRuntimeCorrelation } from "./client";
 
 const NIYANTRAN_BASE_URL =
   import.meta.env.VITE_NIYANTRAN_URL || "";
-
-const DEFAULT_EXECUTION_KEY =
-  import.meta.env.VITE_NIYANTRAN_EXECUTION_KEY || "niyantran-dev-exec-key";
 
 export const niyantranClient = axios.create({
   baseURL: NIYANTRAN_BASE_URL,
@@ -31,7 +30,9 @@ export const niyantranClient = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-// Request interceptor to attach authentication & execution keys
+// Request interceptor to attach user session token (x-auth-token)
+// NOTE: Server-only execution key (x-execution-key) MUST NOT be exposed to the browser
+// and must be injected via secure server-side proxy/BFF if required by Niyantran.
 niyantranClient.interceptors.request.use(
   (config) => {
     const authToken =
@@ -43,25 +44,29 @@ niyantranClient.interceptors.request.use(
       config.headers["x-auth-token"] = authToken;
     }
 
-    if (DEFAULT_EXECUTION_KEY) {
-      config.headers["x-execution-key"] = DEFAULT_EXECUTION_KEY;
-    }
-
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to normalize trace headers and handle network errors
+// Response interceptor to extract runtime correlation without ID conflation
 niyantranClient.interceptors.response.use(
   (response) => {
-    const traceId =
-      response.headers?.["x-trace-id"] ||
-      response.headers?.["x-execution-id"] ||
-      response.headers?.["traceparent"];
-
-    if (traceId && response.data && typeof response.data === "object") {
-      (response.data as any).trace_id = traceId;
+    const correlation = extractRuntimeCorrelation(response.headers);
+    if (response.data && typeof response.data === "object") {
+      (response.data as any).correlation = correlation;
+      if (correlation.trace_id) {
+        (response.data as any).trace_id = correlation.trace_id;
+      }
+      if (correlation.execution_id) {
+        (response.data as any).execution_id = correlation.execution_id;
+      }
+      if (correlation.request_id) {
+        (response.data as any).request_id = correlation.request_id;
+      }
+      if (correlation.tenant_id) {
+        (response.data as any).tenant_id = correlation.tenant_id;
+      }
     }
     return response;
   },
@@ -250,24 +255,18 @@ export async function fetchNiyantranMergeAnalysis(params?: {
 
 /**
  * Fetch Tantra execution history, lineage hashes, events, and rejections
+ * Canonical endpoint: GET /api/tantra/execution/:executionId/history
+ *
+ * NOTE: If Niyantran strictly requires x-execution-key, this request must be
+ * routed through a server-side proxy/BFF. Browser must only transmit x-auth-token.
  */
 export async function fetchNiyantranExecutionHistory(
   executionId: string
 ): Promise<NiyantranTantraExecutionHistory> {
-  try {
-    const { data } = await niyantranClient.get<any>(
-      `/api/tantra/execution/${encodeURIComponent(executionId)}/history`
-    );
-    const payload = data || {};
-    return {
-      ...payload,
-      events: Array.isArray(payload?.events) ? payload.events : [],
-      rejections: Array.isArray(payload?.rejections) ? payload.rejections : [],
-    };
-  } catch (error) {
-    logger.error(`Failed to fetch execution history for ${executionId}:`, error);
-    return { status: "failed", execution_id: executionId, events: [], rejections: [] };
-  }
+  const { data } = await niyantranClient.get<any>(
+    `/api/tantra/execution/${encodeURIComponent(executionId)}/history`
+  );
+  return mapNiyantranExecutionHistory(data);
 }
 
 /**

@@ -1,5 +1,6 @@
 import axios, { type AxiosError } from "axios";
 import { logger } from "@/utils/logger";
+import { extractRuntimeCorrelation } from "./client";
 import type {
   TantraHealthResponse,
   TantraTelemetrySummary,
@@ -16,44 +17,48 @@ if (TANTRA_BASE_URL.includes("vercel.app") && !TANTRA_BASE_URL.includes("/api/")
 
 export const tantraClient = axios.create({
   baseURL: TANTRA_BASE_URL,
-  timeout: 30000, // Elevated timeout to mitigate Render cold starts
+  timeout: 30000, // Elevated timeout to mitigate cold starts
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Interceptor to attach bridge signature if present in local storage or environment
+// Request interceptor to attach user session authorization if present
 tantraClient.interceptors.request.use(
   (config) => {
-    const localSig =
+    const sessionToken =
       typeof localStorage !== "undefined"
-        ? localStorage.getItem("x-bridge-signature") || localStorage.getItem("token")
+        ? localStorage.getItem("token")
         : null;
 
-    const signature = localSig || import.meta.env.VITE_TANTRA_BRIDGE_SIGNATURE;
-
-    if (signature) {
-      // Attach both as standard Authorization header and custom signature header to cover all specs
-      config.headers["Authorization"] = signature.startsWith("Bearer ")
-        ? signature
-        : `Bearer ${signature}`;
-      config.headers["x-bridge-signature"] = signature;
+    if (sessionToken) {
+      config.headers["Authorization"] = sessionToken.startsWith("Bearer ")
+        ? sessionToken
+        : `Bearer ${sessionToken}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to normalize trace headers
+// Response interceptor to extract runtime correlation without ID conflation
 tantraClient.interceptors.response.use(
   (response) => {
-    const traceId =
-      response.headers?.["x-trace-id"] ||
-      response.headers?.["x-execution-id"] ||
-      response.headers?.["traceparent"];
-
-    if (traceId && response.data && typeof response.data === "object") {
-      (response.data as any).trace_id = traceId;
+    const correlation = extractRuntimeCorrelation(response.headers);
+    if (response.data && typeof response.data === "object") {
+      (response.data as any).correlation = correlation;
+      if (correlation.trace_id) {
+        (response.data as any).trace_id = correlation.trace_id;
+      }
+      if (correlation.execution_id) {
+        (response.data as any).execution_id = correlation.execution_id;
+      }
+      if (correlation.request_id) {
+        (response.data as any).request_id = correlation.request_id;
+      }
+      if (correlation.tenant_id) {
+        (response.data as any).tenant_id = correlation.tenant_id;
+      }
     }
     return response;
   },
@@ -66,7 +71,7 @@ tantraClient.interceptors.response.use(
     } else if (status === 404) {
       logger.warn(`TANTRA endpoint not found: ${url}`);
     } else if (error.code === "ECONNABORTED") {
-      logger.error(`TANTRA request timeout (cold start): ${url}`);
+      logger.error(`TANTRA request timeout: ${url}`);
     } else if (!error.response) {
       logger.error(`TANTRA network error — unreachable at ${TANTRA_BASE_URL}`);
     }
@@ -85,44 +90,20 @@ export async function fetchTantraHealth(): Promise<TantraHealthResponse> {
 
 /**
  * GET /telemetry
+ * Fail-Closed: Rejects on error so React Query marks query as isError.
+ * Never returns synthetic healthy metrics.
  */
 export async function fetchTantraTelemetry(): Promise<TantraTelemetryResponse> {
-  try {
-    const { data } = await tantraClient.get<TantraTelemetryResponse>("/telemetry");
-    return data;
-  } catch (error) {
-    logger.error("Failed to fetch TANTRA telemetry data:", error);
-    return {
-      metrics: {
-        response_times: [],
-        event_rates: [],
-        error_rates: [],
-        system_load: [],
-      },
-      summary: {
-        avg_response_time_ms: 0,
-        total_events: 0,
-        error_rate: 0,
-        uptime_percentage: 100,
-      },
-    };
-  }
+  const { data } = await tantraClient.get<TantraTelemetryResponse>("/telemetry");
+  return data;
 }
 
 /**
  * GET /telemetry/summary
+ * Fail-Closed: Rejects on error so React Query marks query as isError.
+ * Never returns synthetic healthy metrics.
  */
 export async function fetchTantraTelemetrySummary(): Promise<TantraTelemetrySummary> {
-  try {
-    const { data } = await tantraClient.get<TantraTelemetrySummary>("/telemetry/summary");
-    return data;
-  } catch (error) {
-    logger.error("Failed to fetch TANTRA telemetry summary:", error);
-    return {
-      avg_response_time_ms: 0,
-      total_events: 0,
-      error_rate: 0,
-      uptime_percentage: 100,
-    };
-  }
+  const { data } = await tantraClient.get<TantraTelemetrySummary>("/telemetry/summary");
+  return data;
 }

@@ -6,7 +6,14 @@ import {
   getProjectMilestones,
   getTask,
   getTaskAssignments,
+  getSetuDashboard,
+  getSetuTimeline,
+  getSetuCandidateState,
+  getSetuSignals,
+  getSetuTelemetry,
 } from "@/api/setuEndpoints";
+
+// ─── SETU PMC / Project Queries ──────────────────────────────────────────────
 
 export const useSetuHealth = () =>
   useQuery({
@@ -63,5 +70,57 @@ export const useSetuTaskAssignments = (taskId: string) =>
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
     enabled: !!taskId,
+    retry: 1,
+  });
+
+// ─── SETU Runtime Observation Queries (Strictly Read-Only) ───────────────────
+
+export const useSetuDashboard = (traceId?: string) =>
+  useQuery({
+    queryKey: ["setu-dashboard", traceId],
+    queryFn: () => getSetuDashboard(traceId!),
+    enabled: Boolean(traceId),
+    refetchInterval: 10_000,
+    placeholderData: keepPreviousData,
+    retry: 1,
+  });
+
+export const useSetuTimeline = (traceId?: string) =>
+  useQuery({
+    queryKey: ["setu-timeline", traceId],
+    queryFn: () => getSetuTimeline(traceId!),
+    enabled: Boolean(traceId),
+    refetchInterval: 10_000,
+    placeholderData: keepPreviousData,
+    retry: 1,
+  });
+
+export const useSetuCandidateState = (traceId?: string) =>
+  useQuery({
+    queryKey: ["setu-candidate-state", traceId],
+    queryFn: () => getSetuCandidateState(traceId!),
+    enabled: Boolean(traceId),
+    refetchInterval: 10_000,
+    placeholderData: keepPreviousData,
+    retry: 1,
+  });
+
+export const useSetuSignals = (traceId?: string) =>
+  useQuery({
+    queryKey: ["setu-signals", traceId],
+    queryFn: () => getSetuSignals(traceId!),
+    enabled: Boolean(traceId),
+    refetchInterval: 10_000,
+    placeholderData: keepPreviousData,
+    retry: 1,
+  });
+
+export const useSetuTelemetry = (traceId?: string) =>
+  useQuery({
+    queryKey: ["setu-telemetry", traceId],
+    queryFn: () => getSetuTelemetry(traceId!),
+    enabled: Boolean(traceId),
+    refetchInterval: 10_000,
+    placeholderData: keepPreviousData,
     retry: 1,
   });

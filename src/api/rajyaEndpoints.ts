@@ -1,5 +1,6 @@
 import axios, { type AxiosError } from "axios";
 import { logger } from "@/utils/logger";
+import { extractRuntimeCorrelation } from "./client";
 
 let RAJYA_BASE_URL =
   import.meta.env.VITE_RAJYA_BASE_URL || "";
@@ -17,16 +18,24 @@ export const rajyaClient = axios.create({
   },
 });
 
-// Response interceptor to normalize trace headers
+// Response interceptor to extract runtime correlation without ID conflation
 rajyaClient.interceptors.response.use(
   (response) => {
-    const traceId =
-      response.headers?.["x-trace-id"] ||
-      response.headers?.["x-execution-id"] ||
-      response.headers?.["traceparent"];
-
-    if (traceId && response.data && typeof response.data === "object") {
-      (response.data as any).trace_id = traceId;
+    const correlation = extractRuntimeCorrelation(response.headers);
+    if (response.data && typeof response.data === "object") {
+      (response.data as any).correlation = correlation;
+      if (correlation.trace_id) {
+        (response.data as any).trace_id = correlation.trace_id;
+      }
+      if (correlation.execution_id) {
+        (response.data as any).execution_id = correlation.execution_id;
+      }
+      if (correlation.request_id) {
+        (response.data as any).request_id = correlation.request_id;
+      }
+      if (correlation.tenant_id) {
+        (response.data as any).tenant_id = correlation.tenant_id;
+      }
     }
     return response;
   },
