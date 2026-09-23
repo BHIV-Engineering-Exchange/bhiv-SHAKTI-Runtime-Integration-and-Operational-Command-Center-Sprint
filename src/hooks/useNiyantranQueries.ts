@@ -78,10 +78,10 @@ export const useNiyantranMergeAnalysis = (params?: {
     retry: 1,
   });
 
-export const useNiyantranExecutionHistory = (executionId?: string) =>
+export const useNiyantranExecutionHistory = (executionId?: string, tenantId?: string) =>
   useQuery({
-    queryKey: ["niyantran-execution-history", executionId],
-    queryFn: () => fetchNiyantranExecutionHistory(executionId!),
+    queryKey: ["niyantran-execution-history", executionId, tenantId],
+    queryFn: () => fetchNiyantranExecutionHistory(executionId!, tenantId),
     enabled: Boolean(executionId),
     refetchInterval: 5_000,
     placeholderData: keepPreviousData,

@@ -171,9 +171,14 @@ export async function getTaskAssignments(taskId: string): Promise<Assignment[]> 
  * GET /setu/ui/dashboard/{trace_id}
  * Retrieves complete visibility dashboard for a trace (read-only, observational only).
  */
-export async function getSetuDashboard(traceId: string): Promise<SetuVisibilityDashboard> {
+export async function getSetuDashboard(traceId: string, tenantId?: string): Promise<SetuVisibilityDashboard> {
+  const headers: Record<string, string> = {};
+  if (tenantId && tenantId.trim().length > 0) {
+    headers["x-tenant-id"] = tenantId.trim();
+  }
   const { data } = await setuClient.get<SetuVisibilityDashboard>(
-    `/setu/ui/dashboard/${encodeURIComponent(traceId)}`
+    `/setu/ui/dashboard/${encodeURIComponent(traceId)}`,
+    { headers }
   );
   return data;
 }
@@ -182,9 +187,14 @@ export async function getSetuDashboard(traceId: string): Promise<SetuVisibilityD
  * GET /setu/niyantran/timeline/{trace_id}
  * Retrieves execution timeline from SETU Niyantran adapter.
  */
-export async function getSetuTimeline(traceId: string): Promise<SetuTimelineResponse> {
+export async function getSetuTimeline(traceId: string, tenantId?: string): Promise<SetuTimelineResponse> {
+  const headers: Record<string, string> = {};
+  if (tenantId && tenantId.trim().length > 0) {
+    headers["x-tenant-id"] = tenantId.trim();
+  }
   const { data } = await setuClient.get<SetuTimelineResponse>(
-    `/setu/niyantran/timeline/${encodeURIComponent(traceId)}`
+    `/setu/niyantran/timeline/${encodeURIComponent(traceId)}`,
+    { headers }
   );
   return data;
 }
@@ -193,9 +203,14 @@ export async function getSetuTimeline(traceId: string): Promise<SetuTimelineResp
  * GET /setu/ui/candidate/{trace_id}
  * Retrieves candidate state for UI observation.
  */
-export async function getSetuCandidateState(traceId: string): Promise<SetuCandidateState> {
+export async function getSetuCandidateState(traceId: string, tenantId?: string): Promise<SetuCandidateState> {
+  const headers: Record<string, string> = {};
+  if (tenantId && tenantId.trim().length > 0) {
+    headers["x-tenant-id"] = tenantId.trim();
+  }
   const { data } = await setuClient.get<SetuCandidateState>(
-    `/setu/ui/candidate/${encodeURIComponent(traceId)}`
+    `/setu/ui/candidate/${encodeURIComponent(traceId)}`,
+    { headers }
   );
   return data;
 }
@@ -204,9 +219,14 @@ export async function getSetuCandidateState(traceId: string): Promise<SetuCandid
  * GET /setu/ui/signals/{trace_id}
  * Retrieves signal visibility for UI observation.
  */
-export async function getSetuSignals(traceId: string): Promise<SetuSignalVisibility> {
+export async function getSetuSignals(traceId: string, tenantId?: string): Promise<SetuSignalVisibility> {
+  const headers: Record<string, string> = {};
+  if (tenantId && tenantId.trim().length > 0) {
+    headers["x-tenant-id"] = tenantId.trim();
+  }
   const { data } = await setuClient.get<SetuSignalVisibility>(
-    `/setu/ui/signals/${encodeURIComponent(traceId)}`
+    `/setu/ui/signals/${encodeURIComponent(traceId)}`,
+    { headers }
   );
   return data;
 }
@@ -215,9 +235,14 @@ export async function getSetuSignals(traceId: string): Promise<SetuSignalVisibil
  * GET /setu/telemetry/{trace_id}
  * Retrieves telemetry events for a trace (strictly read-only).
  */
-export async function getSetuTelemetry(traceId: string): Promise<SetuTelemetryResponse> {
+export async function getSetuTelemetry(traceId: string, tenantId?: string): Promise<SetuTelemetryResponse> {
+  const headers: Record<string, string> = {};
+  if (tenantId && tenantId.trim().length > 0) {
+    headers["x-tenant-id"] = tenantId.trim();
+  }
   const { data } = await setuClient.get<SetuTelemetryResponse>(
-    `/setu/telemetry/${encodeURIComponent(traceId)}`
+    `/setu/telemetry/${encodeURIComponent(traceId)}`,
+    { headers }
   );
   return data;
 }

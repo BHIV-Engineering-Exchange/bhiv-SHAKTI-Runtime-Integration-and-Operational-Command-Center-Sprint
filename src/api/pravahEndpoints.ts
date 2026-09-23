@@ -17,6 +17,7 @@ export const pravahClient = axios.create({
   timeout: 15000,
   headers: {
     "Content-Type": "application/json",
+    "Accept": "application/json",
     "X-Source-System": "SHAKTI",
   },
 });

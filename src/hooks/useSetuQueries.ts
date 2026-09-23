@@ -75,50 +75,50 @@ export const useSetuTaskAssignments = (taskId: string) =>
 
 // ─── SETU Runtime Observation Queries (Strictly Read-Only) ───────────────────
 
-export const useSetuDashboard = (traceId?: string) =>
+export const useSetuDashboard = (traceId?: string, tenantId?: string) =>
   useQuery({
-    queryKey: ["setu-dashboard", traceId],
-    queryFn: () => getSetuDashboard(traceId!),
+    queryKey: ["setu-dashboard", traceId, tenantId],
+    queryFn: () => getSetuDashboard(traceId!, tenantId),
     enabled: Boolean(traceId),
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
     retry: 1,
   });
 
-export const useSetuTimeline = (traceId?: string) =>
+export const useSetuTimeline = (traceId?: string, tenantId?: string) =>
   useQuery({
-    queryKey: ["setu-timeline", traceId],
-    queryFn: () => getSetuTimeline(traceId!),
+    queryKey: ["setu-timeline", traceId, tenantId],
+    queryFn: () => getSetuTimeline(traceId!, tenantId),
     enabled: Boolean(traceId),
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
     retry: 1,
   });
 
-export const useSetuCandidateState = (traceId?: string) =>
+export const useSetuCandidateState = (traceId?: string, tenantId?: string) =>
   useQuery({
-    queryKey: ["setu-candidate-state", traceId],
-    queryFn: () => getSetuCandidateState(traceId!),
+    queryKey: ["setu-candidate-state", traceId, tenantId],
+    queryFn: () => getSetuCandidateState(traceId!, tenantId),
     enabled: Boolean(traceId),
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
     retry: 1,
   });
 
-export const useSetuSignals = (traceId?: string) =>
+export const useSetuSignals = (traceId?: string, tenantId?: string) =>
   useQuery({
-    queryKey: ["setu-signals", traceId],
-    queryFn: () => getSetuSignals(traceId!),
+    queryKey: ["setu-signals", traceId, tenantId],
+    queryFn: () => getSetuSignals(traceId!, tenantId),
     enabled: Boolean(traceId),
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
     retry: 1,
   });
 
-export const useSetuTelemetry = (traceId?: string) =>
+export const useSetuTelemetry = (traceId?: string, tenantId?: string) =>
   useQuery({
-    queryKey: ["setu-telemetry", traceId],
-    queryFn: () => getSetuTelemetry(traceId!),
+    queryKey: ["setu-telemetry", traceId, tenantId],
+    queryFn: () => getSetuTelemetry(traceId!, tenantId),
     enabled: Boolean(traceId),
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,

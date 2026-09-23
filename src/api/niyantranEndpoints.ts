@@ -261,10 +261,16 @@ export async function fetchNiyantranMergeAnalysis(params?: {
  * routed through a server-side proxy/BFF. Browser must only transmit x-auth-token.
  */
 export async function fetchNiyantranExecutionHistory(
-  executionId: string
+  executionId: string,
+  tenantId?: string
 ): Promise<NiyantranTantraExecutionHistory> {
+  const headers: Record<string, string> = {};
+  if (tenantId && tenantId.trim().length > 0) {
+    headers["x-tenant-id"] = tenantId.trim();
+  }
   const { data } = await niyantranClient.get<any>(
-    `/api/tantra/execution/${encodeURIComponent(executionId)}/history`
+    `/api/tantra/execution/${encodeURIComponent(executionId)}/history`,
+    { headers }
   );
   return mapNiyantranExecutionHistory(data);
 }
