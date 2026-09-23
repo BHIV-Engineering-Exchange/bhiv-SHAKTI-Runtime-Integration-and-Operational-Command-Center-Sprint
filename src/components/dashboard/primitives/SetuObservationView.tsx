@@ -109,11 +109,12 @@ export const SetuObservationView = memo(function SetuObservationView({
         </div>
 
         <div className="flex items-center gap-1">
-          {(dashboard?.tenant_id || timelineQuery.data?.tenant_id) && (
+          {(tenantId || dashboard?.tenant_id || timelineQuery.data?.tenant_id) && (
             <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
-              Tenant: {dashboard?.tenant_id || timelineQuery.data?.tenant_id}
+              Tenant: {tenantId || dashboard?.tenant_id || timelineQuery.data?.tenant_id}
             </span>
           )}
+
           {(dashboard?.execution_id || timelineQuery.data?.execution_id) && (
             <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-emerald-400 border border-slate-700">
               Exec: {(dashboard?.execution_id || timelineQuery.data?.execution_id)?.slice(0, 10)}...

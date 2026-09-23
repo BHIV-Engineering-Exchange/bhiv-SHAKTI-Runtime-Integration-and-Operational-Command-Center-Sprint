@@ -124,3 +124,6 @@ export const useSetuTelemetry = (traceId?: string, tenantId?: string) =>
     placeholderData: keepPreviousData,
     retry: 1,
   });
+
+// ─── Authoritative Tenant Context Hook ───────────────────────────────────────
+export { useCurrentTenant, type CurrentTenantResult, type TenantResolutionStatus } from "./useCurrentTenant";

@@ -11,6 +11,7 @@ import type {
   SetuCandidateState,
   SetuSignalVisibility,
   SetuTelemetryResponse,
+  SetuAuthMeResponse,
 } from "@/types/setu";
 
 let SETU_BASE_URL = import.meta.env.VITE_SETU_URL || "";
@@ -34,7 +35,7 @@ setuClient.interceptors.request.use(
   (config) => {
     const sessionToken =
       typeof localStorage !== "undefined"
-        ? localStorage.getItem("token")
+        ? localStorage.getItem("token") || localStorage.getItem("WorkflowToken")
         : null;
 
     if (sessionToken) {
@@ -165,6 +166,18 @@ export async function getTaskAssignments(taskId: string): Promise<Assignment[]> 
   }
 }
 
+// ─── SETU Authentication & Tenant Context (Authoritative Contract) ─────────────
+
+/**
+ * GET /api/auth/me
+ * Retrieves current authenticated user context including authoritative tenant_id.
+ * Authorization: Bearer <JWT_ACCESS_TOKEN> is automatically attached via request interceptor.
+ */
+export async function getSetuAuthMe(): Promise<SetuAuthMeResponse> {
+  const { data } = await setuClient.get<SetuAuthMeResponse>("/api/auth/me");
+  return data;
+}
+
 // ─── SETU Runtime Observation Endpoints (Strictly Read-Only) ──────────────────
 
 /**
@@ -174,7 +187,9 @@ export async function getTaskAssignments(taskId: string): Promise<Assignment[]> 
 export async function getSetuDashboard(traceId: string, tenantId?: string): Promise<SetuVisibilityDashboard> {
   const headers: Record<string, string> = {};
   if (tenantId && tenantId.trim().length > 0) {
-    headers["x-tenant-id"] = tenantId.trim();
+    const trimmed = tenantId.trim();
+    headers["x-tenant-id"] = trimmed;
+    headers["x-setu-tenant-id"] = trimmed;
   }
   const { data } = await setuClient.get<SetuVisibilityDashboard>(
     `/setu/ui/dashboard/${encodeURIComponent(traceId)}`,
@@ -190,7 +205,9 @@ export async function getSetuDashboard(traceId: string, tenantId?: string): Prom
 export async function getSetuTimeline(traceId: string, tenantId?: string): Promise<SetuTimelineResponse> {
   const headers: Record<string, string> = {};
   if (tenantId && tenantId.trim().length > 0) {
-    headers["x-tenant-id"] = tenantId.trim();
+    const trimmed = tenantId.trim();
+    headers["x-tenant-id"] = trimmed;
+    headers["x-setu-tenant-id"] = trimmed;
   }
   const { data } = await setuClient.get<SetuTimelineResponse>(
     `/setu/niyantran/timeline/${encodeURIComponent(traceId)}`,
@@ -206,7 +223,9 @@ export async function getSetuTimeline(traceId: string, tenantId?: string): Promi
 export async function getSetuCandidateState(traceId: string, tenantId?: string): Promise<SetuCandidateState> {
   const headers: Record<string, string> = {};
   if (tenantId && tenantId.trim().length > 0) {
-    headers["x-tenant-id"] = tenantId.trim();
+    const trimmed = tenantId.trim();
+    headers["x-tenant-id"] = trimmed;
+    headers["x-setu-tenant-id"] = trimmed;
   }
   const { data } = await setuClient.get<SetuCandidateState>(
     `/setu/ui/candidate/${encodeURIComponent(traceId)}`,
@@ -222,7 +241,9 @@ export async function getSetuCandidateState(traceId: string, tenantId?: string):
 export async function getSetuSignals(traceId: string, tenantId?: string): Promise<SetuSignalVisibility> {
   const headers: Record<string, string> = {};
   if (tenantId && tenantId.trim().length > 0) {
-    headers["x-tenant-id"] = tenantId.trim();
+    const trimmed = tenantId.trim();
+    headers["x-tenant-id"] = trimmed;
+    headers["x-setu-tenant-id"] = trimmed;
   }
   const { data } = await setuClient.get<SetuSignalVisibility>(
     `/setu/ui/signals/${encodeURIComponent(traceId)}`,
@@ -238,7 +259,9 @@ export async function getSetuSignals(traceId: string, tenantId?: string): Promis
 export async function getSetuTelemetry(traceId: string, tenantId?: string): Promise<SetuTelemetryResponse> {
   const headers: Record<string, string> = {};
   if (tenantId && tenantId.trim().length > 0) {
-    headers["x-tenant-id"] = tenantId.trim();
+    const trimmed = tenantId.trim();
+    headers["x-tenant-id"] = trimmed;
+    headers["x-setu-tenant-id"] = trimmed;
   }
   const { data } = await setuClient.get<SetuTelemetryResponse>(
     `/setu/telemetry/${encodeURIComponent(traceId)}`,

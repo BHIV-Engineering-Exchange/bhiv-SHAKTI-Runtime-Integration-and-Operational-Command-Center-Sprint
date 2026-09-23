@@ -26,6 +26,7 @@ import { usePranaPropagationLog } from "@/hooks/usePranaQueries";
 import { useSanskarTrace } from "@/hooks/useSanskarQueries";
 import { useKarmaLatestHash } from "@/hooks/useKarmaQueries";
 import { useSetuDashboard } from "@/hooks/useSetuQueries";
+import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { usePravahTraceRegistry } from "@/hooks/usePravahQueries";
 
 import { formatTime, formatRelativeTime } from "@/utils/format";
@@ -82,8 +83,15 @@ export default memo(function EvidenceLayout() {
     return activeArtifact?.trace_id || "";
   }, [customTraceId, activeArtifact?.trace_id]);
 
+  // Authoritative tenant provider query (GET /api/auth/me)
+  const currentTenant = useCurrentTenant();
+  const authoritativeTenantId = currentTenant.tenantId || "";
+
   // Read-only ecosystem queries for trace correlation
-  const setuDashboard = useSetuDashboard(effectiveTraceId || undefined);
+  const setuDashboard = useSetuDashboard(
+    effectiveTraceId || undefined,
+    authoritativeTenantId || undefined
+  );
   const pravahRegistry = usePravahTraceRegistry(effectiveTraceId || undefined);
 
   // Authoritative execution ID (never invented)
@@ -96,10 +104,11 @@ export default memo(function EvidenceLayout() {
     );
   }, [setuDashboard.data?.execution_id, pravahRegistry.data]);
 
-  // Authoritative tenant ID (only from SETU backend response, never invented or defaulted)
+  // Authoritative tenant ID: sourced from authoritative tenant provider (/api/auth/me)
+  // or confirmed SETU backend response. STRICT RULE: Never invented, defaulted, or conflated with trace/execution/request ID.
   const effectiveTenantId = useMemo(() => {
-    return setuDashboard.data?.tenant_id || "";
-  }, [setuDashboard.data?.tenant_id]);
+    return authoritativeTenantId || setuDashboard.data?.tenant_id || "";
+  }, [authoritativeTenantId, setuDashboard.data?.tenant_id]);
 
   const hasEvidenceRef = useMemo(() => {
     return Boolean(
@@ -132,6 +141,7 @@ export default memo(function EvidenceLayout() {
       isError={isError}
       hasData={hasData}
       onRetry={() => {
+        currentTenant.refetch();
         bucket.refetch();
         audit.refetch();
         telemetry.refetch();
@@ -328,11 +338,22 @@ export default memo(function EvidenceLayout() {
             <div className="flex flex-col h-full min-h-0">
               <div className="flex items-center justify-between mb-1">
                 <h3 className="text-xs font-semibold text-slate-400">Trace Observation & Artifact Details</h3>
-                {effectiveTraceId && (
-                  <span className="text-[10px] font-mono text-slate-500 truncate max-w-[200px]" title={effectiveTraceId}>
-                    Trace: {effectiveTraceId}
-                  </span>
-                )}
+                <div className="flex items-center gap-1.5">
+                  {effectiveTenantId ? (
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700" title="Authoritative Tenant Context">
+                      Tenant: {effectiveTenantId}
+                    </span>
+                  ) : currentTenant.isLoading ? (
+                    <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-800/60 text-slate-500 border border-slate-800">
+                      Resolving Tenant...
+                    </span>
+                  ) : null}
+                  {effectiveTraceId && (
+                    <span className="text-[10px] font-mono text-slate-500 truncate max-w-[180px]" title={effectiveTraceId}>
+                      Trace: {effectiveTraceId}
+                    </span>
+                  )}
+                </div>
               </div>
 
               {/* Chain Steps horizontal navigation */}

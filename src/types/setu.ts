@@ -105,3 +105,24 @@ export interface SetuTelemetryResponse {
   execution_id?: string;
   tenant_id?: string;
 }
+
+// ─── SETU Authentication & Authoritative Tenant Context Models ─────────────────
+
+export interface SetuAuthUser {
+  _id?: string;
+  id?: string;
+  name?: string;
+  email?: string;
+  role?: string;
+  tenant_id?: string;
+  isActive?: boolean;
+  [key: string]: unknown;
+}
+
+export interface SetuAuthMeResponse {
+  success: boolean;
+  message?: string;
+  data: {
+    user: SetuAuthUser;
+  };
+}
