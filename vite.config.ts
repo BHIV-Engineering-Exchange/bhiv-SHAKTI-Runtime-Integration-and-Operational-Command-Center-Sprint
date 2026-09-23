@@ -82,6 +82,15 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/setu/, ""),
       },
+      "/api/pravah": {
+        target: "https://pravah.blackholeinfiverse.com/api/control",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/pravah/, ""),
+        headers: {
+          "Authorization": `Bearer ${process.env.PRAVAH_API_KEY || "shakti-secret-key-change-in-prod"}`,
+          "X-Source-System": "SHAKTI",
+        },
+      },
     },
   },
 });

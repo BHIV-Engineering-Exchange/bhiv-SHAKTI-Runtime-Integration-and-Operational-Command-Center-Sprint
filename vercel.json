@@ -45,6 +45,10 @@
       "destination": "http://163.128.209.18:3009/:path*"
     },
     {
+      "source": "/api/pravah/:path*",
+      "destination": "https://pravah.blackholeinfiverse.com/api/control/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
