@@ -83,12 +83,15 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/setu/, ""),
       },
       "/api/pravah": {
-        target: "https://pravah.blackholeinfiverse.com/api/control",
+        target: process.env.PRAVAH_UPSTREAM_URL || "https://pravah.blackholeinfiverse.com/api/control",
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/pravah/, ""),
         headers: {
-          "Authorization": `Bearer ${process.env.PRAVAH_API_KEY || "shakti-secret-key-change-in-prod"}`,
+          "Authorization": process.env.PRAVAH_API_KEY
+            ? `Bearer ${process.env.PRAVAH_API_KEY}`
+            : "",
           "X-Source-System": "SHAKTI",
+          "Accept": "application/json",
         },
       },
     },
