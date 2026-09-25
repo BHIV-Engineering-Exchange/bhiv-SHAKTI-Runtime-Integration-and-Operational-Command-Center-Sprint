@@ -151,8 +151,9 @@ export default memo(function CapabilityDependencyGraphLayout() {
     return { nodes: nodesList, edges: edgesList };
   }, [capRegistry.data, status.data, ops.data, karmaLineage.data]);
 
-  const isLoading = capRegistry.isLoading || status.isLoading;
-  const isError = !isLoading && (capRegistry.isError && status.isError && karmaLineage.isError);
+  const hasData = nodes.length > 0;
+  const isLoading = !hasData && (capRegistry.isLoading || status.isLoading || karmaLineage.isLoading);
+  const isError = !isLoading && !hasData && (capRegistry.isError && status.isError && karmaLineage.isError);
   const timestamp = capRegistry.data?.timestamp || status.data?.timestamp || (karmaLineage.data ? new Date().toISOString() : undefined);
 
   return (
@@ -160,7 +161,7 @@ export default memo(function CapabilityDependencyGraphLayout() {
       title="Capability Dependency Graph — Interactive Ecosystem Topology"
       isLoading={isLoading}
       isError={isError}
-      hasData={nodes.length > 0}
+      hasData={hasData}
       onRetry={() => {
         capRegistry.refetch();
         status.refetch();

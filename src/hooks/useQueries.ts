@@ -27,6 +27,7 @@ export const useHealth = () =>
     queryFn: fetchHealth,
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // GET /system/status → SystemHealth zone
@@ -34,8 +35,9 @@ export const useSystemStatus = () =>
   useQuery({
     queryKey: ["system-status"],
     queryFn: fetchSystemStatus,
-    refetchInterval: 5_000,
+    refetchInterval: 10_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // GET /metrics → Live KPIs zone
@@ -45,6 +47,7 @@ export const useMetrics = () =>
     queryFn: fetchMetrics,
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // GET /dashboard/executive → Executive Summary zone
@@ -54,6 +57,7 @@ export const useExecutiveDashboard = () =>
     queryFn: fetchExecutiveDashboard,
     refetchInterval: 15_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // GET /dashboard/operations → Operations / Incident Queue zone
@@ -61,8 +65,9 @@ export const useOperationsDashboard = () =>
   useQuery({
     queryKey: ["dashboard-operations"],
     queryFn: fetchOperationsDashboard,
-    refetchInterval: 5_000,
+    refetchInterval: 10_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // GET /dashboard/alerts → Live Alert Queue zone
@@ -70,8 +75,9 @@ export const useAlertsDashboard = () =>
   useQuery({
     queryKey: ["dashboard-alerts"],
     queryFn: fetchAlertsDashboard,
-    refetchInterval: 5_000,
+    refetchInterval: 10_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // GET /dashboard/runtime → Replay Status zone
@@ -79,8 +85,9 @@ export const useRuntimeDashboard = () =>
   useQuery({
     queryKey: ["dashboard-runtime"],
     queryFn: fetchRuntimeDashboard,
-    refetchInterval: 5_000,
+    refetchInterval: 10_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // GET /dashboard/telemetry → Forecast / Telemetry zone
@@ -90,6 +97,7 @@ export const useTelemetryDashboard = () =>
     queryFn: fetchTelemetryDashboard,
     refetchInterval: 10_000,
     placeholderData: keepPreviousData,
+    retry: 1,
   });
 
 // BHEX Repository Registry

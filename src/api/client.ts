@@ -11,7 +11,7 @@ if (BASE_URL.includes("vercel.app") && !BASE_URL.includes("/api/")) {
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 300000,
+  timeout: 10000,
   headers: { "Content-Type": "application/json" },
 });
 
@@ -105,7 +105,7 @@ apiClient.interceptors.response.use(
       logger.warn(`Service unavailable: ${url}`);
       return Promise.reject(new Error(`Service unavailable: ${url}`));
     }
-    if (error.code === "ECONNABORTED") {
+    if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT" || error.message?.includes("timeout")) {
       logger.error(`Request timeout: ${url}`);
       return Promise.reject(new Error(`Request timeout: ${url}`));
     }

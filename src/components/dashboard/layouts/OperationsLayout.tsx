@@ -219,9 +219,15 @@ export default memo(function OperationsLayout() {
     tantraTelemetrySummary.data,
   ]);
 
-  const isLoading = ops.isLoading || status.isLoading || metrics.isLoading;
-  const isError = !isLoading && (ops.isError || status.isError || metrics.isError);
-  const timestamp = ops.data?.timestamp || status.data?.timestamp;
+  const hasData = Boolean(
+    ops.data !== undefined ||
+    status.data !== undefined ||
+    metrics.data !== undefined ||
+    bhivCapabilities.some((c) => c.hasRuntimeData)
+  );
+  const isLoading = !hasData && (ops.isLoading || status.isLoading || metrics.isLoading);
+  const isError = !isLoading && !hasData && (ops.isError && status.isError && metrics.isError);
+  const timestamp = ops.data?.timestamp || status.data?.timestamp || metrics.data?.timestamp;
 
   return (
     <DashboardCard
@@ -229,7 +235,7 @@ export default memo(function OperationsLayout() {
       ariaLabel="Operations Layout"
       isLoading={isLoading}
       isError={isError}
-      hasData={ops.data !== undefined || status.data !== undefined}
+      hasData={hasData}
       onRetry={() => {
         ops.refetch();
         status.refetch();

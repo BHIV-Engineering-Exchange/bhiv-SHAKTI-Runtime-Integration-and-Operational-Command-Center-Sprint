@@ -106,7 +106,7 @@ export function DashboardCard({
         {headerRight}
       </div>
 
-      {isLoading ? (
+      {isLoading && !hasData ? (
         <div className="space-y-2">
           {Array.from({ length: skeletonCount }).map((_, i) => (
             <Skeleton key={i} className={`${skeletonHeight} bg-slate-700/50 rounded`} />
