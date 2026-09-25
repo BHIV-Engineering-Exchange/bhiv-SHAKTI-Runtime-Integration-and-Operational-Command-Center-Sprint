@@ -101,7 +101,7 @@ export default memo(function RuntimeHealthLayout() {
             ? "Cold starting..."
             : rajyaHealth.isError
               ? "Connection failed"
-              : `Status: ${rajyaHealth.data?.status || 'degraded'}`,
+              : `Service: ${rajyaHealth.data?.service || 'bhiv-enforcement-gateway'} | Status: ${rajyaHealth.data?.status || 'degraded'}`,
         }] : []),
         ...(sanskarHealth.data || sanskarHealth.isError || sanskarHealth.isLoading ? [{
           name: "SANSKAR Domain Intelligence",

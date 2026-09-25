@@ -28,6 +28,7 @@ import { useKarmaLatestHash } from "@/hooks/useKarmaQueries";
 import { useSetuDashboard } from "@/hooks/useSetuQueries";
 import { useCurrentTenant } from "@/hooks/useCurrentTenant";
 import { usePravahTraceRegistry } from "@/hooks/usePravahQueries";
+import { useSovereignTraces } from "@/hooks/useRajyaQueries";
 
 import { formatTime, formatRelativeTime } from "@/utils/format";
 
@@ -93,16 +94,30 @@ export default memo(function EvidenceLayout() {
     authoritativeTenantId || undefined
   );
   const pravahRegistry = usePravahTraceRegistry(effectiveTraceId || undefined);
+  const sovereignTraces = useSovereignTraces();
 
-  // Authoritative execution ID (never invented)
+  // Authoritative Sovereign Core trace matching current trace or first active
+  const activeSovereignTrace = useMemo(() => {
+    if (!sovereignTraces.data || sovereignTraces.data.length === 0) return null;
+    if (effectiveTraceId) {
+      const match = sovereignTraces.data.find(
+        (t) => t.trace_hash === effectiveTraceId
+      );
+      if (match) return match;
+    }
+    return sovereignTraces.data[0];
+  }, [sovereignTraces.data, effectiveTraceId]);
+
+  // Authoritative execution ID (never invented) - Sovereign Core trace takes precedence
   const effectiveExecutionId = useMemo(() => {
     return (
+      activeSovereignTrace?.execution_id ||
       setuDashboard.data?.execution_id ||
       pravahRegistry.data?.execution_records?.[0]?.execution_id ||
       pravahRegistry.data?.evidence_bundles?.[0]?.execution_id ||
       ""
     );
-  }, [setuDashboard.data?.execution_id, pravahRegistry.data]);
+  }, [activeSovereignTrace?.execution_id, setuDashboard.data?.execution_id, pravahRegistry.data]);
 
   // Authoritative tenant ID: sourced from authoritative tenant provider (/api/auth/me)
   // or confirmed SETU backend response. STRICT RULE: Never invented, defaulted, or conflated with trace/execution/request ID.
@@ -146,6 +161,7 @@ export default memo(function EvidenceLayout() {
         audit.refetch();
         telemetry.refetch();
         karmaLatestHash.refetch();
+        sovereignTraces.refetch();
         if (effectiveTraceId) {
           sanskarTrace.refetch();
           setuDashboard.refetch();
@@ -403,6 +419,7 @@ export default memo(function EvidenceLayout() {
                       <NiyantranHistoryView
                         executionId={effectiveExecutionId || undefined}
                         tenantId={effectiveTenantId || undefined}
+                        sovereignTrace={activeSovereignTrace}
                       />
                     )}
 
@@ -425,6 +442,7 @@ export default memo(function EvidenceLayout() {
                   <NiyantranHistoryView
                     executionId={effectiveExecutionId || undefined}
                     tenantId={effectiveTenantId || undefined}
+                    sovereignTrace={activeSovereignTrace}
                   />
                 )}
 

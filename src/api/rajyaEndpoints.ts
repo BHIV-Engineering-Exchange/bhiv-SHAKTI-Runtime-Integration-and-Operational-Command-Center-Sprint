@@ -1,6 +1,13 @@
 import axios, { type AxiosError } from "axios";
 import { logger } from "@/utils/logger";
 import { extractRuntimeCorrelation } from "./client";
+import type {
+  SovereignExecutionTrace,
+  SovereignBucketEntry,
+  RajyaHealthResponse,
+} from "@/types/sovereign";
+
+export type { RajyaHealthResponse, SovereignExecutionTrace, SovereignBucketEntry };
 
 let RAJYA_BASE_URL =
   import.meta.env.VITE_RAJYA_BASE_URL || "";
@@ -55,11 +62,17 @@ rajyaClient.interceptors.response.use(
   }
 );
 
-export interface RajyaHealthResponse {
-  status: string;
-}
-
 export async function fetchRajyaHealth(): Promise<RajyaHealthResponse> {
   const { data } = await rajyaClient.get<RajyaHealthResponse>("/health");
   return data;
+}
+
+export async function fetchSovereignTraces(): Promise<SovereignExecutionTrace[]> {
+  const { data } = await rajyaClient.get<SovereignExecutionTrace[]>("/api/v1/niyantran/traces");
+  return Array.isArray(data) ? data : [];
+}
+
+export async function fetchSovereignBucketEntries(): Promise<SovereignBucketEntry[]> {
+  const { data } = await rajyaClient.get<SovereignBucketEntry[]>("/api/v1/bucket/entries");
+  return Array.isArray(data) ? data : [];
 }
